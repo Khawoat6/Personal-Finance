@@ -390,7 +390,7 @@ const CalendarView: React.FC<{
 // --- Main Page Component ---
 export const SubscriptionsPage: React.FC = () => {
     const { subscriptions, addSubscription, updateSubscription, deleteSubscription, loading } = useData();
-    const [filters, setFilters] = useState({ status: 'All', expenseType: 'All' });
+    const [filters, setFilters] = useState({ status: 'All', expenseType: 'All', billingPeriod: 'All', paymentMethod: 'All' });
     const [viewMode, setViewMode] = useState('list');
     const [visibleColumns, setVisibleColumns] = useState({
         category: true,
@@ -409,11 +409,18 @@ export const SubscriptionsPage: React.FC = () => {
 
     const activeSubscriptions = useMemo(() => subscriptions.filter(s => s.status === 'Active' && s.expenseType === 'Recurring'), [subscriptions]);
     
+    const paymentMethodOptions = useMemo(() => {
+        const methods = new Set(subscriptions.map(s => s.paymentMethod));
+        return Array.from(methods);
+    }, [subscriptions]);
+
     const filteredSubscriptions = useMemo(() => {
         return subscriptions
             .filter(sub => {
                 if (filters.status !== 'All' && sub.status !== filters.status) return false;
                 if (filters.expenseType !== 'All' && sub.expenseType !== filters.expenseType) return false;
+                if (filters.billingPeriod !== 'All' && sub.billingPeriod !== filters.billingPeriod) return false;
+                if (filters.paymentMethod !== 'All' && sub.paymentMethod !== filters.paymentMethod) return false;
                 return true;
             })
             .sort((a, b) => new Date(b.firstPayment).getTime() - new Date(a.firstPayment).getTime());
@@ -564,7 +571,7 @@ export const SubscriptionsPage: React.FC = () => {
     return (
         <div className="space-y-6">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-sm font-medium text-slate-500">Filter:</span>
                      <select value={filters.status} onChange={(e) => setFilters(prev => ({...prev, status: e.target.value}))} className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md px-2 py-1 text-sm">
                          <option value="All">All Status</option>
@@ -575,6 +582,15 @@ export const SubscriptionsPage: React.FC = () => {
                          <option value="All">All Types</option>
                          <option value="Recurring">Recurring</option>
                          <option value="One-Time">One-Time</option>
+                     </select>
+                     <select value={filters.billingPeriod} onChange={(e) => setFilters(prev => ({...prev, billingPeriod: e.target.value}))} className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md px-2 py-1 text-sm">
+                         <option value="All">All Periods</option>
+                         <option value="Monthly">Monthly</option>
+                         <option value="Yearly">Yearly</option>
+                     </select>
+                     <select value={filters.paymentMethod} onChange={(e) => setFilters(prev => ({...prev, paymentMethod: e.target.value}))} className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md px-2 py-1 text-sm">
+                         <option value="All">All Payment Methods</option>
+                         {paymentMethodOptions.map(method => <option key={method} value={method}>{method}</option>)}
                      </select>
                 </div>
                 <button onClick={handleAdd} className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-slate-800 dark:bg-slate-200 dark:text-slate-900 rounded-lg hover:bg-slate-700 dark:hover:bg-slate-300">
