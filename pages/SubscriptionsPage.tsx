@@ -22,6 +22,15 @@ const getLogoUrl = (sub: Subscription) => {
   return `https://logo.clearbit.com/${cleanName}.com`;
 };
 
+const formatCurrencyLocal = (amount: number, currency: string = 'THB') => {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD', // To match the image's '$' sign
+    minimumFractionDigits: 2,
+  }).format(amount);
+};
+
+
 const formatCurrency = (amount: number) => {
   return new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount);
 };
@@ -355,69 +364,86 @@ const GridView: React.FC<{
   </div>
 );
 
-const CalendarView: React.FC<{
-    data: Subscription[],
-    onEdit: (sub: Subscription) => void
-}> = ({ data, onEdit }) => {
-  const [currentDate, setCurrentDate] = useState(new Date());
+const CalendarView: React.FC<{ data: Subscription[], onEdit: (sub: Subscription) => void }> = ({ data, onEdit }) => {
+    const [currentDate, setCurrentDate] = useState(new Date());
 
-  const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
-  const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay();
-  const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    const getStartOfWeek = (date: Date) => {
+        const d = new Date(date);
+        const day = d.getDay();
+        const diff = d.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is sunday
+        return new Date(d.setDate(diff));
+    };
 
-  const getSubsForDay = (day: number) => {
-    return data.filter(sub => {
-      if (sub.status !== 'Active' || !sub.firstPayment) return false;
-      const paymentDate = new Date(sub.firstPayment);
-      if (sub.expenseType === 'One-Time') {
-        return paymentDate.getDate() === day && paymentDate.getMonth() === currentDate.getMonth() && paymentDate.getFullYear() === currentDate.getFullYear();
-      }
-      if (sub.billingPeriod === 'Monthly') return paymentDate.getDate() === day;
-      if (sub.billingPeriod === 'Yearly') return paymentDate.getDate() === day && paymentDate.getMonth() === currentDate.getMonth();
-      return false;
-    });
-  };
+    const addDays = (date: Date, days: number) => {
+        const result = new Date(date);
+        result.setDate(result.getDate() + days);
+        return result;
+    };
 
-  const changeMonth = (offset: number) => {
-    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + offset, 1));
-  };
+    const changeWeek = (offset: number) => {
+        setCurrentDate(prev => addDays(prev, offset * 7));
+    };
 
-  return (
-    <Card className="p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-lg font-bold text-slate-900 dark:text-white">
-          {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
-        </h2>
-        <div className="flex space-x-2">
-          <button onClick={() => changeMonth(-1)} className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500"><ChevronLeft size={20} /></button>
-          <button onClick={() => setCurrentDate(new Date())} className="text-sm font-medium px-4 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600">Today</button>
-          <button onClick={() => changeMonth(1)} className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500"><ChevronRight size={20} /></button>
-        </div>
-      </div>
-      <div className="grid grid-cols-7 gap-px border dark:border-slate-700 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-700">
-        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => <div key={d} className="py-2.5 text-center text-xs font-semibold uppercase tracking-wider bg-slate-50 dark:bg-slate-800 text-slate-500">{d}</div>)}
-        {Array.from({ length: firstDayOfMonth }).map((_, i) => <div key={`empty-${i}`} className="bg-white dark:bg-slate-800/50 min-h-[120px]"></div>)}
-        {Array.from({ length: daysInMonth }).map((_, i) => {
-          const day = i + 1;
-          const daySubs = getSubsForDay(day);
-          const isToday = day === new Date().getDate() && currentDate.getMonth() === new Date().getMonth() && currentDate.getFullYear() === new Date().getFullYear();
-          return (
-            <div key={day} className={`bg-white dark:bg-slate-800/50 min-h-[120px] p-2 flex flex-col ${isToday ? 'bg-blue-50/30 dark:bg-blue-900/20' : ''}`}>
-              <span className={`text-sm font-semibold w-7 h-7 flex items-center justify-center rounded-full ${isToday ? 'bg-slate-900 dark:bg-blue-600 text-white' : ''}`}>{day}</span>
-              <div className="flex-1 overflow-y-auto space-y-1.5 mt-1.5">
-                {daySubs.map(sub => (
-                  <div key={sub.id} onClick={() => onEdit(sub)} className="flex items-center gap-2 p-1.5 rounded-lg border shadow-sm cursor-pointer bg-white dark:bg-slate-700 border-gray-100 dark:border-slate-600 hover:border-gray-300">
-                    <img src={getLogoUrl(sub)} alt="" className="w-5 h-5 object-contain rounded-md" onError={(e) => (e.currentTarget.style.display='none')} />
-                    <span className="text-xs truncate w-full font-semibold text-slate-800 dark:text-slate-200">{sub.name}</span>
-                  </div>
-                ))}
-              </div>
+    const weekData = useMemo(() => {
+        const startOfWeek = getStartOfWeek(currentDate);
+        const week = Array.from({ length: 7 }).map((_, i) => {
+            const date = addDays(startOfWeek, i);
+            const subsForDay = data.filter(sub => {
+                if (sub.status !== 'Active' || !sub.firstPayment) return false;
+                const paymentDate = new Date(sub.firstPayment);
+                if (sub.billingPeriod === 'Monthly') return paymentDate.getDate() === date.getDate();
+                if (sub.billingPeriod === 'Yearly') return paymentDate.getDate() === date.getDate() && paymentDate.getMonth() === date.getMonth();
+                return false;
+            });
+            const totalAmount = subsForDay.reduce((sum, s) => sum + s.price, 0);
+
+            return {
+                date,
+                dayName: date.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase(),
+                dayNumber: date.getDate(),
+                subscriptions: subsForDay,
+                totalAmount,
+            };
+        });
+        return week;
+    }, [currentDate, data]);
+
+    const monthName = currentDate.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+
+    return (
+        <div className="bg-zinc-900 p-6 rounded-2xl">
+            <div className="flex items-center justify-between mb-6">
+                <h2 className="text-lg font-bold text-white">{monthName}</h2>
+                <div className="flex space-x-2">
+                    <button onClick={() => changeWeek(-1)} className="p-1.5 rounded-lg hover:bg-zinc-700 text-zinc-400"><ChevronLeft size={20} /></button>
+                    <button onClick={() => setCurrentDate(new Date())} className="text-sm font-medium px-4 py-1.5 rounded-lg bg-zinc-700 hover:bg-zinc-600 text-white">Today</button>
+                    <button onClick={() => changeWeek(1)} className="p-1.5 rounded-lg hover:bg-zinc-700 text-zinc-400"><ChevronRight size={20} /></button>
+                </div>
             </div>
-          );
-        })}
-      </div>
-    </Card>
-  );
+            <div className="grid grid-cols-7 gap-4">
+                {weekData.map(({ date, dayName, dayNumber, subscriptions, totalAmount }) => (
+                    <div key={date.toISOString()} className="bg-zinc-800 rounded-2xl p-4 flex flex-col min-h-[180px]">
+                        <div className="text-center">
+                            <p className="font-mono text-xs font-semibold text-zinc-400">{dayName}</p>
+                            <p className="font-mono text-lg font-semibold text-zinc-200 mt-1">{dayNumber}</p>
+                        </div>
+                        <div className="flex-grow flex flex-col items-center justify-center space-y-2 my-4">
+                            {subscriptions.map(sub => (
+                                <div key={sub.id} onClick={() => onEdit(sub)} className="w-8 h-8 rounded-full bg-white p-1 flex items-center justify-center shadow-md cursor-pointer">
+                                    <img src={getLogoUrl(sub)} alt={sub.name} className="w-full h-full object-contain" />
+                                </div>
+                            ))}
+                        </div>
+                        <div className="text-center mt-auto">
+                            {totalAmount > 0 && (
+                                <p className="text-sm font-semibold text-white">{formatCurrencyLocal(totalAmount)}</p>
+                            )}
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
 };
 
 // --- Main Page Component ---
