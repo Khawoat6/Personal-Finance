@@ -200,8 +200,9 @@ const ListView: React.FC<{
     data: (Subscription & { nextPayment: string })[],
     onDelete: (id: string | number) => void,
     onEdit: (sub: Subscription) => void,
-    visibleColumns: { [key: string]: boolean }
-}> = ({ data, onDelete, onEdit, visibleColumns }) => (
+    visibleColumns: { [key: string]: boolean },
+    showLogoUrl: boolean
+}> = ({ data, onDelete, onEdit, visibleColumns, showLogoUrl }) => (
   <Card className="overflow-x-auto">
     <table className="min-w-full text-left">
       <thead className="bg-slate-50/50 dark:bg-slate-900/50 border-b border-gray-100 dark:border-slate-800">
@@ -228,6 +229,9 @@ const ListView: React.FC<{
                 </div>
                 <div className="ml-3">
                   <div className="text-sm font-semibold text-slate-900 dark:text-white">{sub.name}</div>
+                   {showLogoUrl && sub.logoUrl && (
+                        <p className="text-xs text-slate-400 truncate max-w-[200px]">{sub.logoUrl}</p>
+                   )}
                 </div>
               </div>
             </td>
@@ -402,6 +406,7 @@ export const SubscriptionsPage: React.FC = () => {
         website: false,
         endDate: false,
     });
+    const [showLogoUrl, setShowLogoUrl] = useState(false);
 
     const [isAddModalOpen, setAddModalOpen] = useState(false);
     const [editingSub, setEditingSub] = useState<Subscription | null>(null);
@@ -692,7 +697,13 @@ export const SubscriptionsPage: React.FC = () => {
 
             <div className="flex items-center justify-end gap-2">
                  {viewMode === 'list' && (
-                    <ColumnsDropdown columns={visibleColumns} setColumns={setVisibleColumns} />
+                    <div className="flex items-center gap-4">
+                        <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300 cursor-pointer">
+                           <span>Show Logo URL</span>
+                           <Switch checked={showLogoUrl} onChange={() => setShowLogoUrl(!showLogoUrl)} />
+                        </label>
+                        <ColumnsDropdown columns={visibleColumns} setColumns={setVisibleColumns} />
+                    </div>
                  )}
                 <div className="p-1 rounded-lg flex bg-slate-100 dark:bg-slate-800">
                     <button onClick={() => setViewMode('list')} className={`px-3 py-1.5 rounded-md transition-all text-sm flex items-center gap-2 ${viewMode === 'list' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500'}`}><List size={16} /> List</button>
@@ -701,7 +712,7 @@ export const SubscriptionsPage: React.FC = () => {
                 </div>
             </div>
 
-            {viewMode === 'list' && <ListView data={subscriptionsWithNextPayment} onDelete={handleDelete} onEdit={handleEdit} visibleColumns={visibleColumns} />}
+            {viewMode === 'list' && <ListView data={subscriptionsWithNextPayment} onDelete={handleDelete} onEdit={handleEdit} visibleColumns={visibleColumns} showLogoUrl={showLogoUrl} />}
             {viewMode === 'grid' && <GridView data={filteredSubscriptions} onDelete={handleDelete} onEdit={handleEdit} />}
             {viewMode === 'calendar' && <CalendarView data={filteredSubscriptions} onEdit={handleEdit} />}
             
