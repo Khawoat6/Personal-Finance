@@ -1,4 +1,3 @@
-
 import { DEFAULT_CATEGORIES, DEFAULT_ACCOUNTS, DEFAULT_SUBSCRIPTIONS } from '../constants';
 import type { AppData, Transaction } from '../types';
 
@@ -112,6 +111,14 @@ export const generateSeedData = (): AppData => {
             deadline: new Date(today.getFullYear() + 1, today.getMonth(), today.getDate()).toISOString(),
             category: 'Technology',
         },
+        {
+            id: 'goal-2',
+            name: 'เงินสำรองฉุกเฉิน',
+            targetAmount: 100000,
+            currentAmount: 30000,
+            deadline: new Date(today.getFullYear() + 1, today.getMonth(), today.getDate()).toISOString(),
+            category: 'Financial',
+        }
     ];
     
     const subscriptions = [...DEFAULT_SUBSCRIPTIONS];
