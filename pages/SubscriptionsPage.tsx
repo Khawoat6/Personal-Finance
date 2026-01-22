@@ -34,7 +34,7 @@ const formatDateDisplay = (dateString: string) => {
 };
 
 const getCategoryIcon = (category: string) => {
-  const iconProps = { size: 16, className: "text-slate-500 dark:text-slate-400" };
+  const iconProps = { size: 18, className: "text-slate-500 dark:text-slate-400" };
   switch (category) {
     case 'Entertainment': return <Film {...iconProps} />;
     case 'Music': case 'Music Streaming': return <Headphones {...iconProps} />;
@@ -669,28 +669,6 @@ export const SubscriptionsPage: React.FC = () => {
 
     return (
         <div className="space-y-6">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-sm font-medium text-slate-500">Filter:</span>
-                    <FilterDropdown title="All Status" value={filters.status} onChange={(v) => setFilters(p => ({...p, status: v}))} options={[{value: 'All', label: 'All Status'}, {value: 'Active', label: 'Active'}, {value: 'Inactive', label: 'Inactive'}]} />
-                    <FilterDropdown title="All Types" value={filters.expenseType} onChange={(v) => setFilters(p => ({...p, expenseType: v}))} options={[{value: 'All', label: 'All Types'}, {value: 'Recurring', label: 'Recurring'}, {value: 'One-Time', label: 'One-Time'}]} />
-                    <FilterDropdown title="All Periods" value={filters.billingPeriod} onChange={(v) => setFilters(p => ({...p, billingPeriod: v}))} options={[{value: 'All', label: 'All Periods'}, {value: 'Monthly', label: 'Monthly'}, {value: 'Yearly', label: 'Yearly'}]} />
-                    <FilterDropdown title="All Payment Methods" value={filters.paymentMethod} onChange={(v) => setFilters(p => ({...p, paymentMethod: v}))} options={[{value: 'All', label: 'All Payment Methods'}, ...paymentMethodOptions]} />
-                </div>
-                <div className="flex items-center gap-2">
-                    <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept=".csv" />
-                    <button onClick={handleImportClick} className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-700/50 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700">
-                        <Upload className="h-4 w-4" />
-                    </button>
-                    <button onClick={handleExportCSV} className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-700/50 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700">
-                        <Download className="h-4 w-4" />
-                    </button>
-                    <button onClick={handleAdd} className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-slate-800 dark:bg-slate-200 dark:text-slate-900 rounded-lg hover:bg-slate-700 dark:hover:bg-slate-300">
-                        <Plus className="h-4 w-4" /> Add Subscription
-                    </button>
-                </div>
-            </div>
-
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                  <Card className="col-span-2 md:col-span-1"><h4 className="text-sm text-slate-500">Active Items</h4><p className="text-2xl font-bold">{summaryCards.activeItems}</p></Card>
                  <Card className="col-span-2 md:col-span-1"><h4 className="text-sm text-slate-500">Avg. Monthly Expenses</h4><p className="text-2xl font-bold">{formatCurrency(summaryCards.avgMonthly)}</p></Card>
@@ -754,17 +732,15 @@ export const SubscriptionsPage: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Card>
                     <h3 className="text-lg font-semibold mb-4">Category Breakdown</h3>
-                    <div className="flex flex-wrap gap-4">
+                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         {categoryBreakdownData.slice(0, 10).map((item) => (
-                            <div key={item.name} className="flex items-center justify-between text-sm">
-                                <div className="flex items-center gap-2 p-2 rounded-lg bg-slate-100 dark:bg-slate-700/50">
-                                    <div className="w-8 h-8 bg-white dark:bg-slate-700 rounded-md flex items-center justify-center">
-                                        {getCategoryIcon(item.name)}
-                                    </div>
-                                    <div>
-                                        <span className="font-semibold text-slate-800 dark:text-slate-200">{item.name}</span>
-                                        <p className="font-mono text-xs text-slate-500 dark:text-slate-400">{formatCurrency(item.value)}</p>
-                                    </div>
+                            <div key={item.name} className="flex items-center gap-3 p-3 rounded-lg bg-slate-100 dark:bg-slate-700/50">
+                                <div className="w-9 h-9 flex-shrink-0 bg-white dark:bg-slate-700 rounded-lg flex items-center justify-center">
+                                    {getCategoryIcon(item.name)}
+                                </div>
+                                <div className="truncate">
+                                    <span className="font-semibold text-sm text-slate-800 dark:text-slate-200 truncate block">{item.name}</span>
+                                    <p className="font-mono text-sm text-slate-500 dark:text-slate-400">{formatCurrency(item.value)}</p>
                                 </div>
                             </div>
                         ))}
@@ -788,25 +764,51 @@ export const SubscriptionsPage: React.FC = () => {
                 </Card>
             </div>
             
-            <div className="flex items-center justify-between gap-2">
-                <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">All Subscriptions</h2>
-                <div className="flex items-center gap-2">
-                    {viewMode === 'list' && (
-                        <div className="flex items-center gap-4">
-                            <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300 cursor-pointer">
-                               <span>Show Email</span>
-                               <Switch checked={showEmail} onChange={() => setShowEmail(!showEmail)} />
-                            </label>
-                            <ColumnsDropdown columns={visibleColumns} setColumns={setVisibleColumns} />
-                        </div>
-                     )}
-                    <div className="p-1 rounded-lg flex bg-slate-100 dark:bg-slate-800">
-                        <button onClick={() => setViewMode('list')} className={`px-3 py-1.5 rounded-md transition-all text-sm flex items-center gap-2 ${viewMode === 'list' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500'}`}><List size={16} /> List</button>
-                        <button onClick={() => setViewMode('grid')} className={`px-3 py-1.5 rounded-md transition-all text-sm flex items-center gap-2 ${viewMode === 'grid' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500'}`}><Grid size={16} /> Grid</button>
-                        <button onClick={() => setViewMode('calendar')} className={`px-3 py-1.5 rounded-md transition-all text-sm flex items-center gap-2 ${viewMode === 'calendar' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500'}`}><CalendarIcon size={16} /> Calendar</button>
+            <Card>
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">All Subscriptions</h2>
+                     <div className="flex items-center gap-2">
+                        <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept=".csv" />
+                        <button onClick={handleImportClick} className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-700/50 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700">
+                            <Upload className="h-4 w-4" />
+                        </button>
+                        <button onClick={handleExportCSV} className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-700/50 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700">
+                            <Download className="h-4 w-4" />
+                        </button>
+                        <button onClick={handleAdd} className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-slate-800 dark:bg-slate-200 dark:text-slate-900 rounded-lg hover:bg-slate-700 dark:hover:bg-slate-300">
+                            <Plus className="h-4 w-4" /> Add Subscription
+                        </button>
                     </div>
                 </div>
-            </div>
+
+                <div className="border-t dark:border-slate-700 my-4"></div>
+
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-sm font-medium text-slate-500">Filter:</span>
+                        <FilterDropdown title="All Status" value={filters.status} onChange={(v) => setFilters(p => ({...p, status: v}))} options={[{value: 'All', label: 'All Status'}, {value: 'Active', label: 'Active'}, {value: 'Inactive', label: 'Inactive'}]} />
+                        <FilterDropdown title="All Types" value={filters.expenseType} onChange={(v) => setFilters(p => ({...p, expenseType: v}))} options={[{value: 'All', label: 'All Types'}, {value: 'Recurring', label: 'Recurring'}, {value: 'One-Time', label: 'One-Time'}]} />
+                        <FilterDropdown title="All Periods" value={filters.billingPeriod} onChange={(v) => setFilters(p => ({...p, billingPeriod: v}))} options={[{value: 'All', label: 'All Periods'}, {value: 'Monthly', label: 'Monthly'}, {value: 'Yearly', label: 'Yearly'}]} />
+                        <FilterDropdown title="All Payment Methods" value={filters.paymentMethod} onChange={(v) => setFilters(p => ({...p, paymentMethod: v}))} options={[{value: 'All', label: 'All Payment Methods'}, ...paymentMethodOptions]} />
+                    </div>
+                     <div className="flex items-center gap-2">
+                        {viewMode === 'list' && (
+                            <div className="flex items-center gap-4">
+                                <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300 cursor-pointer">
+                                   <span>Show Email</span>
+                                   <Switch checked={showEmail} onChange={() => setShowEmail(!showEmail)} />
+                                </label>
+                                <ColumnsDropdown columns={visibleColumns} setColumns={setVisibleColumns} />
+                            </div>
+                         )}
+                        <div className="p-1 rounded-lg flex bg-slate-100 dark:bg-slate-800">
+                            <button onClick={() => setViewMode('list')} className={`px-3 py-1.5 rounded-md transition-all text-sm flex items-center gap-2 ${viewMode === 'list' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500'}`}><List size={16} /> List</button>
+                            <button onClick={() => setViewMode('grid')} className={`px-3 py-1.5 rounded-md transition-all text-sm flex items-center gap-2 ${viewMode === 'grid' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500'}`}><Grid size={16} /> Grid</button>
+                            <button onClick={() => setViewMode('calendar')} className={`px-3 py-1.5 rounded-md transition-all text-sm flex items-center gap-2 ${viewMode === 'calendar' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500'}`}><CalendarIcon size={16} /> Calendar</button>
+                        </div>
+                    </div>
+                </div>
+            </Card>
 
             {viewMode === 'list' && <ListView data={subscriptionsWithNextPayment} onDelete={handleDelete} onEdit={handleEdit} visibleColumns={visibleColumns} showEmail={showEmail} />}
             {viewMode === 'grid' && <GridView data={filteredSubscriptions} onDelete={handleDelete} onEdit={handleEdit} />}
