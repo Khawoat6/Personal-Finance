@@ -39,32 +39,37 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const seedDataForNewUser = useCallback(async (userId: string) => {
         console.log("Seeding data for new user:", userId);
         const seedData = generateSeedData();
-        
         const addUserId = <T extends {}>(items: T[]): (T & { user_id: string })[] => items.map(item => ({ ...item, user_id: userId }));
 
-        const { error: catError } = await supabase.from('categories').insert(addUserId(seedData.categories));
-        if (catError) throw catError;
-        const { error: accError } = await supabase.from('accounts').insert(addUserId(seedData.accounts));
-        if (accError) throw accError;
-        const { error: subError } = await supabase.from('subscriptions').insert(addUserId(seedData.subscriptions));
-        if (subError) throw subError;
-        
-        // After seeding, we should have some base data
-        return await loadData(userId, true);
+        const tables = {
+            categories: seedData.categories,
+            accounts: seedData.accounts,
+            subscriptions: seedData.subscriptions.map(({ id, ...rest }) => rest), // Omit local ID
+            transactions: seedData.transactions,
+            budgets: seedData.budgets,
+            goals: seedData.goals
+        };
+
+        for (const [tableName, dataToInsert] of Object.entries(tables)) {
+            if (dataToInsert && dataToInsert.length > 0) {
+                const { error } = await supabase.from(tableName).insert(addUserId(dataToInsert as any[]));
+                if (error) {
+                    console.error(`Error seeding ${tableName}:`, error);
+                    throw error;
+                }
+            }
+        }
     }, []);
     
-    const loadData = useCallback(async (userId: string, isSeeding: boolean = false) => {
+    const loadData = useCallback(async (userId: string) => {
         try {
-            if (!isSeeding) setLoading(true);
+            setLoading(true);
             
-            // Check if user has any data, categories is a good proxy
             const { data: checkData, error: checkError } = await supabase.from('categories').select('id').eq('user_id', userId).limit(1);
             if (checkError) throw checkError;
 
             if (checkData.length === 0) {
-                 const seededData = await seedDataForNewUser(userId);
-                 setData(seededData);
-                 return seededData;
+                 await seedDataForNewUser(userId);
             }
 
             const [
@@ -87,14 +92,12 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
             const allData = { transactions, categories, accounts, budgets, goals, subscriptions } as AppData;
             setData(allData);
-            return allData;
 
         } catch (err) {
             setError(err as Error);
             console.error("Error loading data:", err);
-            return data;
         } finally {
-            if (!isSeeding) setLoading(false);
+            setLoading(false);
         }
     }, [seedDataForNewUser]);
 
@@ -128,55 +131,49 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     };
 
     const updateTransaction = async (updatedTransaction: Transaction) => {
-        // Logic to revert old transaction effect and apply new one on account balances
-        // This can be complex, for simplicity, we'll just update the transaction
         const { data: newTransaction, error } = await supabase.from('transactions')
           .update(updatedTransaction)
           .eq('id', updatedTransaction.id)
           .select()
           .single();
         if (error) throw error;
-        // Ideally, we'd refetch balances or calculate locally. For now, we'll just update the transaction list.
-        // A page reload or subsequent data fetch would fix balances.
         setData(prev => ({ ...prev, transactions: prev.transactions.map(t => t.id === newTransaction.id ? newTransaction : t)}));
         if(user) await loadData(user.id); // Refresh data to ensure consistency
     };
 
     const deleteTransaction = async (id: string) => {
-        const txToDelete = data.transactions.find(t => t.id === id);
-        if (!txToDelete || !user) return;
-        
+        if (!user) return;
         const { error } = await supabase.from('transactions').delete().eq('id', id);
         if (error) throw error;
-        
         setData(prev => ({...prev, transactions: prev.transactions.filter(t => t.id !== id)}));
         if(user) await loadData(user.id); // Refresh data to ensure consistency
     };
 
-    // Placeholder functions for other types
     const updateCategory = async (cat: Category) => {
         const {data: newCat, error} = await supabase.from('categories').update(cat).eq('id', cat.id).select().single();
         if(error) throw error;
         setData(prev => ({...prev, categories: prev.categories.map(c => c.id === newCat.id ? newCat : c)}));
     };
+    
     const addSubscription = async (sub: Omit<Subscription, 'id' | 'user_id'>) => {
         if (!user) return;
         const { data: newSub, error } = await supabase.from('subscriptions').insert({...sub, user_id: user.id}).select().single();
         if (error) throw error;
         setData(prev => ({...prev, subscriptions: [...prev.subscriptions, newSub]}));
     };
+
     const updateSubscription = async (sub: Subscription) => {
         const { data: newSub, error } = await supabase.from('subscriptions').update(sub).eq('id', sub.id).select().single();
         if (error) throw error;
         setData(prev => ({...prev, subscriptions: prev.subscriptions.map(s => s.id === newSub.id ? newSub : s)}));
     };
+
     const deleteSubscription = async (id: number | string) => {
         const { error } = await supabase.from('subscriptions').delete().eq('id', id);
         if (error) throw error;
         setData(prev => ({...prev, subscriptions: prev.subscriptions.filter(s => s.id !== id)}));
     };
 
-    // Generic placeholder functions for unimplemented features
     const placeholder = async (name: string) => { console.warn(`${name} is not implemented for Supabase yet.`); };
     const addBudget = async () => placeholder('addBudget');
     const updateBudget = async () => placeholder('updateBudget');
@@ -186,7 +183,6 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const deleteGoal = async () => placeholder('deleteGoal');
     const importData = async () => placeholder('importData');
     const exportData = () => { console.warn('exportData not fully implemented'); return data; };
-
 
     const value: DataContextType = {
         ...data, loading, error, addTransaction, updateTransaction, deleteTransaction,
