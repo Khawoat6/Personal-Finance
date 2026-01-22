@@ -1,24 +1,22 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import type { AppData, Transaction, Budget, Goal, Account, Category, Subscription } from '../types';
-import { supabase } from '../services/db';
-import { useAuth } from './useAuth';
-import { generateSeedData } from '../services/seedData';
+import { db } from '../services/db';
 
 interface DataContextType extends AppData {
     loading: boolean;
     error: Error | null;
-    addTransaction: (transaction: Omit<Transaction, 'id' | 'user_id'>) => Promise<void>;
+    addTransaction: (transaction: Omit<Transaction, 'id'>) => Promise<void>;
     updateTransaction: (transaction: Transaction) => Promise<void>;
     deleteTransaction: (id: string) => Promise<void>;
     updateCategory: (category: Category) => Promise<void>;
-    addBudget: (budget: Omit<Budget, 'id' | 'user_id'>) => Promise<void>;
+    addBudget: (budget: Omit<Budget, 'id'>) => Promise<void>;
     updateBudget: (budget: Budget) => Promise<void>;
     deleteBudget: (id: string) => Promise<void>;
-    addGoal: (goal: Omit<Goal, 'id' | 'user_id'>) => Promise<void>;
+    addGoal: (goal: Omit<Goal, 'id'>) => Promise<void>;
     updateGoal: (goal: Goal) => Promise<void>;
     deleteGoal: (id: string) => Promise<void>;
-    addSubscription: (subscription: Omit<Subscription, 'id' | 'user_id'>) => Promise<void>;
+    addSubscription: (subscription: Omit<Subscription, 'id'>) => Promise<void>;
     updateSubscription: (subscription: Subscription) => Promise<void>;
     deleteSubscription: (id: number | string) => Promise<void>;
     importData: (data: AppData) => Promise<void>;
@@ -28,166 +26,189 @@ interface DataContextType extends AppData {
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
 export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-    const { user } = useAuth();
     const [data, setData] = useState<AppData>({
-        transactions: [], categories: [], accounts: [],
-        budgets: [], goals: [], subscriptions: [],
+        transactions: [],
+        categories: [],
+        accounts: [],
+        budgets: [],
+        goals: [],
+        subscriptions: [],
     });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<Error | null>(null);
 
-    const seedDataForNewUser = useCallback(async (userId: string) => {
-        console.log("Seeding data for new user:", userId);
-        const seedData = generateSeedData();
-        const addUserId = <T extends {}>(items: T[]): (T & { user_id: string })[] => items.map(item => ({ ...item, user_id: userId }));
-
-        const tables = {
-            categories: seedData.categories,
-            accounts: seedData.accounts,
-            subscriptions: seedData.subscriptions.map(({ id, ...rest }) => rest), // Omit local ID
-            transactions: seedData.transactions,
-            budgets: seedData.budgets,
-            goals: seedData.goals
-        };
-
-        for (const [tableName, dataToInsert] of Object.entries(tables)) {
-            if (dataToInsert && dataToInsert.length > 0) {
-                const { error } = await supabase.from(tableName).insert(addUserId(dataToInsert as any[]));
-                if (error) {
-                    console.error(`Error seeding ${tableName}:`, error);
-                    throw error;
-                }
-            }
-        }
-    }, []);
-    
-    const loadData = useCallback(async (userId: string) => {
+    const loadData = useCallback(async () => {
         try {
             setLoading(true);
-            
-            const { data: checkData, error: checkError } = await supabase.from('categories').select('id').eq('user_id', userId).limit(1);
-            if (checkError) throw checkError;
-
-            if (checkData.length === 0) {
-                 await seedDataForNewUser(userId);
-            }
-
-            const [
-                { data: transactions, error: tError },
-                { data: categories, error: cError },
-                { data: accounts, error: aError },
-                { data: budgets, error: bError },
-                { data: goals, error: gError },
-                { data: subscriptions, error: sError },
-            ] = await Promise.all([
-                supabase.from('transactions').select('*').eq('user_id', userId),
-                supabase.from('categories').select('*').eq('user_id', userId),
-                supabase.from('accounts').select('*').eq('user_id', userId),
-                supabase.from('budgets').select('*').eq('user_id', userId),
-                supabase.from('goals').select('*').eq('user_id', userId),
-                supabase.from('subscriptions').select('*').eq('user_id', userId),
-            ]);
-
-            if (tError || cError || aError || bError || gError || sError) throw tError || cError || aError || bError || gError || sError;
-
-            const allData = { transactions, categories, accounts, budgets, goals, subscriptions } as AppData;
+            const allData = await db.getAllData();
             setData(allData);
-
         } catch (err) {
             setError(err as Error);
-            console.error("Error loading data:", err);
         } finally {
             setLoading(false);
         }
-    }, [seedDataForNewUser]);
+    }, []);
 
     useEffect(() => {
-        if (user) {
-            loadData(user.id);
-        } else {
-            setData({ transactions: [], categories: [], accounts: [], budgets: [], goals: [], subscriptions: [] });
-            setLoading(false);
-        }
-    }, [user, loadData]);
+        loadData();
+    }, [loadData]);
+    
+    const saveData = useCallback(async (newData: AppData) => {
+        await db.saveData(newData);
+        setData(newData);
+    }, []);
 
-    const addTransaction = async (transaction: Omit<Transaction, 'id' | 'user_id'>) => {
-        if (!user) return;
-        const { data: newTransaction, error } = await supabase.from('transactions')
-          .insert({ ...transaction, user_id: user.id })
-          .select()
-          .single();
-        if (error) throw error;
-        
-        setData(prev => ({ ...prev, transactions: [...prev.transactions, newTransaction] }));
-        
-        // Update account balance
-        const acc = data.accounts.find(a => a.id === newTransaction.accountId);
-        if (acc) {
-            const newBalance = newTransaction.type === 'income' ? acc.balance + newTransaction.amount : acc.balance - newTransaction.amount;
-            const { error: accError } = await supabase.from('accounts').update({ balance: newBalance }).eq('id', acc.id);
-            if (accError) throw accError;
-            setData(prev => ({ ...prev, accounts: prev.accounts.map(a => a.id === acc.id ? { ...a, balance: newBalance } : a) }));
-        }
+    const addTransaction = async (transaction: Omit<Transaction, 'id'>) => {
+        const newTransaction: Transaction = { ...transaction, id: `tx-${Date.now()}` };
+        const newTransactions = [...data.transactions, newTransaction];
+
+        const newAccounts = data.accounts.map(acc => {
+            if (acc.id === newTransaction.accountId) {
+                const newBalance = newTransaction.type === 'income'
+                    ? acc.balance + newTransaction.amount
+                    : acc.balance - newTransaction.amount;
+                return { ...acc, balance: newBalance };
+            }
+            return acc;
+        });
+
+        const newData = { ...data, transactions: newTransactions, accounts: newAccounts };
+        await saveData(newData);
     };
 
     const updateTransaction = async (updatedTransaction: Transaction) => {
-        const { data: newTransaction, error } = await supabase.from('transactions')
-          .update(updatedTransaction)
-          .eq('id', updatedTransaction.id)
-          .select()
-          .single();
-        if (error) throw error;
-        setData(prev => ({ ...prev, transactions: prev.transactions.map(t => t.id === newTransaction.id ? newTransaction : t)}));
-        if(user) await loadData(user.id); // Refresh data to ensure consistency
+        const oldTransaction = data.transactions.find(t => t.id === updatedTransaction.id);
+        if (!oldTransaction) return;
+
+        const newTransactions = data.transactions.map(t =>
+            t.id === updatedTransaction.id ? updatedTransaction : t
+        );
+
+        const amountDifference = (updatedTransaction.type === 'income' ? updatedTransaction.amount : -updatedTransaction.amount) - (oldTransaction.type === 'income' ? oldTransaction.amount : -oldTransaction.amount);
+
+        const newAccounts = data.accounts.map(acc => {
+            if (acc.id === updatedTransaction.accountId && acc.id === oldTransaction.accountId) {
+                return { ...acc, balance: acc.balance + amountDifference };
+            }
+            // Handle account change
+            if (acc.id === oldTransaction.accountId) {
+                return { ...acc, balance: acc.balance - (oldTransaction.type === 'income' ? oldTransaction.amount : -oldTransaction.amount) };
+            }
+            if (acc.id === updatedTransaction.accountId) {
+                return { ...acc, balance: acc.balance + (updatedTransaction.type === 'income' ? updatedTransaction.amount : -updatedTransaction.amount) };
+            }
+            return acc;
+        });
+
+        const newData = { ...data, transactions: newTransactions, accounts: newAccounts };
+        await saveData(newData);
     };
 
     const deleteTransaction = async (id: string) => {
-        if (!user) return;
-        const { error } = await supabase.from('transactions').delete().eq('id', id);
-        if (error) throw error;
-        setData(prev => ({...prev, transactions: prev.transactions.filter(t => t.id !== id)}));
-        if(user) await loadData(user.id); // Refresh data to ensure consistency
+        const transactionToDelete = data.transactions.find(t => t.id === id);
+        if (!transactionToDelete) return;
+        
+        const newTransactions = data.transactions.filter(t => t.id !== id);
+        
+        const newAccounts = data.accounts.map(acc => {
+             if (acc.id === transactionToDelete.accountId) {
+                const newBalance = transactionToDelete.type === 'income'
+                    ? acc.balance - transactionToDelete.amount
+                    : acc.balance + transactionToDelete.amount;
+                return { ...acc, balance: newBalance };
+            }
+            return acc;
+        });
+        
+        const newData = { ...data, transactions: newTransactions, accounts: newAccounts };
+        await saveData(newData);
     };
 
-    const updateCategory = async (cat: Category) => {
-        const {data: newCat, error} = await supabase.from('categories').update(cat).eq('id', cat.id).select().single();
-        if(error) throw error;
-        setData(prev => ({...prev, categories: prev.categories.map(c => c.id === newCat.id ? newCat : c)}));
+    const updateCategory = async (updatedCategory: Category) => {
+        const newCategories = data.categories.map(c => c.id === updatedCategory.id ? updatedCategory : c);
+        const newData = { ...data, categories: newCategories };
+        await saveData(newData);
     };
     
-    const addSubscription = async (sub: Omit<Subscription, 'id' | 'user_id'>) => {
-        if (!user) return;
-        const { data: newSub, error } = await supabase.from('subscriptions').insert({...sub, user_id: user.id}).select().single();
-        if (error) throw error;
-        setData(prev => ({...prev, subscriptions: [...prev.subscriptions, newSub]}));
+    const addBudget = async (budget: Omit<Budget, 'id'>) => {
+        const newBudget: Budget = { ...budget, id: `bud-${Date.now()}` };
+        const newData = { ...data, budgets: [...data.budgets, newBudget] };
+        await saveData(newData);
     };
 
-    const updateSubscription = async (sub: Subscription) => {
-        const { data: newSub, error } = await supabase.from('subscriptions').update(sub).eq('id', sub.id).select().single();
-        if (error) throw error;
-        setData(prev => ({...prev, subscriptions: prev.subscriptions.map(s => s.id === newSub.id ? newSub : s)}));
+    const updateBudget = async (updatedBudget: Budget) => {
+        const newBudgets = data.budgets.map(b => b.id === updatedBudget.id ? updatedBudget : b);
+        const newData = { ...data, budgets: newBudgets };
+        await saveData(newData);
+    };
+
+    const deleteBudget = async (id: string) => {
+        const newBudgets = data.budgets.filter(b => b.id !== id);
+        const newData = { ...data, budgets: newBudgets };
+        await saveData(newData);
+    };
+    
+    const addGoal = async (goal: Omit<Goal, 'id'>) => {
+        const newGoal: Goal = { ...goal, id: `goal-${Date.now()}` };
+        const newData = { ...data, goals: [...data.goals, newGoal] };
+        await saveData(newData);
+    };
+
+    const updateGoal = async (updatedGoal: Goal) => {
+        const newGoals = data.goals.map(g => g.id === updatedGoal.id ? updatedGoal : g);
+        const newData = { ...data, goals: newGoals };
+        await saveData(newData);
+    };
+
+    const deleteGoal = async (id: string) => {
+        const newGoals = data.goals.filter(g => g.id !== id);
+        const newData = { ...data, goals: newGoals };
+        await saveData(newData);
+    };
+    
+    const addSubscription = async (subscription: Omit<Subscription, 'id'>) => {
+        const newSubscription: Subscription = { ...subscription, id: `sub-${Date.now()}` };
+        const newSubscriptions = [...data.subscriptions, newSubscription];
+        await saveData({ ...data, subscriptions: newSubscriptions });
+    };
+
+    const updateSubscription = async (updatedSubscription: Subscription) => {
+        const newSubscriptions = data.subscriptions.map(s => s.id === updatedSubscription.id ? updatedSubscription : s);
+        await saveData({ ...data, subscriptions: newSubscriptions });
     };
 
     const deleteSubscription = async (id: number | string) => {
-        const { error } = await supabase.from('subscriptions').delete().eq('id', id);
-        if (error) throw error;
-        setData(prev => ({...prev, subscriptions: prev.subscriptions.filter(s => s.id !== id)}));
+        const newSubscriptions = data.subscriptions.filter(s => s.id !== id);
+        await saveData({ ...data, subscriptions: newSubscriptions });
     };
 
-    const placeholder = async (name: string) => { console.warn(`${name} is not implemented for Supabase yet.`); };
-    const addBudget = async () => placeholder('addBudget');
-    const updateBudget = async () => placeholder('updateBudget');
-    const deleteBudget = async () => placeholder('deleteBudget');
-    const addGoal = async () => placeholder('addGoal');
-    const updateGoal = async () => placeholder('updateGoal');
-    const deleteGoal = async () => placeholder('deleteGoal');
-    const importData = async () => placeholder('importData');
-    const exportData = () => { console.warn('exportData not fully implemented'); return data; };
+    const importData = async (importedData: AppData) => {
+        await saveData(importedData);
+    };
+    
+    const exportData = () => {
+        return data;
+    };
 
     const value: DataContextType = {
-        ...data, loading, error, addTransaction, updateTransaction, deleteTransaction,
-        updateCategory, addBudget, updateBudget, deleteBudget, addGoal, updateGoal, deleteGoal,
-        addSubscription, updateSubscription, deleteSubscription, importData, exportData
+        ...data,
+        loading,
+        error,
+        addTransaction,
+        updateTransaction,
+        deleteTransaction,
+        updateCategory,
+        addBudget,
+        updateBudget,
+        deleteBudget,
+        addGoal,
+        updateGoal,
+        deleteGoal,
+        addSubscription,
+        updateSubscription,
+        deleteSubscription,
+        importData,
+        exportData
     };
 
     return <DataContext.Provider value={value}>{children}</DataContext.Provider>;

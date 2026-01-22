@@ -11,15 +11,13 @@ import { SettingsPage } from './pages/SettingsPage';
 import { DataProvider } from './hooks/useData';
 import { PlusCircle } from 'lucide-react';
 import { TransactionModal } from './components/features/TransactionModal';
+import type { Transaction } from './types';
 import { PersonalStatementPage } from './pages/PersonalStatementPage';
 import { SubscriptionsPage } from './pages/SubscriptionsPage';
-import { AuthProvider, useAuth } from './hooks/useAuth';
-import { AuthPage } from './pages/AuthPage';
 
-const AppContent: React.FC = () => {
+const App: React.FC = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const location = useLocation();
-    const { user } = useAuth();
 
     useEffect(() => {
         const theme = localStorage.getItem('theme');
@@ -84,33 +82,6 @@ const AppContent: React.FC = () => {
             </div>
         </DataProvider>
     );
-};
-
-
-const App: React.FC = () => {
-    return (
-        <AuthProvider>
-            <AuthGate />
-        </AuthProvider>
-    );
-};
-
-const AuthGate: React.FC = () => {
-    const { session, loading } = useAuth();
-    
-    if (loading) {
-        return (
-            <div className="flex h-screen w-full items-center justify-center bg-gray-50 dark:bg-slate-900">
-                <p className="text-slate-500">Loading Application...</p>
-            </div>
-        )
-    }
-
-    if (!session) {
-        return <AuthPage />;
-    }
-
-    return <AppContent />;
 };
 
 export default App;

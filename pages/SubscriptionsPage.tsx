@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { SubscriptionFormModal } from '../components/features/SubscriptionFormModal';
-import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend, LineChart, Line, YAxis, XAxis, CartesianGrid } from 'recharts';
+import { ResponsiveContainer, LineChart, Line, YAxis, XAxis, CartesianGrid, Tooltip } from 'recharts';
 
 // --- Helpers ---
 const getLogoUrl = (sub: Subscription) => {
@@ -22,13 +22,15 @@ const formatCurrency = (amount: number) => {
   return new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount);
 };
 
+const formatCurrencyWithTHB = (amount: number) => {
+    return `THB ${new Intl.NumberFormat('en-US', { style: 'decimal', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount)}`;
+};
+
 const formatDateDisplay = (dateString: string) => {
   if (!dateString) return '-';
   const date = new Date(dateString);
   return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 };
-
-const COLORS = ['#3b82f6', '#10b981', '#f97316', '#ef4444', '#8b5cf6', '#ec4899', '#f59e0b', '#14b8a6'];
 
 const getCategoryIcon = (category: string) => {
   const iconProps = { size: 14, className: "text-slate-500 dark:text-slate-400" };
@@ -43,6 +45,38 @@ const getCategoryIcon = (category: string) => {
     default: return <Layers {...iconProps} />;
   }
 };
+
+const categoryColors: { [key: string]: string } = {
+  'Video Streaming': 'bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300',
+  'Security & Privacy': 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300',
+  'Productivity': 'bg-pink-100 text-pink-800 dark:bg-pink-900/50 dark:text-pink-300',
+  'Cloud Storage': 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300',
+  'Music Streaming': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300',
+  'Entertainment': 'bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300',
+  'Music': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300',
+  'Finance': 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/50 dark:text-indigo-300',
+  'Education': 'bg-teal-100 text-teal-800 dark:bg-teal-900/50 dark:text-teal-300',
+  'Health & Wellness': 'bg-rose-100 text-rose-800 dark:bg-rose-900/50 dark:text-rose-300',
+  'Travel': 'bg-sky-100 text-sky-800 dark:bg-sky-900/50 dark:text-sky-300',
+  'AI': 'bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-300',
+};
+const defaultColor = 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
+
+
+const getPaymentMethodIcon = (method: string) => {
+    const iconProps = { size: 24, className: "text-slate-600 dark:text-slate-400" };
+    switch (method.toLowerCase()) {
+        case 'credit card': return <CreditCard {...iconProps} />;
+        case 'debit card': return (
+            <div className="w-6 h-6 relative flex items-center justify-center">
+                <div className="w-5 h-5 rounded-full bg-red-500 absolute left-0.5"></div>
+                <div className="w-5 h-5 rounded-full bg-yellow-400 opacity-80 absolute right-0.5"></div>
+            </div>
+        );
+        default: return <Wallet {...iconProps} />;
+    }
+};
+
 
 // --- Sub-Components ---
 
@@ -338,7 +372,7 @@ export const SubscriptionsPage: React.FC = () => {
             const current = methodMap.get(sub.paymentMethod) || { total: 0, count: 0 };
             methodMap.set(sub.paymentMethod, { total: current.total + monthlyCost, count: current.count + 1});
         });
-        return Array.from(methodMap.entries()).map(([name, data]) => ({ name, ...data }));
+        return Array.from(methodMap.entries()).map(([name, data]) => ({ name, ...data })).sort((a, b) => b.total - a.total);
     }, [activeSubscriptions]);
     
     const handleAdd = () => {
@@ -395,31 +429,70 @@ export const SubscriptionsPage: React.FC = () => {
                  <Card><div className="flex justify-between items-center"><h4 className="text-sm text-slate-500">Most Affordable</h4><TrendingDown className="text-green-500" size={18}/></div><p className="text-lg font-bold">{formatCurrency(summaryCards.mostAffordable.price)}</p><p className="text-xs text-slate-400 truncate">{summaryCards.mostAffordable.name}</p></Card>
             </div>
             
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                 <Card className="lg:col-span-2">
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+                 <Card className="lg:col-span-3">
                     <h3 className="text-lg font-semibold mb-4">Spending Projection</h3>
                      <ResponsiveContainer width="100%" height={300}>
                          <LineChart data={spendingProjectionData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
                              <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.2}/>
                              <XAxis dataKey="name" fontSize={12} tickLine={false} axisLine={false} />
                              <YAxis fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => formatCurrency(Number(value))}/>
-                             <Tooltip contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.8)', backdropFilter: 'blur(5px)', borderRadius: '0.5rem' }}/>
+                             <Tooltip contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.8)', backdropFilter: 'blur(5px)', borderRadius: '0.5rem' }} formatter={(value: number) => formatCurrency(value)}/>
                              <Line type="monotone" dataKey="Expenses" stroke="#8b5cf6" strokeWidth={2} dot={{ r: 4 }} activeDot={{ r: 6 }}/>
                          </LineChart>
                      </ResponsiveContainer>
                  </Card>
-                 <Card>
-                    <h3 className="text-lg font-semibold mb-4">Category Breakdown</h3>
-                    <ResponsiveContainer width="100%" height={300}>
-                         <PieChart>
-                            <Pie data={categoryBreakdownData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5} cornerRadius={5}>
-                                {categoryBreakdownData.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />)}
-                            </Pie>
-                             <Tooltip formatter={(value: number) => formatCurrency(value)} />
-                             <Legend iconSize={10} wrapperStyle={{fontSize: "12px"}}/>
-                         </PieChart>
-                     </ResponsiveContainer>
+                 <Card className="lg:col-span-2">
+                    <h3 className="text-lg font-semibold mb-4">Upcoming Payments</h3>
+                    <div className="space-y-3">
+                        {upcomingPayments.map((sub) => (
+                            <div key={sub.id} className="flex items-center justify-between text-sm">
+                              <div className="flex items-center overflow-hidden">
+                                <div className="h-8 w-8 rounded-lg p-1 flex-shrink-0 flex items-center justify-center overflow-hidden border shadow-sm bg-white dark:bg-slate-700 border-gray-100 dark:border-slate-600 mr-3">
+                                    <img src={getLogoUrl(sub)} alt={sub.name} className="h-full w-full object-contain" onError={(e) => (e.currentTarget.src = 'https://via.placeholder.com/40?text='+sub.name[0])} />
+                                </div>
+                                <div className="truncate">
+                                    <p className="font-semibold text-slate-900 dark:text-white truncate">{sub.name}</p>
+                                    <p className="text-xs text-slate-500 dark:text-slate-400">{formatDateDisplay(sub.nextPayment)}</p>
+                                </div>
+                              </div>
+                              <span className="font-semibold text-slate-900 dark:text-white pl-2">{formatCurrency(sub.price)}</span>
+                            </div>
+                        ))}
+                    </div>
                  </Card>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Card>
+                    <h3 className="text-lg font-semibold mb-4">Category Breakdown</h3>
+                    <div className="space-y-4">
+                        {categoryBreakdownData.slice(0, 5).map((item) => (
+                             <div key={item.name} className="flex items-center justify-between text-sm">
+                                <span className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold ${categoryColors[item.name] || defaultColor}`}>
+                                    {item.name}
+                                </span>
+                                <span className="font-bold text-slate-900 dark:text-white tracking-tight">{formatCurrencyWithTHB(item.value)}</span>
+                            </div>
+                        ))}
+                    </div>
+                </Card>
+                <Card>
+                    <h3 className="text-lg font-semibold mb-4">Payment Methods</h3>
+                    <div className="space-y-3">
+                         {paymentMethods.map((item) => (
+                            <div key={item.name} className="flex items-center justify-between text-sm p-2 rounded-lg transition-colors group hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                              <div className="flex items-center">
+                                <div className="w-10 h-7 bg-slate-100 dark:bg-slate-700/50 rounded-md flex items-center justify-center mr-4">
+                                  {getPaymentMethodIcon(item.name)}
+                                </div>
+                                <span className="font-medium text-slate-700 dark:text-slate-300">{item.name}</span>
+                              </div>
+                              <span className="font-bold text-slate-900 dark:text-white tracking-tight">{formatCurrencyWithTHB(item.total)}</span>
+                            </div>
+                        ))}
+                    </div>
+                </Card>
             </div>
 
             <div className="p-1 rounded-lg flex bg-slate-100 dark:bg-slate-800 w-min ml-auto">

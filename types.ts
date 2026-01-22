@@ -8,7 +8,6 @@ export interface Transaction {
   accountId: string;
   note?: string;
   tags?: string[];
-  user_id?: string;
 }
 
 export interface Category {
@@ -19,14 +18,12 @@ export interface Category {
   icon: string; // e.g., 'Home', 'Car', 'Shopping' for icon mapping
   parentCategoryId?: string | null;
   monthlyBudgets?: number[]; // Array of 12 numbers for monthly budgets
-  user_id?: string;
 }
 
 export interface Account {
   id: string;
   name: string;
   balance: number;
-  user_id?: string;
 }
 
 export interface Budget {
@@ -35,7 +32,6 @@ export interface Budget {
   amount: number;
   period: 'monthly'; // Can be extended later
   startDate: string; // ISO 8601 format
-  user_id?: string;
 }
 
 export interface Goal {
@@ -44,7 +40,6 @@ export interface Goal {
   targetAmount: number;
   currentAmount: number;
   deadline: string; // ISO 8601 format
-  user_id?: string;
 }
 
 export interface Subscription {
@@ -61,7 +56,6 @@ export interface Subscription {
   website: string;
   status: 'Active' | 'Inactive';
   logoUrl: string;
-  user_id?: string;
 }
 
 export interface AppData {
