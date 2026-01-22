@@ -30,6 +30,20 @@ const formatDateDisplay = (dateString: string) => {
 
 const COLORS = ['#3b82f6', '#10b981', '#f97316', '#ef4444', '#8b5cf6', '#ec4899', '#f59e0b', '#14b8a6'];
 
+const getCategoryIcon = (category: string) => {
+  const iconProps = { size: 14, className: "text-slate-500 dark:text-slate-400" };
+  switch (category) {
+    case 'Entertainment': return <Film {...iconProps} />;
+    case 'Music': case 'Music Streaming': return <Headphones {...iconProps} />;
+    case 'Productivity': case 'Task Management': return <Briefcase {...iconProps} />;
+    case 'Design': case 'Art': return <PenTool {...iconProps} />;
+    case 'Cloud Storage': case 'Hosting': return <Cloud {...iconProps} />;
+    case 'Finance': case 'Banking': case 'Investing': return <DollarSign {...iconProps} />;
+    case 'Video': case 'Video Streaming': return <Film {...iconProps} />;
+    default: return <Layers {...iconProps} />;
+  }
+};
+
 // --- Sub-Components ---
 
 const Modal: React.FC<{
@@ -57,10 +71,185 @@ const Modal: React.FC<{
   );
 };
 
+const ListView: React.FC<{
+    data: Subscription[],
+    onDelete: (id: string | number) => void,
+    onEdit: (sub: Subscription) => void,
+}> = ({ data, onDelete, onEdit }) => (
+  <Card className="overflow-x-auto">
+    <table className="min-w-full text-left">
+      <thead className="bg-slate-50/50 dark:bg-slate-900/50 border-b border-gray-100 dark:border-slate-800">
+        <tr>
+          <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Service</th>
+          <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Category</th>
+          <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Cost</th>
+          <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Next Payment</th>
+          <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Status</th>
+          <th className="px-6 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-wide">Action</th>
+        </tr>
+      </thead>
+      <tbody className="divide-y divide-gray-100 dark:divide-slate-800">
+        {data.map((sub) => (
+          <tr key={sub.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800 transition-colors group">
+            <td className="px-6 py-3.5 whitespace-nowrap">
+              <div className="flex items-center">
+                <div className="h-9 w-9 rounded-xl p-1 flex items-center justify-center overflow-hidden border shadow-sm bg-white dark:bg-slate-700 border-gray-100 dark:border-slate-600">
+                  <img src={getLogoUrl(sub)} alt={sub.name} className="h-full w-full object-contain" onError={(e) => (e.currentTarget.src = 'https://via.placeholder.com/40?text='+sub.name[0])} />
+                </div>
+                <div className="ml-3">
+                  <div className="text-sm font-semibold text-slate-900 dark:text-white">{sub.name}</div>
+                </div>
+              </div>
+            </td>
+            <td className="px-6 py-3.5 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                <div className="flex items-center gap-2">
+                  {getCategoryIcon(sub.category)}
+                  <span className="truncate max-w-[100px]" title={sub.category}>{sub.category}</span>
+                </div>
+            </td>
+            <td className="px-6 py-3.5 whitespace-nowrap text-sm font-semibold text-slate-900 dark:text-white">
+                {formatCurrency(sub.price)} <span className="text-xs text-slate-400">/{sub.billingPeriod === 'Monthly' ? 'mo' : 'yr'}</span>
+            </td>
+            <td className="px-6 py-3.5 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                 {formatDateDisplay(sub.firstPayment)}
+            </td>
+            <td className="px-6 py-3.5 whitespace-nowrap">
+                 <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border ${sub.status === 'Active' ? 'bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-100 dark:border-green-900/50' : 'bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-100 dark:border-slate-700'}`}>
+                   {sub.status}
+                 </span>
+            </td>
+            <td className="px-6 py-3.5 whitespace-nowrap text-right text-sm font-medium">
+              <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button onClick={() => onEdit(sub)} className="p-1.5 rounded-md transition-all text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700">
+                  <Edit size={16} />
+                </button>
+                <button onClick={() => onDelete(sub.id)} className="p-1.5 rounded-md transition-all text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30">
+                  <Trash2 size={16} />
+                </button>
+              </div>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </Card>
+);
+
+const GridView: React.FC<{
+    data: Subscription[],
+    onDelete: (id: string | number) => void,
+    onEdit: (sub: Subscription) => void
+}> = ({ data, onDelete, onEdit }) => (
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+    {data.map((sub) => (
+      <Card key={sub.id} className="p-5 hover:shadow-md transition-all hover:-translate-y-0.5 relative group">
+        <div className="flex justify-between items-start mb-3">
+          <div className="h-12 w-12 rounded-xl p-1.5 border shadow-sm flex items-center justify-center bg-white dark:bg-slate-700 border-gray-100 dark:border-slate-600">
+             <img src={getLogoUrl(sub)} alt={sub.name} className="h-full w-full object-contain" onError={(e) => (e.currentTarget.src = 'https://via.placeholder.com/40?text='+sub.name[0])} />
+          </div>
+          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity absolute top-4 right-4 backdrop-blur-sm p-1 rounded-lg border shadow-sm bg-white/80 dark:bg-slate-900/80 border-gray-100 dark:border-slate-700">
+             <button onClick={() => onEdit(sub)} className="p-1 text-slate-400 dark:hover:text-white hover:text-slate-900">
+              <Edit size={14} />
+            </button>
+            <button onClick={() => onDelete(sub.id)} className="p-1 text-slate-400 dark:hover:text-red-400 hover:text-red-600">
+              <Trash2 size={14} />
+            </button>
+          </div>
+        </div>
+        <h3 className="text-base font-bold mb-0.5 truncate text-slate-900 dark:text-white">{sub.name}</h3>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mb-3 flex items-center gap-1.5">
+           {getCategoryIcon(sub.category)} <span className="truncate">{sub.category}</span>
+        </p>
+        <div className="flex items-end justify-between border-t pt-3 mt-1 border-slate-100 dark:border-slate-700">
+          <div>
+            <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wide">Cost</p>
+            <p className="text-base font-bold text-slate-900 dark:text-white">{formatCurrency(sub.price)}</p>
+          </div>
+          <div className="text-right">
+             <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wide">
+               {sub.expenseType === 'Recurring' ? 'Next Bill' : 'Date'}
+             </p>
+             <p className="text-xs font-medium text-slate-700 dark:text-slate-300">
+               {formatDateDisplay(sub.firstPayment)}
+             </p>
+          </div>
+        </div>
+      </Card>
+    ))}
+  </div>
+);
+
+const CalendarView: React.FC<{
+    data: Subscription[],
+    onEdit: (sub: Subscription) => void
+}> = ({ data, onEdit }) => {
+  const [currentDate, setCurrentDate] = useState(new Date());
+
+  const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
+  const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay();
+  const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+  const getSubsForDay = (day: number) => {
+    return data.filter(sub => {
+      if (sub.status !== 'Active' || !sub.firstPayment) return false;
+      const paymentDate = new Date(sub.firstPayment);
+      if (sub.expenseType === 'One-Time') {
+        return paymentDate.getDate() === day && paymentDate.getMonth() === currentDate.getMonth() && paymentDate.getFullYear() === currentDate.getFullYear();
+      }
+      if (sub.billingPeriod === 'Monthly') return paymentDate.getDate() === day;
+      if (sub.billingPeriod === 'Yearly') return paymentDate.getDate() === day && paymentDate.getMonth() === currentDate.getMonth();
+      return false;
+    });
+  };
+
+  const changeMonth = (offset: number) => {
+    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + offset, 1));
+  };
+
+  return (
+    <Card className="p-6">
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+          {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
+        </h2>
+        <div className="flex space-x-2">
+          <button onClick={() => changeMonth(-1)} className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500"><ChevronLeft size={18} /></button>
+          <button onClick={() => setCurrentDate(new Date())} className="text-xs font-medium px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600">Today</button>
+          <button onClick={() => changeMonth(1)} className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500"><ChevronRight size={18} /></button>
+        </div>
+      </div>
+      <div className="grid grid-cols-7 gap-px border dark:border-slate-700 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-700">
+        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => <div key={d} className="py-2 text-center text-[10px] font-semibold uppercase tracking-wider bg-slate-50 dark:bg-slate-800 text-slate-400">{d}</div>)}
+        {Array.from({ length: firstDayOfMonth }).map((_, i) => <div key={`empty-${i}`} className="bg-white dark:bg-slate-800/50 h-28"></div>)}
+        {Array.from({ length: daysInMonth }).map((_, i) => {
+          const day = i + 1;
+          const daySubs = getSubsForDay(day);
+          const total = daySubs.reduce((acc, sub) => acc + sub.price, 0);
+          const isToday = day === new Date().getDate() && currentDate.getMonth() === new Date().getMonth() && currentDate.getFullYear() === new Date().getFullYear();
+          return (
+            <div key={day} className={`bg-white dark:bg-slate-800/50 h-28 p-2 flex flex-col ${isToday ? 'bg-blue-50/30 dark:bg-blue-900/20' : ''}`}>
+              <span className={`text-xs font-medium w-6 h-6 flex items-center justify-center rounded-full ${isToday ? 'bg-slate-900 dark:bg-blue-600 text-white' : ''}`}>{day}</span>
+              <div className="flex-1 overflow-y-auto space-y-1 mt-1">
+                {daySubs.map(sub => (
+                  <div key={sub.id} onClick={() => onEdit(sub)} className="flex items-center gap-1.5 p-1 rounded-md border shadow-sm cursor-pointer bg-white dark:bg-slate-700 border-gray-100 dark:border-slate-600 hover:border-gray-300">
+                    <img src={getLogoUrl(sub)} alt="" className="w-3 h-3 object-contain rounded-sm" onError={(e) => (e.currentTarget.style.display='none')} />
+                    <span className="text-[9px] truncate w-full font-medium text-slate-700 dark:text-slate-300">{sub.name}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </Card>
+  );
+};
+
 // --- Main Page Component ---
 export const SubscriptionsPage: React.FC = () => {
     const { subscriptions, addSubscription, updateSubscription, deleteSubscription, loading } = useData();
     const [filters, setFilters] = useState({ status: 'All', expenseType: 'All' });
+    const [viewMode, setViewMode] = useState('list');
 
     const [isAddModalOpen, setAddModalOpen] = useState(false);
     const [editingSub, setEditingSub] = useState<Subscription | null>(null);
@@ -68,6 +257,16 @@ export const SubscriptionsPage: React.FC = () => {
 
     const activeSubscriptions = useMemo(() => subscriptions.filter(s => s.status === 'Active' && s.expenseType === 'Recurring'), [subscriptions]);
     
+    const filteredSubscriptions = useMemo(() => {
+        return subscriptions
+            .filter(sub => {
+                if (filters.status !== 'All' && sub.status !== filters.status) return false;
+                if (filters.expenseType !== 'All' && sub.expenseType !== filters.expenseType) return false;
+                return true;
+            })
+            .sort((a, b) => new Date(b.firstPayment).getTime() - new Date(a.firstPayment).getTime());
+    }, [subscriptions, filters]);
+
     const summaryCards = useMemo(() => {
         const monthlyTotal = activeSubscriptions.reduce((sum, sub) => sum + (sub.billingPeriod === 'Yearly' ? sub.price / 12 : sub.price), 0);
         const mostExpensive = activeSubscriptions.reduce((max, sub) => {
@@ -118,7 +317,7 @@ export const SubscriptionsPage: React.FC = () => {
          return activeSubscriptions.map(sub => {
              const today = new Date();
              const firstPayment = new Date(sub.firstPayment);
-             let nextPayment = firstPayment;
+             let nextPayment = new Date(firstPayment); // clone date
              if (sub.billingPeriod === 'Monthly') {
                  while (nextPayment < today) {
                      nextPayment.setMonth(nextPayment.getMonth() + 1);
@@ -145,6 +344,23 @@ export const SubscriptionsPage: React.FC = () => {
     const handleAdd = () => {
         setEditingSub(null);
         setAddModalOpen(true);
+    };
+
+    const handleEdit = (sub: Subscription) => {
+        setEditingSub(sub);
+        setAddModalOpen(true);
+    };
+
+    const handleDelete = (id: number | string) => {
+        const sub = subscriptions.find(s => s.id === id);
+        if (sub) setSubToDelete(sub);
+    };
+
+    const confirmDelete = () => {
+        if (subToDelete) {
+            deleteSubscription(subToDelete.id);
+            setSubToDelete(null);
+        }
     };
 
     if (loading) {
@@ -206,44 +422,15 @@ export const SubscriptionsPage: React.FC = () => {
                  </Card>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                 <Card>
-                     <h3 className="text-lg font-semibold mb-4">Upcoming Payments</h3>
-                     <div className="space-y-3">
-                         {upcomingPayments.map(sub => (
-                             <div key={sub.id} className="flex items-center justify-between text-sm">
-                                 <div className="flex items-center gap-3">
-                                     <img src={getLogoUrl(sub)} alt={sub.name} className="h-8 w-8 object-contain rounded-md border p-1 dark:bg-slate-700" onError={(e) => (e.currentTarget.style.display = 'none')} />
-                                     <div>
-                                         <p className="font-medium">{sub.name}</p>
-                                         <p className="text-xs text-slate-500">{sub.category}</p>
-                                     </div>
-                                 </div>
-                                 <div className="text-right">
-                                     <p className="font-semibold">{formatCurrency(sub.price)}</p>
-                                     <p className="text-xs text-slate-500">{formatDateDisplay(sub.nextPayment)}</p>
-                                 </div>
-                             </div>
-                         ))}
-                     </div>
-                 </Card>
-                <Card>
-                    <h3 className="text-lg font-semibold mb-4">Payment Methods</h3>
-                    <div className="space-y-4">
-                        {paymentMethods.map(method => (
-                             <div key={method.name}>
-                                 <div className="flex justify-between text-sm mb-1">
-                                    <span className="font-medium">{method.name} <span className="text-xs text-slate-400">({method.count})</span></span>
-                                    <span className="font-semibold">{formatCurrency(method.total)}<span className="text-xs text-slate-400">/mo</span></span>
-                                 </div>
-                                 <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1.5">
-                                     <div className="bg-blue-500 h-1.5 rounded-full" style={{ width: `${(method.total / summaryCards.avgMonthly) * 100}%` }}></div>
-                                 </div>
-                             </div>
-                        ))}
-                    </div>
-                </Card>
+            <div className="p-1 rounded-lg flex bg-slate-100 dark:bg-slate-800 w-min ml-auto">
+                <button onClick={() => setViewMode('list')} className={`px-3 py-1.5 rounded-md transition-all text-sm flex items-center gap-2 ${viewMode === 'list' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500'}`}><List size={16} /> List</button>
+                <button onClick={() => setViewMode('grid')} className={`px-3 py-1.5 rounded-md transition-all text-sm flex items-center gap-2 ${viewMode === 'grid' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500'}`}><Grid size={16} /> Grid</button>
+                <button onClick={() => setViewMode('calendar')} className={`px-3 py-1.5 rounded-md transition-all text-sm flex items-center gap-2 ${viewMode === 'calendar' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500'}`}><CalendarIcon size={16} /> Calendar</button>
             </div>
+
+            {viewMode === 'list' && <ListView data={filteredSubscriptions} onDelete={handleDelete} onEdit={handleEdit} />}
+            {viewMode === 'grid' && <GridView data={filteredSubscriptions} onDelete={handleDelete} onEdit={handleEdit} />}
+            {viewMode === 'calendar' && <CalendarView data={filteredSubscriptions} onEdit={handleEdit} />}
             
             <SubscriptionFormModal 
                 isOpen={isAddModalOpen} 
@@ -265,7 +452,7 @@ export const SubscriptionsPage: React.FC = () => {
                     <p className="mb-6 text-sm leading-relaxed text-slate-500 dark:text-slate-400">This action cannot be undone.</p>
                     <div className="flex gap-3">
                         <button onClick={() => setSubToDelete(null)} className="flex-1 py-2.5 border rounded-xl font-medium transition-colors bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700">Cancel</button>
-                        <button onClick={() => { if(subToDelete) { deleteSubscription(subToDelete.id); setSubToDelete(null); } }} className="flex-1 py-2.5 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 shadow-lg shadow-red-200/50 dark:shadow-red-800/50">Delete</button>
+                        <button onClick={confirmDelete} className="flex-1 py-2.5 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 shadow-lg shadow-red-200/50 dark:shadow-red-800/50">Delete</button>
                     </div>
                  </div>
             </Modal>
