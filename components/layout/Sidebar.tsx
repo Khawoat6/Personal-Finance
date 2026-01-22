@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
+import { useAuth } from '../../hooks/useAuth';
 
 // Fix: Moved dummy Lucide icon declarations to the top to resolve block-scoped variable errors.
 // Dummy Lucide Icons
@@ -37,6 +38,7 @@ const Moon = createLucideIcon('Moon');
 const Wallet = createLucideIcon('Wallet');
 const FileText = createLucideIcon('FileText');
 const Repeat = createLucideIcon('Repeat');
+const LogOut = createLucideIcon('LogOut');
 
 const navItems = [
     { to: '/', label: 'Dashboard', icon: LayoutDashboard },
@@ -51,6 +53,7 @@ const navItems = [
 
 export const Sidebar: React.FC = () => {
     const [isDarkMode, setIsDarkMode] = useState(false);
+    const { user, signOut } = useAuth();
 
     useEffect(() => {
         const theme = localStorage.getItem('theme');
@@ -95,7 +98,17 @@ export const Sidebar: React.FC = () => {
                     </NavLink>
                 ))}
             </nav>
-            <div className="p-4 border-t border-gray-200 dark:border-slate-800">
+            <div className="p-4 border-t border-gray-200 dark:border-slate-800 space-y-2">
+                 <div className="px-2 py-2 text-center text-xs text-slate-500 dark:text-slate-400">
+                    <p className="font-medium truncate">{user?.email}</p>
+                </div>
+                 <button
+                    onClick={signOut}
+                    className="w-full flex items-center justify-center p-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/50"
+                >
+                    <LogOut className="h-5 w-5" />
+                    <span className="ml-2 text-sm">Log Out</span>
+                </button>
                 <button
                     onClick={toggleTheme}
                     className="w-full flex items-center justify-center p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700/50"

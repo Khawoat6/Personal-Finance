@@ -1,64 +1,31 @@
 
-import localforage from 'localforage';
-import type { AppData, Transaction, Category, Account, Budget, Goal, Subscription } from '../types';
-import { generateSeedData } from './seedData';
+import { createClient } from '@supabase/supabase-js';
 
-const DB_NAME = 'personalFinanceDB';
+// --- IMPORTANT SETUP STEP ---
+// You must create a Supabase project and replace the placeholder values below.
+// 1. Go to https://supabase.com/dashboard/projects
+// 2. Create a new project.
+// 3. Go to your project's "API" settings.
+// 4. Find your Project URL and anon key, then copy and paste them here.
 
-// Configure localForage
-localforage.config({
-    name: DB_NAME,
-    storeName: 'app_data',
-    description: 'Local storage for Personal Finance App',
-});
+const supabaseUrl = 'https://xetjjadrmagebgcjyacv.supabase.co'; // Replace with your actual Supabase URL
+const supabaseAnonKey = 'sb_publishable_jzMOa3-suWoxhCKh-XDcEA_Ce1aIJfu'; // Replace with your actual anon key
 
-const KEYS = {
-    TRANSACTIONS: 'transactions',
-    CATEGORIES: 'categories',
-    ACCOUNTS: 'accounts',
-    BUDGETS: 'budgets',
-    GOALS: 'goals',
-    SUBSCRIPTIONS: 'subscriptions',
-};
-
-async function seedInitialData() {
-    const seedData = generateSeedData();
-    await localforage.setItem(KEYS.TRANSACTIONS, seedData.transactions);
-    await localforage.setItem(KEYS.CATEGORIES, seedData.categories);
-    await localforage.setItem(KEYS.ACCOUNTS, seedData.accounts);
-    await localforage.setItem(KEYS.BUDGETS, seedData.budgets);
-    await localforage.setItem(KEYS.GOALS, seedData.goals);
-    await localforage.setItem(KEYS.SUBSCRIPTIONS, seedData.subscriptions);
-    return seedData;
+// This check helps you remember to add your credentials.
+if (supabaseUrl.includes('your-project-url') || supabaseAnonKey.includes('your-anon-public-key')) {
+    const warningMessage = `
+    ********************************************************************************
+    *                                                                              *
+    *    Supabase credentials are not set in 'services/db.ts'!                     *
+    *                                                                              *
+    *    Please replace the placeholder values with your actual Supabase           *
+    *    Project URL and Anon Key.                                                 *
+    *                                                                              *
+    *    The application will not function correctly until this is done.           *
+    *                                                                              *
+    ********************************************************************************
+    `;
+    console.warn(warningMessage);
 }
 
-export const db = {
-    async getAllData(): Promise<AppData> {
-        const transactions = await localforage.getItem<Transaction[]>(KEYS.TRANSACTIONS);
-        if (transactions === null) {
-            console.log('No data found, seeding initial data...');
-            return await seedInitialData();
-        }
-
-        const categories = await localforage.getItem<Category[]>(KEYS.CATEGORIES) || [];
-        const accounts = await localforage.getItem<Account[]>(KEYS.ACCOUNTS) || [];
-        const budgets = await localforage.getItem<Budget[]>(KEYS.BUDGETS) || [];
-        const goals = await localforage.getItem<Goal[]>(KEYS.GOALS) || [];
-        const subscriptions = await localforage.getItem<Subscription[]>(KEYS.SUBSCRIPTIONS) || [];
-
-        return { transactions, categories, accounts, budgets, goals, subscriptions };
-    },
-
-    async saveData(data: AppData): Promise<void> {
-        await localforage.setItem(KEYS.TRANSACTIONS, data.transactions);
-        await localforage.setItem(KEYS.CATEGORIES, data.categories);
-        await localforage.setItem(KEYS.ACCOUNTS, data.accounts);
-        await localforage.setItem(KEYS.BUDGETS, data.budgets);
-        await localforage.setItem(KEYS.GOALS, data.goals);
-        await localforage.setItem(KEYS.SUBSCRIPTIONS, data.subscriptions);
-    },
-
-    async clearAllData(): Promise<void> {
-        await localforage.clear();
-    }
-};
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);

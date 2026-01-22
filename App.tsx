@@ -11,13 +11,15 @@ import { SettingsPage } from './pages/SettingsPage';
 import { DataProvider } from './hooks/useData';
 import { PlusCircle } from 'lucide-react';
 import { TransactionModal } from './components/features/TransactionModal';
-import type { Transaction } from './types';
 import { PersonalStatementPage } from './pages/PersonalStatementPage';
 import { SubscriptionsPage } from './pages/SubscriptionsPage';
+import { AuthProvider, useAuth } from './hooks/useAuth';
+import { AuthPage } from './pages/AuthPage';
 
-const App: React.FC = () => {
+const AppContent: React.FC = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const location = useLocation();
+    const { user } = useAuth();
 
     useEffect(() => {
         const theme = localStorage.getItem('theme');
@@ -84,31 +86,31 @@ const App: React.FC = () => {
     );
 };
 
-// Dummy Lucide Icon
-const createLucideIcon = (name: string) => {
-    const Icon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
-        <svg
-            {...props}
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-        >
-            {/* Using a generic circle as a placeholder for all icons */}
-            <circle cx="12" cy="12" r="10" />
-            <title>{name}</title>
-        </svg>
+
+const App: React.FC = () => {
+    return (
+        <AuthProvider>
+            <AuthGate />
+        </AuthProvider>
     );
-    Icon.displayName = name;
-    return Icon;
 };
 
-// Mock lucide-react exports
-const PlusCircle = createLucideIcon('PlusCircle');
+const AuthGate: React.FC = () => {
+    const { session, loading } = useAuth();
+    
+    if (loading) {
+        return (
+            <div className="flex h-screen w-full items-center justify-center bg-gray-50 dark:bg-slate-900">
+                <p className="text-slate-500">Loading Application...</p>
+            </div>
+        )
+    }
+
+    if (!session) {
+        return <AuthPage />;
+    }
+
+    return <AppContent />;
+};
 
 export default App;
