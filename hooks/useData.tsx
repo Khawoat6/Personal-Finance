@@ -19,6 +19,7 @@ interface DataContextType extends AppData {
     addSubscription: (subscription: Omit<Subscription, 'id'>) => Promise<void>;
     updateSubscription: (subscription: Subscription) => Promise<void>;
     deleteSubscription: (id: number | string) => Promise<void>;
+    bulkAddSubscriptions: (subscriptions: Omit<Subscription, 'id'>[]) => Promise<void>;
     importData: (data: AppData) => Promise<void>;
     exportData: () => AppData;
 }
@@ -182,6 +183,15 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         await saveData({ ...data, subscriptions: newSubscriptions });
     };
 
+    const bulkAddSubscriptions = async (subscriptionsToAdd: Omit<Subscription, 'id'>[]) => {
+        const newSubscriptions: Subscription[] = subscriptionsToAdd.map((sub, index) => ({
+            ...sub,
+            id: `sub-${Date.now()}-${index}`
+        }));
+        const updatedSubscriptions = [...data.subscriptions, ...newSubscriptions];
+        await saveData({ ...data, subscriptions: updatedSubscriptions });
+    };
+
     const importData = async (importedData: AppData) => {
         await saveData(importedData);
     };
@@ -207,6 +217,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         addSubscription,
         updateSubscription,
         deleteSubscription,
+        bulkAddSubscriptions,
         importData,
         exportData
     };

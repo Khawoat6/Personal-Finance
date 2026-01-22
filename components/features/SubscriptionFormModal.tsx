@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import type { Subscription } from '../../types';
 import { SUBSCRIPTION_CATEGORIES } from '../../constants';
-import { X, ChevronDown, Calendar } from 'lucide-react';
+import { X, ChevronDown, Calendar, Mail, KeyRound, Smartphone } from 'lucide-react';
 
 // --- UI Components ---
 const Modal: React.FC<{
@@ -59,7 +59,8 @@ export const SubscriptionFormModal: React.FC<{
     const initialFormState: Omit<Subscription, 'id'> = {
         name: '', category: 'Entertainment', price: 0, expenseType: 'Recurring',
         billingPeriod: 'Monthly', billingDay: 1, firstPayment: getTodayString(),
-        endDate: '', paymentMethod: 'Credit Card', website: '', status: 'Active', logoUrl: ''
+        endDate: '', paymentMethod: 'Credit Card', website: '', status: 'Active', logoUrl: '',
+        email: '', signupMethod: 'Not Specified', signupIdentifier: ''
     };
 
     const [formState, setFormState] = useState(initialFormState);
@@ -98,6 +99,8 @@ export const SubscriptionFormModal: React.FC<{
         onSave(formState);
     };
 
+    const showIdentifierInput = formState.signupMethod === 'Google' || formState.signupMethod === 'Apple ID';
+
     return (
         <Modal isOpen={isOpen} onClose={onClose} title={subscription ? "Edit Subscription" : "Add New Subscription"}>
             <form onSubmit={handleSubmit} className="space-y-5">
@@ -123,25 +126,22 @@ export const SubscriptionFormModal: React.FC<{
                         <SelectWrapper><select name="category" value={formState.category} onChange={handleChange} className={Select}>{SUBSCRIPTION_CATEGORIES.map(cat => <option key={cat} value={cat}>{cat}</option>)}</select></SelectWrapper>
                     </div>
                     <div>
-                        <label className={Label}>Expense Type</label>
-                        <SelectWrapper><select name="expenseType" value={formState.expenseType} onChange={handleChange} className={Select}><option value="Recurring">Recurring</option><option value="One-Time">One-Time</option></select></SelectWrapper>
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                    <div>
                         <label className={Label}>Payment Method</label>
                         <SelectWrapper><select name="paymentMethod" value={formState.paymentMethod} onChange={handleChange} className={Select}><option>Credit Card</option><option>Debit Card</option><option>PayPal</option><option>Bank Transfer</option><option>Apple Pay</option><option>Google Pay</option></select></SelectWrapper>
                     </div>
+                </div>
+
+                <div className="border-t dark:border-slate-700 my-2"></div>
+
+                <div className="grid grid-cols-2 gap-4">
                     <div>
+                        <label className={Label}>Expense Type</label>
+                        <SelectWrapper><select name="expenseType" value={formState.expenseType} onChange={handleChange} className={Select}><option value="Recurring">Recurring</option><option value="One-Time">One-Time</option></select></SelectWrapper>
+                    </div>
+                     <div>
                         <label className={Label}>Billing Cycle</label>
                         <SelectWrapper><select name="billingPeriod" value={formState.billingPeriod} onChange={handleChange} className={Select}><option value="Monthly">Monthly</option><option value="Yearly">Yearly</option></select></SelectWrapper>
                     </div>
-                </div>
-
-                <div>
-                    <label className={Label}>Billing Day (1-31)</label>
-                    <SelectWrapper><select name="billingDay" value={formState.billingDay} onChange={handleChange} className={Select}>{Array.from({ length: 31 }, (_, i) => i + 1).map(day => <option key={day} value={day}>Every {day}</option>)}</select></SelectWrapper>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
@@ -154,10 +154,32 @@ export const SubscriptionFormModal: React.FC<{
                         <DateInputWrapper><input name="endDate" type="date" className={`${Select} date-input`} value={formState.endDate} onChange={handleChange} /></DateInputWrapper>
                     </div>
                 </div>
-
-                <div>
-                    <label className={Label}>Logo URL (Optional)</label>
-                    <input name="logoUrl" type="text" placeholder="https://..." className={Input} value={formState.logoUrl} onChange={handleChange} />
+                
+                <div className="border-t dark:border-slate-700 my-2"></div>
+                
+                 <div>
+                    <label className={Label}>Email (Optional)</label>
+                    <input name="email" type="email" placeholder="user@example.com" className={Input} value={formState.email} onChange={handleChange} />
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                    <div>
+                        <label className={Label}>Sign-up Method (Optional)</label>
+                        <SelectWrapper>
+                           <select name="signupMethod" value={formState.signupMethod} onChange={handleChange} className={Select}>
+                               <option>Not Specified</option>
+                               <option>Google</option>
+                               <option>Apple ID</option>
+                               <option>Email/Password</option>
+                           </select>
+                        </SelectWrapper>
+                    </div>
+                    {showIdentifierInput && (
+                        <div>
+                           <label className={Label}>Account Used (Optional)</label>
+                           <input name="signupIdentifier" type="text" placeholder={formState.signupMethod === 'Google' ? "user@gmail.com" : "user@icloud.com"} className={Input} value={formState.signupIdentifier} onChange={handleChange} />
+                        </div>
+                    )}
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">

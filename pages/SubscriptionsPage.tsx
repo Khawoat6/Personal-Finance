@@ -6,7 +6,7 @@ import {
   Grid, List, Calendar as CalendarIcon, Plus, ChevronDown, Edit, Trash2,
   Film, Headphones, Briefcase, PenTool, Cloud, DollarSign, Layers, CreditCard,
   Smartphone, Wallet, ExternalLink, ChevronLeft, ChevronRight, X, Repeat, TrendingUp, TrendingDown,
-  Columns3
+  Columns3, Upload, Download
 } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { SubscriptionFormModal } from '../components/features/SubscriptionFormModal';
@@ -34,7 +34,7 @@ const formatDateDisplay = (dateString: string) => {
 };
 
 const getCategoryIcon = (category: string) => {
-  const iconProps = { size: 14, className: "text-slate-500 dark:text-slate-400" };
+  const iconProps = { size: 16, className: "text-slate-500 dark:text-slate-400" };
   switch (category) {
     case 'Entertainment': return <Film {...iconProps} />;
     case 'Music': case 'Music Streaming': return <Headphones {...iconProps} />;
@@ -46,23 +46,6 @@ const getCategoryIcon = (category: string) => {
     default: return <Layers {...iconProps} />;
   }
 };
-
-const categoryColors: { [key: string]: string } = {
-  'Video Streaming': 'bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300',
-  'Security & Privacy': 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300',
-  'Productivity': 'bg-pink-100 text-pink-800 dark:bg-pink-900/50 dark:text-pink-300',
-  'Cloud Storage': 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300',
-  'Music Streaming': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300',
-  'Entertainment': 'bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300',
-  'Music': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300',
-  'Finance': 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/50 dark:text-indigo-300',
-  'Education': 'bg-teal-100 text-teal-800 dark:bg-teal-900/50 dark:text-teal-300',
-  'Health & Wellness': 'bg-rose-100 text-rose-800 dark:bg-rose-900/50 dark:text-rose-300',
-  'Travel': 'bg-sky-100 text-sky-800 dark:bg-sky-900/50 dark:text-sky-300',
-  'AI': 'bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-300',
-};
-const defaultColor = 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
-
 
 const getPaymentMethodIcon = (method: string) => {
     const iconProps = { size: 24, className: "text-slate-600 dark:text-slate-400" };
@@ -80,6 +63,51 @@ const getPaymentMethodIcon = (method: string) => {
 
 
 // --- Sub-Components ---
+const FilterDropdown: React.FC<{
+  value: string;
+  onChange: (value: string) => void;
+  options: { value: string; label: string }[];
+  title: string;
+}> = ({ value, onChange, options, title }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const ref = useRef<HTMLDivElement>(null);
+    const selectedLabel = options.find(o => o.value === value)?.label || title;
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (ref.current && !ref.current.contains(event.target as Node)) {
+                setIsOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [ref]);
+
+    return (
+        <div className="relative" ref={ref}>
+            <button onClick={() => setIsOpen(!isOpen)} className="flex items-center justify-between w-full sm:w-auto gap-2 px-3 py-1.5 rounded-lg transition-all text-sm bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700">
+               <span className="truncate">{selectedLabel}</span>
+               <ChevronDown size={16} />
+            </button>
+            {isOpen && (
+                <div className="absolute left-0 mt-2 w-48 bg-white dark:bg-slate-800 rounded-lg shadow-xl border dark:border-slate-700 z-20 max-h-60 overflow-y-auto">
+                    <div className="p-1">
+                        {options.map(option => (
+                            <button 
+                                key={option.value} 
+                                onClick={() => { onChange(option.value); setIsOpen(false); }}
+                                className="flex items-center w-full px-2 py-1.5 text-sm rounded-md text-left hover:bg-slate-100 dark:hover:bg-slate-700"
+                            >
+                                {option.label}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
 
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
@@ -201,8 +229,8 @@ const ListView: React.FC<{
     onDelete: (id: string | number) => void,
     onEdit: (sub: Subscription) => void,
     visibleColumns: { [key: string]: boolean },
-    showLogoUrl: boolean
-}> = ({ data, onDelete, onEdit, visibleColumns, showLogoUrl }) => (
+    showEmail: boolean
+}> = ({ data, onDelete, onEdit, visibleColumns, showEmail }) => (
   <Card className="overflow-x-auto">
     <table className="min-w-full text-left">
       <thead className="bg-slate-50/50 dark:bg-slate-900/50 border-b border-gray-100 dark:border-slate-800">
@@ -229,8 +257,8 @@ const ListView: React.FC<{
                 </div>
                 <div className="ml-3">
                   <div className="text-sm font-semibold text-slate-900 dark:text-white">{sub.name}</div>
-                   {showLogoUrl && sub.logoUrl && (
-                        <p className="text-xs text-slate-400 truncate max-w-[200px]">{sub.logoUrl}</p>
+                   {showEmail && sub.email && (
+                        <p className="text-xs text-slate-400 truncate max-w-[200px]">{sub.email}</p>
                    )}
                 </div>
               </div>
@@ -359,27 +387,26 @@ const CalendarView: React.FC<{
           {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
         </h2>
         <div className="flex space-x-2">
-          <button onClick={() => changeMonth(-1)} className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500"><ChevronLeft size={18} /></button>
-          <button onClick={() => setCurrentDate(new Date())} className="text-xs font-medium px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600">Today</button>
-          <button onClick={() => changeMonth(1)} className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500"><ChevronRight size={18} /></button>
+          <button onClick={() => changeMonth(-1)} className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500"><ChevronLeft size={20} /></button>
+          <button onClick={() => setCurrentDate(new Date())} className="text-sm font-medium px-4 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600">Today</button>
+          <button onClick={() => changeMonth(1)} className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500"><ChevronRight size={20} /></button>
         </div>
       </div>
       <div className="grid grid-cols-7 gap-px border dark:border-slate-700 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-700">
-        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => <div key={d} className="py-2 text-center text-[10px] font-semibold uppercase tracking-wider bg-slate-50 dark:bg-slate-800 text-slate-400">{d}</div>)}
-        {Array.from({ length: firstDayOfMonth }).map((_, i) => <div key={`empty-${i}`} className="bg-white dark:bg-slate-800/50 h-28"></div>)}
+        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => <div key={d} className="py-2.5 text-center text-xs font-semibold uppercase tracking-wider bg-slate-50 dark:bg-slate-800 text-slate-500">{d}</div>)}
+        {Array.from({ length: firstDayOfMonth }).map((_, i) => <div key={`empty-${i}`} className="bg-white dark:bg-slate-800/50 min-h-[120px]"></div>)}
         {Array.from({ length: daysInMonth }).map((_, i) => {
           const day = i + 1;
           const daySubs = getSubsForDay(day);
-          const total = daySubs.reduce((acc, sub) => acc + sub.price, 0);
           const isToday = day === new Date().getDate() && currentDate.getMonth() === new Date().getMonth() && currentDate.getFullYear() === new Date().getFullYear();
           return (
-            <div key={day} className={`bg-white dark:bg-slate-800/50 h-28 p-2 flex flex-col ${isToday ? 'bg-blue-50/30 dark:bg-blue-900/20' : ''}`}>
-              <span className={`text-xs font-medium w-6 h-6 flex items-center justify-center rounded-full ${isToday ? 'bg-slate-900 dark:bg-blue-600 text-white' : ''}`}>{day}</span>
-              <div className="flex-1 overflow-y-auto space-y-1 mt-1">
+            <div key={day} className={`bg-white dark:bg-slate-800/50 min-h-[120px] p-2 flex flex-col ${isToday ? 'bg-blue-50/30 dark:bg-blue-900/20' : ''}`}>
+              <span className={`text-sm font-semibold w-7 h-7 flex items-center justify-center rounded-full ${isToday ? 'bg-slate-900 dark:bg-blue-600 text-white' : ''}`}>{day}</span>
+              <div className="flex-1 overflow-y-auto space-y-1.5 mt-1.5">
                 {daySubs.map(sub => (
-                  <div key={sub.id} onClick={() => onEdit(sub)} className="flex items-center gap-1.5 p-1 rounded-md border shadow-sm cursor-pointer bg-white dark:bg-slate-700 border-gray-100 dark:border-slate-600 hover:border-gray-300">
-                    <img src={getLogoUrl(sub)} alt="" className="w-3 h-3 object-contain rounded-sm" onError={(e) => (e.currentTarget.style.display='none')} />
-                    <span className="text-[9px] truncate w-full font-medium text-slate-700 dark:text-slate-300">{sub.name}</span>
+                  <div key={sub.id} onClick={() => onEdit(sub)} className="flex items-center gap-2 p-1.5 rounded-lg border shadow-sm cursor-pointer bg-white dark:bg-slate-700 border-gray-100 dark:border-slate-600 hover:border-gray-300">
+                    <img src={getLogoUrl(sub)} alt="" className="w-5 h-5 object-contain rounded-md" onError={(e) => (e.currentTarget.style.display='none')} />
+                    <span className="text-xs truncate w-full font-semibold text-slate-800 dark:text-slate-200">{sub.name}</span>
                   </div>
                 ))}
               </div>
@@ -393,7 +420,7 @@ const CalendarView: React.FC<{
 
 // --- Main Page Component ---
 export const SubscriptionsPage: React.FC = () => {
-    const { subscriptions, addSubscription, updateSubscription, deleteSubscription, loading } = useData();
+    const { subscriptions, addSubscription, updateSubscription, deleteSubscription, bulkAddSubscriptions, loading } = useData();
     const [filters, setFilters] = useState({ status: 'All', expenseType: 'All', billingPeriod: 'All', paymentMethod: 'All' });
     const [viewMode, setViewMode] = useState('list');
     const [visibleColumns, setVisibleColumns] = useState({
@@ -403,10 +430,11 @@ export const SubscriptionsPage: React.FC = () => {
         paymentMethod: true,
         nextPaymentDate: true,
         status: true,
-        website: false,
-        endDate: false,
+        website: true,
+        endDate: true,
     });
-    const [showLogoUrl, setShowLogoUrl] = useState(false);
+    const [showEmail, setShowEmail] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const [isAddModalOpen, setAddModalOpen] = useState(false);
     const [editingSub, setEditingSub] = useState<Subscription | null>(null);
@@ -416,7 +444,7 @@ export const SubscriptionsPage: React.FC = () => {
     
     const paymentMethodOptions = useMemo(() => {
         const methods = new Set(subscriptions.map(s => s.paymentMethod));
-        return Array.from(methods);
+        return Array.from(methods).map(m => ({ value: m, label: m }));
     }, [subscriptions]);
 
     const filteredSubscriptions = useMemo(() => {
@@ -568,6 +596,72 @@ export const SubscriptionsPage: React.FC = () => {
             setSubToDelete(null);
         }
     };
+    
+    const handleExportCSV = () => {
+        const headers = ['id', 'name', 'category', 'price', 'expenseType', 'billingPeriod', 'billingDay', 'firstPayment', 'endDate', 'paymentMethod', 'website', 'status', 'logoUrl', 'email', 'signupMethod', 'signupIdentifier'];
+        const escapeCSV = (value: any) => {
+          const str = String(value ?? '');
+          if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+            return `"${str.replace(/"/g, '""')}"`;
+          }
+          return str;
+        };
+        const csvContent = [
+            headers.join(','),
+            ...subscriptions.map(sub => headers.map(header => escapeCSV(sub[header as keyof Subscription])).join(','))
+        ].join('\n');
+        
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(blob);
+        link.setAttribute("href", url);
+        link.setAttribute("download", "subscriptions.csv");
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+    
+    const handleImportClick = () => {
+        fileInputRef.current?.click();
+    };
+
+    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            try {
+                const text = e.target?.result as string;
+                const lines = text.trim().split(/\r?\n/);
+                const header = lines[0].split(',').map(h => h.trim());
+                const rows = lines.slice(1);
+                
+                const subsToImport: Omit<Subscription, 'id'>[] = rows.map(row => {
+                    const values = row.split(','); // Simplified parsing, assumes no commas in values
+                    const subObject: any = {};
+                    header.forEach((key, index) => {
+                        let value: any = values[index];
+                        if (key === 'price' || key === 'billingDay') value = parseFloat(value) || 0;
+                        subObject[key] = value;
+                    });
+                    return subObject;
+                });
+                
+                if(window.confirm(`Found ${subsToImport.length} subscriptions to import. Do you want to proceed?`)){
+                    await bulkAddSubscriptions(subsToImport);
+                    alert("Import successful!");
+                }
+            } catch (error) {
+                alert('Failed to import CSV. Please check the file format.');
+                console.error(error);
+            } finally {
+                if(fileInputRef.current) fileInputRef.current.value = "";
+            }
+        };
+        reader.readAsText(file);
+    };
 
     if (loading) {
         return <div className="text-center p-10">Loading subscriptions...</div>;
@@ -578,29 +672,23 @@ export const SubscriptionsPage: React.FC = () => {
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-sm font-medium text-slate-500">Filter:</span>
-                     <select value={filters.status} onChange={(e) => setFilters(prev => ({...prev, status: e.target.value}))} className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md px-2 py-1 text-sm">
-                         <option value="All">All Status</option>
-                         <option value="Active">Active</option>
-                         <option value="Inactive">Inactive</option>
-                     </select>
-                     <select value={filters.expenseType} onChange={(e) => setFilters(prev => ({...prev, expenseType: e.target.value}))} className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md px-2 py-1 text-sm">
-                         <option value="All">All Types</option>
-                         <option value="Recurring">Recurring</option>
-                         <option value="One-Time">One-Time</option>
-                     </select>
-                     <select value={filters.billingPeriod} onChange={(e) => setFilters(prev => ({...prev, billingPeriod: e.target.value}))} className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md px-2 py-1 text-sm">
-                         <option value="All">All Periods</option>
-                         <option value="Monthly">Monthly</option>
-                         <option value="Yearly">Yearly</option>
-                     </select>
-                     <select value={filters.paymentMethod} onChange={(e) => setFilters(prev => ({...prev, paymentMethod: e.target.value}))} className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md px-2 py-1 text-sm">
-                         <option value="All">All Payment Methods</option>
-                         {paymentMethodOptions.map(method => <option key={method} value={method}>{method}</option>)}
-                     </select>
+                    <FilterDropdown title="All Status" value={filters.status} onChange={(v) => setFilters(p => ({...p, status: v}))} options={[{value: 'All', label: 'All Status'}, {value: 'Active', label: 'Active'}, {value: 'Inactive', label: 'Inactive'}]} />
+                    <FilterDropdown title="All Types" value={filters.expenseType} onChange={(v) => setFilters(p => ({...p, expenseType: v}))} options={[{value: 'All', label: 'All Types'}, {value: 'Recurring', label: 'Recurring'}, {value: 'One-Time', label: 'One-Time'}]} />
+                    <FilterDropdown title="All Periods" value={filters.billingPeriod} onChange={(v) => setFilters(p => ({...p, billingPeriod: v}))} options={[{value: 'All', label: 'All Periods'}, {value: 'Monthly', label: 'Monthly'}, {value: 'Yearly', label: 'Yearly'}]} />
+                    <FilterDropdown title="All Payment Methods" value={filters.paymentMethod} onChange={(v) => setFilters(p => ({...p, paymentMethod: v}))} options={[{value: 'All', label: 'All Payment Methods'}, ...paymentMethodOptions]} />
                 </div>
-                <button onClick={handleAdd} className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-slate-800 dark:bg-slate-200 dark:text-slate-900 rounded-lg hover:bg-slate-700 dark:hover:bg-slate-300">
-                    <Plus className="h-4 w-4" /> Add Subscription
-                </button>
+                <div className="flex items-center gap-2">
+                    <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept=".csv" />
+                    <button onClick={handleImportClick} className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-700/50 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700">
+                        <Upload className="h-4 w-4" />
+                    </button>
+                    <button onClick={handleExportCSV} className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-700/50 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700">
+                        <Download className="h-4 w-4" />
+                    </button>
+                    <button onClick={handleAdd} className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-slate-800 dark:bg-slate-200 dark:text-slate-900 rounded-lg hover:bg-slate-700 dark:hover:bg-slate-300">
+                        <Plus className="h-4 w-4" /> Add Subscription
+                    </button>
+                </div>
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -666,13 +754,18 @@ export const SubscriptionsPage: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Card>
                     <h3 className="text-lg font-semibold mb-4">Category Breakdown</h3>
-                    <div className="space-y-4">
-                        {categoryBreakdownData.slice(0, 5).map((item) => (
-                             <div key={item.name} className="flex items-center justify-between text-sm">
-                                <span className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold ${categoryColors[item.name] || defaultColor}`}>
-                                    {item.name}
-                                </span>
-                                <span className="font-bold text-slate-900 dark:text-white tracking-tight">{formatCurrencyWithTHB(item.value)}</span>
+                    <div className="flex flex-wrap gap-4">
+                        {categoryBreakdownData.slice(0, 10).map((item) => (
+                            <div key={item.name} className="flex items-center justify-between text-sm">
+                                <div className="flex items-center gap-2 p-2 rounded-lg bg-slate-100 dark:bg-slate-700/50">
+                                    <div className="w-8 h-8 bg-white dark:bg-slate-700 rounded-md flex items-center justify-center">
+                                        {getCategoryIcon(item.name)}
+                                    </div>
+                                    <div>
+                                        <span className="font-semibold text-slate-800 dark:text-slate-200">{item.name}</span>
+                                        <p className="font-mono text-xs text-slate-500 dark:text-slate-400">{formatCurrency(item.value)}</p>
+                                    </div>
+                                </div>
                             </div>
                         ))}
                     </div>
@@ -694,25 +787,28 @@ export const SubscriptionsPage: React.FC = () => {
                     </div>
                 </Card>
             </div>
-
-            <div className="flex items-center justify-end gap-2">
-                 {viewMode === 'list' && (
-                    <div className="flex items-center gap-4">
-                        <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300 cursor-pointer">
-                           <span>Show Logo URL</span>
-                           <Switch checked={showLogoUrl} onChange={() => setShowLogoUrl(!showLogoUrl)} />
-                        </label>
-                        <ColumnsDropdown columns={visibleColumns} setColumns={setVisibleColumns} />
+            
+            <div className="flex items-center justify-between gap-2">
+                <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">All Subscriptions</h2>
+                <div className="flex items-center gap-2">
+                    {viewMode === 'list' && (
+                        <div className="flex items-center gap-4">
+                            <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300 cursor-pointer">
+                               <span>Show Email</span>
+                               <Switch checked={showEmail} onChange={() => setShowEmail(!showEmail)} />
+                            </label>
+                            <ColumnsDropdown columns={visibleColumns} setColumns={setVisibleColumns} />
+                        </div>
+                     )}
+                    <div className="p-1 rounded-lg flex bg-slate-100 dark:bg-slate-800">
+                        <button onClick={() => setViewMode('list')} className={`px-3 py-1.5 rounded-md transition-all text-sm flex items-center gap-2 ${viewMode === 'list' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500'}`}><List size={16} /> List</button>
+                        <button onClick={() => setViewMode('grid')} className={`px-3 py-1.5 rounded-md transition-all text-sm flex items-center gap-2 ${viewMode === 'grid' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500'}`}><Grid size={16} /> Grid</button>
+                        <button onClick={() => setViewMode('calendar')} className={`px-3 py-1.5 rounded-md transition-all text-sm flex items-center gap-2 ${viewMode === 'calendar' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500'}`}><CalendarIcon size={16} /> Calendar</button>
                     </div>
-                 )}
-                <div className="p-1 rounded-lg flex bg-slate-100 dark:bg-slate-800">
-                    <button onClick={() => setViewMode('list')} className={`px-3 py-1.5 rounded-md transition-all text-sm flex items-center gap-2 ${viewMode === 'list' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500'}`}><List size={16} /> List</button>
-                    <button onClick={() => setViewMode('grid')} className={`px-3 py-1.5 rounded-md transition-all text-sm flex items-center gap-2 ${viewMode === 'grid' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500'}`}><Grid size={16} /> Grid</button>
-                    <button onClick={() => setViewMode('calendar')} className={`px-3 py-1.5 rounded-md transition-all text-sm flex items-center gap-2 ${viewMode === 'calendar' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500'}`}><CalendarIcon size={16} /> Calendar</button>
                 </div>
             </div>
 
-            {viewMode === 'list' && <ListView data={subscriptionsWithNextPayment} onDelete={handleDelete} onEdit={handleEdit} visibleColumns={visibleColumns} showLogoUrl={showLogoUrl} />}
+            {viewMode === 'list' && <ListView data={subscriptionsWithNextPayment} onDelete={handleDelete} onEdit={handleEdit} visibleColumns={visibleColumns} showEmail={showEmail} />}
             {viewMode === 'grid' && <GridView data={filteredSubscriptions} onDelete={handleDelete} onEdit={handleEdit} />}
             {viewMode === 'calendar' && <CalendarView data={filteredSubscriptions} onEdit={handleEdit} />}
             

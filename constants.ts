@@ -150,7 +150,10 @@ export const DEFAULT_SUBSCRIPTIONS: Subscription[] = [
     paymentMethod: 'Credit Card', 
     website: 'https://netflix.com', 
     status: 'Active', 
-    logoUrl: 'https://thumbs.dreamstime.com/b/logo-icon-vector-logos-logo-icons-set-social-media-flat-banner-vectors-svg-eps-jpg-jpeg-emblem-wallpaper-background-editorial-208329597.jpg' 
+    logoUrl: 'https://thumbs.dreamstime.com/b/logo-icon-vector-logos-logo-icons-set-social-media-flat-banner-vectors-svg-eps-jpg-jpeg-emblem-wallpaper-background-editorial-208329597.jpg',
+    email: 'user@example.com',
+    signupMethod: 'Google',
+    signupIdentifier: 'user@gmail.com'
   },
   { 
     id: 2, 

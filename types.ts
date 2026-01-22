@@ -56,6 +56,9 @@ export interface Subscription {
   website: string;
   status: 'Active' | 'Inactive';
   logoUrl: string;
+  email?: string;
+  signupMethod?: string;
+  signupIdentifier?: string;
 }
 
 export interface AppData {
