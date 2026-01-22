@@ -22,15 +22,6 @@ const getLogoUrl = (sub: Subscription) => {
   return `https://logo.clearbit.com/${cleanName}.com`;
 };
 
-const formatCurrencyLocal = (amount: number, currency: string = 'THB') => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD', // To match the image's '$' sign
-    minimumFractionDigits: 2,
-  }).format(amount);
-};
-
-
 const formatCurrency = (amount: number) => {
   return new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount);
 };
@@ -75,6 +66,98 @@ const getPaymentMethodIcon = (method: string) => {
     }
 };
 
+const isDueOnDate = (sub: Subscription, date: Date) => {
+    if (sub.status !== 'Active' || sub.expenseType !== 'Recurring') return false;
+    const firstPayment = new Date(sub.firstPayment);
+    firstPayment.setHours(0, 0, 0, 0);
+    const checkDate = new Date(date);
+    checkDate.setHours(0, 0, 0, 0);
+    
+    if (firstPayment > checkDate) return false;
+    if (sub.endDate && new Date(sub.endDate) < checkDate) return false;
+
+    if (sub.billingPeriod === 'Monthly') {
+        return firstPayment.getDate() === checkDate.getDate();
+    }
+    if (sub.billingPeriod === 'Yearly') {
+        return firstPayment.getDate() === checkDate.getDate() && firstPayment.getMonth() === checkDate.getMonth();
+    }
+    return false;
+};
+
+const MonthGrid: React.FC<{ 
+    year: number; 
+    month: number; 
+    isCompact?: boolean;
+    data: Subscription[];
+    onEdit: (sub: Subscription) => void;
+}> = ({ year, month, isCompact = false, data, onEdit }) => {
+    const firstDayOfMonth = new Date(year, month, 1).getDay(); // 0 = Sunday
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    
+    const days = Array.from({ length: firstDayOfMonth }, (_, i) => {
+        const date = new Date(year, month, i - firstDayOfMonth + 1);
+        return { date, isCurrentMonth: false, subscriptions: [] };
+    });
+
+    for (let i = 1; i <= daysInMonth; i++) {
+        const date = new Date(year, month, i);
+        const subscriptions = data.filter(sub => isDueOnDate(sub, date));
+        days.push({ date, isCurrentMonth: true, subscriptions });
+    }
+    
+    const today = new Date();
+    const todayString = today.toDateString();
+
+    return (
+        <div className={isCompact ? '' : 'bg-white dark:bg-zinc-800 p-4 rounded-xl'}>
+            {!isCompact && <h3 className="text-lg font-bold text-center mb-4 text-zinc-900 dark:text-white">{new Date(year, month).toLocaleString('en-US', { month: 'long', year: 'numeric' })}</h3>}
+            <div className={`grid grid-cols-7 ${isCompact ? 'gap-0.5' : 'gap-1'}`}>
+                {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, i) => (
+                    <div key={i} className="text-center font-semibold text-slate-500 dark:text-zinc-400 pb-2 text-xs">{day}</div>
+                ))}
+                {days.map(({ date, isCurrentMonth, subscriptions }, index) => {
+                    const isToday = date.toDateString() === todayString;
+                    const maxIcons = isCompact ? 3 : 6;
+                    const dayOfWeek = date.getDay();
+
+                    return (
+                         <div key={index} 
+                             className={`relative flex flex-col p-1.5 rounded-lg transition-colors
+                                        ${isCompact ? 'aspect-square' : 'min-h-[110px]'}
+                                        ${isCurrentMonth ? 'bg-white dark:bg-zinc-800' : 'bg-slate-100 dark:bg-zinc-800/50'}
+                                        ${isToday ? '!bg-blue-100 dark:!bg-blue-900/50' : ''}`}
+                        >
+                            <span className={`text-xs font-bold ${isCurrentMonth ? (dayOfWeek === 0 || dayOfWeek === 6 ? 'text-slate-500 dark:text-zinc-400' : 'text-slate-800 dark:text-zinc-200') : 'text-slate-400 dark:text-zinc-600'}`}>
+                                {date.getDate()}
+                            </span>
+                            
+                            <div className="flex-grow mt-1.5 -mx-0.5 overflow-hidden">
+                                <div className={`flex flex-wrap ${isCompact ? 'gap-0.5' : 'gap-1'}`}>
+                                    {subscriptions.slice(0, maxIcons).map(sub => (
+                                        <div key={sub.id} onClick={() => onEdit(sub)} className="cursor-pointer">
+                                            <img 
+                                                src={getLogoUrl(sub)} 
+                                                alt={sub.name} 
+                                                className={`${isCompact ? 'w-5 h-5' : 'w-6 h-6'} object-contain rounded-md transition-transform hover:scale-110`}
+                                                title={`${sub.name} - ${formatCurrency(sub.price)}`} 
+                                            />
+                                        </div>
+                                    ))}
+                                    {subscriptions.length > maxIcons && (
+                                        <div className={`${isCompact ? 'w-5 h-5 text-[9px]' : 'w-6 h-6 text-[10px]'} flex items-center justify-center bg-slate-200 dark:bg-zinc-700 rounded-md font-semibold text-slate-600 dark:text-zinc-300`}>
+                                            +{subscriptions.length - maxIcons}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+        </div>
+    );
+};
 
 // --- Sub-Components ---
 const FilterDropdown: React.FC<{
@@ -364,85 +447,72 @@ const GridView: React.FC<{
   </div>
 );
 
-const CalendarView: React.FC<{ data: Subscription[], onEdit: (sub: Subscription) => void }> = ({ data, onEdit }) => {
+const CalendarView: React.FC<{
+    data: Subscription[],
+    onEdit: (sub: Subscription) => void,
+    viewType: 'yearly'
+}> = ({ data, onEdit, viewType }) => {
     const [currentDate, setCurrentDate] = useState(new Date());
 
-    const getStartOfWeek = (date: Date) => {
-        const d = new Date(date);
-        const day = d.getDay();
-        const diff = d.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is sunday
-        return new Date(d.setDate(diff));
-    };
-
-    const addDays = (date: Date, days: number) => {
-        const result = new Date(date);
-        result.setDate(result.getDate() + days);
-        return result;
-    };
-
-    const changeWeek = (offset: number) => {
-        setCurrentDate(prev => addDays(prev, offset * 7));
-    };
-
-    const weekData = useMemo(() => {
-        const startOfWeek = getStartOfWeek(currentDate);
-        const week = Array.from({ length: 7 }).map((_, i) => {
-            const date = addDays(startOfWeek, i);
-            const subsForDay = data.filter(sub => {
-                if (sub.status !== 'Active' || !sub.firstPayment) return false;
-                const paymentDate = new Date(sub.firstPayment);
-                if (sub.billingPeriod === 'Monthly') return paymentDate.getDate() === date.getDate();
-                if (sub.billingPeriod === 'Yearly') return paymentDate.getDate() === date.getDate() && paymentDate.getMonth() === date.getMonth();
-                return false;
-            });
-            const totalAmount = subsForDay.reduce((sum, s) => sum + s.price, 0);
-
-            return {
-                date,
-                dayName: date.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase(),
-                dayNumber: date.getDate(),
-                subscriptions: subsForDay,
-                totalAmount,
-            };
+    const changePeriod = (offset: number) => {
+        setCurrentDate(prev => {
+            const newDate = new Date(prev);
+            newDate.setFullYear(newDate.getFullYear() + offset);
+            return newDate;
         });
-        return week;
-    }, [currentDate, data]);
+    };
 
-    const monthName = currentDate.toLocaleString('en-US', { month: 'long', year: 'numeric' });
-
+    const getHeaderText = () => currentDate.getFullYear().toString();
+    
     return (
-        <div className="bg-zinc-900 p-6 rounded-2xl">
-            <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg font-bold text-white">{monthName}</h2>
+        <div className="bg-slate-100 dark:bg-zinc-900 p-4 sm:p-6 rounded-2xl">
+            <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
+                <h2 className="text-lg font-bold text-zinc-900 dark:text-white">{getHeaderText()}</h2>
                 <div className="flex space-x-2">
-                    <button onClick={() => changeWeek(-1)} className="p-1.5 rounded-lg hover:bg-zinc-700 text-zinc-400"><ChevronLeft size={20} /></button>
-                    <button onClick={() => setCurrentDate(new Date())} className="text-sm font-medium px-4 py-1.5 rounded-lg bg-zinc-700 hover:bg-zinc-600 text-white">Today</button>
-                    <button onClick={() => changeWeek(1)} className="p-1.5 rounded-lg hover:bg-zinc-700 text-zinc-400"><ChevronRight size={20} /></button>
+                    <button onClick={() => changePeriod(-1)} className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-500 dark:text-zinc-400"><ChevronLeft size={20} /></button>
+                    <button onClick={() => setCurrentDate(new Date())} className="text-sm font-medium px-4 py-1.5 rounded-lg bg-slate-200 dark:bg-zinc-700 hover:bg-slate-300 dark:hover:bg-zinc-600 text-slate-800 dark:text-white">Today</button>
+                    <button onClick={() => changePeriod(1)} className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-500 dark:text-zinc-400"><ChevronRight size={20} /></button>
                 </div>
             </div>
-            <div className="grid grid-cols-7 gap-4">
-                {weekData.map(({ date, dayName, dayNumber, subscriptions, totalAmount }) => (
-                    <div key={date.toISOString()} className="bg-zinc-800 rounded-2xl p-4 flex flex-col min-h-[180px]">
-                        <div className="text-center">
-                            <p className="font-mono text-xs font-semibold text-zinc-400">{dayName}</p>
-                            <p className="font-mono text-lg font-semibold text-zinc-200 mt-1">{dayNumber}</p>
-                        </div>
-                        <div className="flex-grow flex flex-col items-center justify-center space-y-2 my-4">
-                            {subscriptions.map(sub => (
-                                <div key={sub.id} onClick={() => onEdit(sub)} className="w-8 h-8 rounded-full bg-white p-1 flex items-center justify-center shadow-md cursor-pointer">
-                                    <img src={getLogoUrl(sub)} alt={sub.name} className="w-full h-full object-contain" />
-                                </div>
-                            ))}
-                        </div>
-                        <div className="text-center mt-auto">
-                            {totalAmount > 0 && (
-                                <p className="text-sm font-semibold text-white">{formatCurrencyLocal(totalAmount)}</p>
-                            )}
-                        </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                {Array.from({ length: 12 }).map((_, i) => (
+                     <div key={i}>
+                        <h3 className="text-base font-semibold text-center mb-2 text-zinc-900 dark:text-white">{new Date(currentDate.getFullYear(), i).toLocaleString('en-US', { month: 'long' })}</h3>
+                        <MonthGrid year={currentDate.getFullYear()} month={i} isCompact data={data} onEdit={onEdit} />
                     </div>
                 ))}
             </div>
         </div>
+    );
+};
+
+const MiniCalendarView: React.FC<{
+    data: Subscription[],
+    onEdit: (sub: Subscription) => void
+}> = ({ data, onEdit }) => {
+    const [currentDate, setCurrentDate] = useState(new Date());
+
+    const changeMonth = (offset: number) => {
+        setCurrentDate(prev => {
+            const newDate = new Date(prev);
+            newDate.setMonth(newDate.getMonth() + offset);
+            return newDate;
+        });
+    };
+
+    return (
+        <Card>
+            <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+                    {currentDate.toLocaleString('en-US', { month: 'long', year: 'numeric' })}
+                </h3>
+                <div className="flex space-x-1">
+                    <button onClick={() => changeMonth(-1)} className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700/50 text-slate-500 dark:text-slate-400"><ChevronLeft size={16} /></button>
+                    <button onClick={() => changeMonth(1)} className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700/50 text-slate-500 dark:text-slate-400"><ChevronRight size={16} /></button>
+                </div>
+            </div>
+            <MonthGrid year={currentDate.getFullYear()} month={currentDate.getMonth()} isCompact data={data} onEdit={onEdit} />
+        </Card>
     );
 };
 
@@ -717,7 +787,7 @@ export const SubscriptionsPage: React.FC = () => {
                  </Card>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <Card>
                     <h3 className="text-lg font-semibold mb-4">Category Breakdown</h3>
                     <div className="space-y-2">
@@ -750,6 +820,7 @@ export const SubscriptionsPage: React.FC = () => {
                         ))}
                     </div>
                 </Card>
+                <MiniCalendarView data={activeSubscriptions} onEdit={handleEdit} />
             </div>
             
             <Card>
@@ -782,7 +853,7 @@ export const SubscriptionsPage: React.FC = () => {
                                 <ColumnsDropdown columns={visibleColumns} setColumns={setVisibleColumns} />
                             </div>
                          )}
-                        <div className="p-1 rounded-lg flex bg-slate-100 dark:bg-slate-800">
+                         <div className="p-1 rounded-lg flex bg-slate-100 dark:bg-slate-800">
                             <button onClick={() => setViewMode('list')} className={`px-3 py-1.5 rounded-md transition-all text-sm flex items-center gap-2 ${viewMode === 'list' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500'}`}><Rows3 size={16} /> List</button>
                             <button onClick={() => setViewMode('grid')} className={`px-3 py-1.5 rounded-md transition-all text-sm flex items-center gap-2 ${viewMode === 'grid' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500'}`}><AppWindow size={16} /> Grid</button>
                             <button onClick={() => setViewMode('calendar')} className={`px-3 py-1.5 rounded-md transition-all text-sm flex items-center gap-2 ${viewMode === 'calendar' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500'}`}><CalendarDays size={16} /> Calendar</button>
@@ -793,7 +864,7 @@ export const SubscriptionsPage: React.FC = () => {
 
             {viewMode === 'list' && <ListView data={sortedSubscriptions} onDelete={handleDelete} onEdit={handleEdit} visibleColumns={visibleColumns} showEmail={showEmail} sortConfig={sortConfig} requestSort={requestSort} />}
             {viewMode === 'grid' && <GridView data={sortedSubscriptions} onDelete={handleDelete} onEdit={handleEdit} />}
-            {viewMode === 'calendar' && <CalendarView data={sortedSubscriptions} onEdit={handleEdit} />}
+            {viewMode === 'calendar' && <CalendarView data={sortedSubscriptions} onEdit={handleEdit} viewType={'yearly'} />}
             
             <SubscriptionFormModal 
                 isOpen={isAddModalOpen} 

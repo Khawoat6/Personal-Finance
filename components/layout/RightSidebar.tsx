@@ -5,6 +5,7 @@ import { ProgressBar } from '../ui/ProgressBar';
 import { formatCurrency } from '../../utils/formatters';
 import { Building2, Trophy } from 'lucide-react';
 
+// --- Main Sidebar Component ---
 export const RightSidebar: React.FC = () => {
     const { accounts, goals, loading } = useData();
 
@@ -36,11 +37,11 @@ export const RightSidebar: React.FC = () => {
             <div className="space-y-8">
                 <div>
                     <h3 className="text-sm font-semibold text-zinc-500 dark:text-slate-400 uppercase tracking-wider mb-4">Accounts</h3>
-                    <div className="space-y-3">
+                    <div className="space-y-1">
                         {accounts.map(account => (
                             <div key={account.id} className="flex items-center justify-between p-3 rounded-lg hover:bg-zinc-100 dark:hover:bg-slate-800 transition-colors">
                                 <div className="flex items-center gap-3 overflow-hidden">
-                                    <div className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-slate-700 flex items-center justify-center flex-shrink-0">
+                                    <div className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-slate-700/50 flex items-center justify-center flex-shrink-0">
                                         <Building2 size={16} className="text-zinc-500 dark:text-slate-400" />
                                     </div>
                                     <span className="font-medium text-zinc-800 dark:text-slate-200 truncate">{account.name}</span>
@@ -53,14 +54,14 @@ export const RightSidebar: React.FC = () => {
 
                 <div>
                     <h3 className="text-sm font-semibold text-zinc-500 dark:text-slate-400 uppercase tracking-wider mb-4">Goals</h3>
-                    <div className="space-y-4">
+                    <div className="space-y-2">
                         {goals.length > 0 ? goals.map(goal => (
-                            <div key={goal.id} className="p-4 rounded-xl border border-zinc-200 dark:border-slate-700 bg-zinc-50 dark:bg-slate-800">
-                                <div className="flex items-start justify-between mb-2">
+                            <div key={goal.id} className="p-3 rounded-lg hover:bg-zinc-100 dark:hover:bg-slate-800 transition-colors">
+                                <div className="flex items-center justify-between mb-2">
                                     <h4 className="font-semibold text-zinc-800 dark:text-slate-200">{goal.name}</h4>
                                     <Trophy size={18} className="text-zinc-400 dark:text-slate-500 flex-shrink-0" />
                                 </div>
-                                <ProgressBar value={goal.currentAmount} max={goal.targetAmount} colorClass="bg-stone-700" />
+                                <ProgressBar value={goal.currentAmount} max={goal.targetAmount} colorClass="bg-stone-700 dark:bg-stone-500" />
                                 <div className="flex justify-between items-baseline mt-2 text-xs">
                                     <span className="font-medium text-zinc-600 dark:text-slate-300">{formatCurrency(goal.currentAmount)}</span>
                                     <span className="text-zinc-500 dark:text-slate-400"> of {formatCurrency(goal.targetAmount)}</span>

@@ -331,5 +331,21 @@ export const DEFAULT_SUBSCRIPTIONS: Subscription[] = [
     status: 'Active',
     logoUrl: 'https://avatars.githubusercontent.com/u/146205480?s=200&v=4',
     usage: 'Low'
+  },
+  {
+    id: 13,
+    name: '1Password',
+    category: 'Security & Privacy',
+    price: 99,
+    expenseType: 'Recurring',
+    billingPeriod: 'Monthly',
+    billingDay: 25,
+    firstPayment: '2025-12-25',
+    endDate: '',
+    paymentMethod: 'Credit Card',
+    website: 'https://1password.com',
+    status: 'Active',
+    logoUrl: 'https://amused-moccasin-deinefybja.edgeone.app/Format=Glyph.png',
+    usage: 'High'
   }
 ];

@@ -1,12 +1,23 @@
 
-import React, { useRef } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { useData } from '../hooks/useData';
 import { Card } from '../components/ui/Card';
-import { Download, Upload } from 'lucide-react';
+import { Download, Upload, Sun, Moon } from 'lucide-react';
 
 export const SettingsPage: React.FC = () => {
     const { exportData, importData } = useData();
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const [currentTheme, setCurrentTheme] = useState(() => localStorage.getItem('theme') || 'light');
+
+    const handleThemeChange = (theme: 'light' | 'dark') => {
+        setCurrentTheme(theme);
+        localStorage.setItem('theme', theme);
+        if (theme === 'dark') {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    };
 
     const handleExport = (format: 'json' | 'csv') => {
         const data = exportData();
@@ -81,6 +92,25 @@ export const SettingsPage: React.FC = () => {
 
     return (
         <div className="max-w-2xl mx-auto space-y-6">
+             <Card>
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-1">Appearance</h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">Choose how the application looks.</p>
+                <div className="p-1.5 rounded-xl flex bg-slate-100 dark:bg-slate-700 w-fit">
+                    <button 
+                        onClick={() => handleThemeChange('light')} 
+                        className={`flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg transition-colors ${currentTheme === 'light' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
+                    >
+                        <Sun size={16} /> Light
+                    </button>
+                    <button 
+                        onClick={() => handleThemeChange('dark')} 
+                        className={`flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg transition-colors ${currentTheme === 'dark' ? 'dark:bg-slate-800 text-white shadow-sm' : 'dark:text-slate-400 dark:hover:text-white'}`}
+                    >
+                        <Moon size={16} /> Dark
+                    </button>
+                </div>
+            </Card>
+
             <Card>
                 <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-1">Data Management</h3>
                 <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">Export your data for backup or import to restore.</p>

@@ -1,29 +1,45 @@
 
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import { useData } from '../hooks/useData';
 import { Card } from '../components/ui/Card';
 import { formatCurrency } from '../utils/formatters';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { PlusCircle } from 'lucide-react';
+import { AreaChart, Area, Tooltip, ResponsiveContainer } from 'recharts';
+import { ThumbsUp, ThumbsDown } from 'lucide-react';
+
+// New component for the insight text and buttons
+const NetWorthInsight: React.FC = () => (
+    <div className="mt-6 text-zinc-500 dark:text-slate-400 text-base space-y-4">
+        <p>
+            Investment performance helped as well, with your portfolio rising 1.7% — a gain of about ฿19,250. Tech holdings were a key driver, buoyed by a market rebound. Overall, a steady week of growth across the board.
+        </p>
+        <div className="flex items-center gap-4 pt-4 border-t border-zinc-200 dark:border-slate-700">
+            <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-700/50 hover:bg-slate-200 dark:hover:bg-slate-700 text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors">
+                <ThumbsUp size={16} /> More like this
+            </button>
+            <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-700/50 hover:bg-slate-200 dark:hover:bg-slate-700 text-sm text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors">
+                <ThumbsDown size={16} /> Less like this
+            </button>
+        </div>
+    </div>
+);
+
 
 const NetWorthChart: React.FC = () => {
     const { transactions, accounts } = useData();
-    const [timeRange, setTimeRange] = useState('1M');
+    const timeRange = '1M'; 
 
     const chartData = useMemo(() => {
         const totalInitialBalance = accounts.reduce((sum, acc) => sum + acc.balance, 0);
         
         const sortedTransactions = [...transactions].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
         
-        const balanceAtEndDate = sortedTransactions.reduce((balance, t) => {
-            return t.type === 'income' ? balance - t.amount : balance + t.amount;
-        }, totalInitialBalance);
-
         const dataPoints: { date: Date, balance: number }[] = [];
-        let currentBalance = balanceAtEndDate;
-        dataPoints.push({ date: new Date(), balance: totalInitialBalance });
-
         let runningBalance = totalInitialBalance;
+
+        // Start from the current balance at the current time
+        dataPoints.push({ date: new Date(), balance: totalInitialBalance });
+        
+        // Go backwards in time, adjusting the balance
         for (let i = sortedTransactions.length - 1; i >= 0; i--) {
             const t = sortedTransactions[i];
             runningBalance = t.type === 'income' ? runningBalance - t.amount : runningBalance + t.amount;
@@ -34,17 +50,16 @@ const NetWorthChart: React.FC = () => {
         
         const now = new Date();
         let startDate = new Date();
-        switch(timeRange) {
-            case '1W': startDate.setDate(now.getDate() - 7); break;
-            case '1M': startDate.setMonth(now.getMonth() - 1); break;
-            case '3M': startDate.setMonth(now.getMonth() - 3); break;
-            case 'YTD': startDate = new Date(now.getFullYear(), 0, 1); break;
-            case 'ALL': startDate = dataPoints.length > 0 ? dataPoints[0].date : new Date(); break;
-            default: startDate.setMonth(now.getMonth() - 1);
+        startDate.setMonth(now.getMonth() - 1);
+       
+        const filteredPoints = dataPoints.filter(dp => dp.date >= startDate);
+        const firstPointBeforeRange = dataPoints.filter(dp => dp.date < startDate).pop();
+
+        if (firstPointBeforeRange && (filteredPoints.length === 0 || filteredPoints[0].date > firstPointBeforeRange.date)) {
+           return [firstPointBeforeRange, ...filteredPoints];
         }
-
-        return dataPoints.filter(dp => dp.date >= startDate);
-
+        
+        return filteredPoints.length > 0 ? filteredPoints : [{date: new Date(), balance: totalInitialBalance}];
     }, [transactions, accounts, timeRange]);
     
     const netChange = useMemo(() => {
@@ -55,79 +70,65 @@ const NetWorthChart: React.FC = () => {
         const percentage = startValue !== 0 ? (change / startValue) * 100 : 0;
         return { value: change, percentage };
     }, [chartData]);
-
-
-    const TimeRangeButton: React.FC<{ range: string }> = ({ range }) => (
-        <button 
-            onClick={() => setTimeRange(range)}
-            className={`px-3 py-1 text-sm font-semibold rounded-md transition-colors ${timeRange === range ? 'bg-zinc-200 dark:bg-slate-700 text-zinc-900 dark:text-slate-100' : 'text-zinc-500 dark:text-slate-400 hover:bg-zinc-100 dark:hover:bg-slate-800'}`}
-        >
-            {range}
-        </button>
-    );
+    
+    const currentNetWorth = accounts.reduce((sum, acc) => sum + acc.balance, 0);
 
     return (
-         <Card>
-            <div className="flex justify-between items-start">
-                <div>
-                    <h3 className="text-sm font-medium text-zinc-500 dark:text-slate-400 tracking-wider">NET WORTH</h3>
-                    <p className="text-3xl font-bold text-zinc-900 dark:text-slate-100 mt-1">
-                        {formatCurrency(accounts.reduce((sum, acc) => sum + acc.balance, 0))}
-                    </p>
-                    <p className={`text-sm font-medium ${netChange.value >= 0 ? 'text-green-600' : 'text-red-500'}`}>
-                        {netChange.value >= 0 ? '+' : ''}{formatCurrency(netChange.value)} ({netChange.percentage.toFixed(2)}%)
+         <Card className="dark:bg-gradient-to-br dark:from-slate-800 dark:to-slate-900">
+            <h2 className="text-4xl md:text-5xl font-serif font-medium text-slate-800 dark:text-slate-100">
+                Your net worth {netChange.value >= 0 ? 'increased' : 'decreased'} by {formatCurrency(Math.abs(netChange.value))}
+            </h2>
+            
+            <div className="mt-8 pt-4 border-t border-zinc-200 dark:border-slate-700">
+                <div className="flex justify-between items-baseline">
+                    <div>
+                         <h3 className="text-sm font-medium text-zinc-500 dark:text-slate-400 tracking-wider">NET WORTH</h3>
+                         <p className="text-3xl font-bold text-slate-900 dark:text-slate-100 mt-1">
+                             {formatCurrency(currentNetWorth)}
+                         </p>
+                    </div>
+                    <p className={`text-lg font-medium ${netChange.value >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                        {netChange.value >= 0 ? '+' : ''}{netChange.percentage.toFixed(1)}%
                     </p>
                 </div>
-                 <button className="p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-slate-800 transition-colors">
-                    <PlusCircle size={20} className="text-zinc-600 dark:text-slate-400" />
-                </button>
             </div>
             
-            <div className="h-64 mt-6 -ml-4">
+            <div className="h-64 mt-4 -ml-6 -mr-6">
                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={chartData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                    <AreaChart data={chartData} margin={{ top: 5, right: 0, left: 0, bottom: 5 }}>
                         <defs>
-                            <linearGradient id="colorBalance" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="#a8a29e" stopOpacity={0.3}/>
-                                <stop offset="95%" stopColor="#a8a29e" stopOpacity={0}/>
+                            <linearGradient id="balanceFill" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="#a3a3a3" stopOpacity={0.4}/>
+                                <stop offset="95%" stopColor="#a3a3a3" stopOpacity={0}/>
+                            </linearGradient>
+                             <linearGradient id="darkBalanceFill" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="#4b5563" stopOpacity={0.4}/>
+                                <stop offset="95%" stopColor="#4b5563" stopOpacity={0}/>
                             </linearGradient>
                         </defs>
                         <Tooltip 
                             contentStyle={{
-                                backgroundColor: 'rgba(255, 255, 255, 0.8)',
-                                backdropFilter: 'blur(5px)',
-                                border: '1px solid #e2e8f0',
-                                borderRadius: '0.5rem'
+                                backdropFilter: 'blur(4px)',
+                                border: '1px solid #e5e7eb',
+                                borderRadius: '0.5rem',
                             }}
-                            formatter={(value: number) => formatCurrency(value)}
-                            labelFormatter={(label) => new Date(label).toLocaleDateString()}
+                            formatter={(value: number) => [formatCurrency(value), 'Net Worth']}
+                            labelFormatter={(label) => new Date(label).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                            cursor={{ stroke: '#9ca3af', strokeWidth: 1, strokeDasharray: '3 3' }}
                         />
-                        <XAxis 
-                            dataKey="date" 
-                            tickFormatter={(date) => new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                            axisLine={false}
-                            tickLine={false}
-                            tick={{ fill: 'rgb(100 116 139)', fontSize: 12 }}
-                            dy={10}
-                        />
-                        <Area type="monotone" dataKey="balance" stroke="#a8a29e" strokeWidth={2} fillOpacity={1} fill="url(#colorBalance)" />
+                        <Area type="monotone" dataKey="balance" stroke="rgb(100 116 139)" strokeWidth={2} fillOpacity={1} fill="url(#balanceFill)" className="dark:hidden" />
+                        <Area type="monotone" dataKey="balance" stroke="#ffffff" strokeWidth={2} fillOpacity={1} fill="url(#darkBalanceFill)" className="hidden dark:block" />
+
                     </AreaChart>
                 </ResponsiveContainer>
             </div>
-             <div className="flex items-center justify-center gap-2 mt-4">
-                <TimeRangeButton range="1W" />
-                <TimeRangeButton range="1M" />
-                <TimeRangeButton range="3M" />
-                <TimeRangeButton range="YTD" />
-                <TimeRangeButton range="ALL" />
-             </div>
+            <NetWorthInsight />
         </Card>
     );
 };
 
 export const DashboardPage: React.FC<{ setHeaderActions: (actions: React.ReactNode) => void }> = ({ setHeaderActions }) => {
     const { loading } = useData();
-    const [activeTab, setActiveTab] = useState('Overview');
 
     useEffect(() => {
         setHeaderActions(null);
@@ -138,24 +139,8 @@ export const DashboardPage: React.FC<{ setHeaderActions: (actions: React.ReactNo
         return <div className="text-center p-10">Loading your financial dashboard...</div>;
     }
 
-    const TabButton: React.FC<{ name: string }> = ({ name }) => (
-         <button 
-            onClick={() => setActiveTab(name)}
-            className={`px-4 py-1.5 text-sm font-semibold rounded-lg transition-colors ${activeTab === name ? 'bg-white dark:bg-slate-700 text-zinc-900 dark:text-slate-100 shadow-sm' : 'text-zinc-500 dark:text-slate-400 hover:bg-white/60 dark:hover:bg-slate-700/50'}`}
-        >
-            {name}
-        </button>
-    );
-
     return (
         <div className="space-y-8">
-            <h1 className="text-3xl font-serif text-zinc-900 dark:text-slate-100">Good evening, Phattaraphon</h1>
-
-            <div className="flex items-center gap-2 p-1 rounded-xl bg-zinc-100 dark:bg-slate-800 w-fit">
-                <TabButton name="Overview" />
-                <TabButton name="Net worth" />
-            </div>
-            
             <NetWorthChart />
         </div>
     );
