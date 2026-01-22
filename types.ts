@@ -59,6 +59,7 @@ export interface Subscription {
   email?: string;
   signupMethod?: string;
   signupIdentifier?: string;
+  usage?: 'High' | 'Medium' | 'Low' | 'Unused';
 }
 
 export interface AppData {

@@ -153,7 +153,8 @@ export const DEFAULT_SUBSCRIPTIONS: Subscription[] = [
     logoUrl: 'https://thumbs.dreamstime.com/b/logo-icon-vector-logos-logo-icons-set-social-media-flat-banner-vectors-svg-eps-jpg-jpeg-emblem-wallpaper-background-editorial-208329597.jpg',
     email: 'user@example.com',
     signupMethod: 'Google',
-    signupIdentifier: 'user@gmail.com'
+    signupIdentifier: 'user@gmail.com',
+    usage: 'High'
   },
   { 
     id: 2, 
@@ -168,7 +169,8 @@ export const DEFAULT_SUBSCRIPTIONS: Subscription[] = [
     paymentMethod: 'Credit Card', 
     website: 'https://spotify.com', 
     status: 'Active', 
-    logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/19/Spotify_logo_without_text.svg/2048px-Spotify_logo_without_text.svg.png' 
+    logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/19/Spotify_logo_without_text.svg/2048px-Spotify_logo_without_text.svg.png',
+    usage: 'High'
   },
   { 
     id: 3, 
@@ -183,7 +185,8 @@ export const DEFAULT_SUBSCRIPTIONS: Subscription[] = [
     paymentMethod: 'Credit Card', 
     website: 'https://youtube.com', 
     status: 'Active', 
-    logoUrl: 'https://static.vecteezy.com/system/resources/previews/023/986/704/non_2x/youtube-logo-youtube-logo-transparent-youtube-icon-transparent-free-free-png.png' 
+    logoUrl: 'https://static.vecteezy.com/system/resources/previews/023/986/704/non_2x/youtube-logo-youtube-logo-transparent-youtube-icon-transparent-free-free-png.png',
+    usage: 'Medium'
   },
   { 
     id: 4, 
@@ -198,7 +201,8 @@ export const DEFAULT_SUBSCRIPTIONS: Subscription[] = [
     paymentMethod: 'Credit Card', 
     website: 'https://icloud.com', 
     status: 'Active', 
-    logoUrl: 'https://images.seeklogo.com/logo-png/42/2/apple-icloud-logo-png_seeklogo-426388.png' 
+    logoUrl: 'https://images.seeklogo.com/logo-png/42/2/apple-icloud-logo-png_seeklogo-426388.png',
+    usage: 'High'
   },
   { 
     id: 5, 
@@ -213,7 +217,8 @@ export const DEFAULT_SUBSCRIPTIONS: Subscription[] = [
     paymentMethod: 'Credit Card', 
     website: 'https://openai.com', 
     status: 'Active', 
-    logoUrl: 'https://static.vecteezy.com/system/resources/previews/021/059/827/non_2x/chatgpt-logo-chat-gpt-icon-on-white-background-free-vector.jpg' 
+    logoUrl: 'https://static.vecteezy.com/system/resources/previews/021/059/827/non_2x/chatgpt-logo-chat-gpt-icon-on-white-background-free-vector.jpg',
+    usage: 'High'
   },
   { 
     id: 6, 
@@ -228,7 +233,8 @@ export const DEFAULT_SUBSCRIPTIONS: Subscription[] = [
     paymentMethod: 'Credit Card', 
     website: 'https://gemini.google.com', 
     status: 'Active', 
-    logoUrl: 'https://storage.googleapis.com/gweb-uniblog-publish-prod/images/Gemini_SparkIcon_.width-500.format-webp.webp' 
+    logoUrl: 'https://storage.googleapis.com/gweb-uniblog-publish-prod/images/Gemini_SparkIcon_.width-500.format-webp.webp',
+    usage: 'Medium'
   },
   { 
     id: 7, 
@@ -243,7 +249,8 @@ export const DEFAULT_SUBSCRIPTIONS: Subscription[] = [
     paymentMethod: 'Credit Card', 
     website: 'https://one.google.com', 
     status: 'Active', 
-    logoUrl: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRC6y-z48p4vusj2esmZvTrkIitP3EURPBhNw&s' 
+    logoUrl: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRC6y-z48p4vusj2esmZvTrkIitP3EURPBhNw&s',
+    usage: 'High'
   },
   {
     id: 8,
@@ -258,7 +265,8 @@ export const DEFAULT_SUBSCRIPTIONS: Subscription[] = [
     paymentMethod: 'Credit Card',
     website: 'https://duolingo.com',
     status: 'Inactive', 
-    logoUrl: 'https://brandlogos.net/wp-content/uploads/2023/09/duolingo_icon-logo_brandlogos.net_aru6q-512x512.png'
+    logoUrl: 'https://brandlogos.net/wp-content/uploads/2023/09/duolingo_icon-logo_brandlogos.net_aru6q-512x512.png',
+    usage: 'Unused'
   },
   {
     id: 9,
@@ -273,7 +281,8 @@ export const DEFAULT_SUBSCRIPTIONS: Subscription[] = [
     paymentMethod: 'Credit Card',
     website: '',
     status: 'Active',
-    logoUrl: 'https://play-lh.googleusercontent.com/GvLMQymwZ6JDsvTJLy6dMq52BKxefbU1TcXCBZYxLt31jopl4rgtiNJEHvOJqTps6JI'
+    logoUrl: 'https://play-lh.googleusercontent.com/GvLMQymwZ6JDsvTJLy6dMq52BKxefbU1TcXCBZYxLt31jopl4rgtiNJEHvOJqTps6JI',
+    usage: 'Low'
   },
   {
     id: 10,
@@ -288,7 +297,8 @@ export const DEFAULT_SUBSCRIPTIONS: Subscription[] = [
     paymentMethod: 'Credit Card',
     website: 'https://musclewiki.com',
     status: 'Inactive',
-    logoUrl: 'https://yt3.googleusercontent.com/erXvfFlW_lp2KzkvHi4i9a-oJNmCqJFJLqLiTbRwEbkorAD-LLANbyEZ8k7N47aHWf-F6EbJ=s900-c-k-c0x00ffffff-no-rj'
+    logoUrl: 'https://yt3.googleusercontent.com/erXvfFlW_lp2KzkvHi4i9a-oJNmCqJFJLqLiTbRwEbkorAD-LLANbyEZ8k7N47aHWf-F6EbJ=s900-c-k-c0x00ffffff-no-rj',
+    usage: 'Unused'
   },
   {
     id: 11,
@@ -303,7 +313,8 @@ export const DEFAULT_SUBSCRIPTIONS: Subscription[] = [
     paymentMethod: 'Credit Card',
     website: 'https://wanderlog.com',
     status: 'Inactive',
-    logoUrl: 'https://bookface-images.s3.amazonaws.com/small_logos/9904ae948c8e0e97d71028dcbca777328465de82.png'
+    logoUrl: 'https://bookface-images.s3.amazonaws.com/small_logos/9904ae948c8e0e97d71028dcbca777328465de82.png',
+    usage: 'Unused'
   },
   {
     id: 12,
@@ -318,6 +329,7 @@ export const DEFAULT_SUBSCRIPTIONS: Subscription[] = [
     paymentMethod: 'Credit Card',
     website: 'https://higgsfield.ai',
     status: 'Active',
-    logoUrl: 'https://avatars.githubusercontent.com/u/146205480?s=200&v=4'
+    logoUrl: 'https://avatars.githubusercontent.com/u/146205480?s=200&v=4',
+    usage: 'Low'
   }
 ];

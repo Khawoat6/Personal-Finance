@@ -1,13 +1,13 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useData } from '../hooks/useData';
 import { formatCurrency, formatDate } from '../utils/formatters';
 import type { Transaction } from '../types';
 import { Card } from '../components/ui/Card';
 import { TransactionModal } from '../components/features/TransactionModal';
-import { Edit, Trash2 } from 'lucide-react';
+import { Edit, Trash2, PlusCircle } from 'lucide-react';
 
-export const TransactionsPage: React.FC = () => {
+export const TransactionsPage: React.FC<{ setHeaderActions: (actions: React.ReactNode) => void }> = ({ setHeaderActions }) => {
     const { transactions, categories, accounts, deleteTransaction, loading } = useData();
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedMonth, setSelectedMonth] = useState<string>('all');
@@ -16,6 +16,19 @@ export const TransactionsPage: React.FC = () => {
 
     const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    
+    useEffect(() => {
+        setHeaderActions(
+             <button
+                onClick={() => setIsModalOpen(true)}
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-slate-800 dark:bg-slate-200 dark:text-slate-900 rounded-lg hover:bg-slate-700 dark:hover:bg-slate-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-slate-500 transition-colors"
+            >
+                <PlusCircle className="h-4 w-4" />
+                <span>Add Transaction</span>
+            </button>
+        );
+        return () => setHeaderActions(null);
+    }, [setHeaderActions]);
 
     const handleEdit = (transaction: Transaction) => {
         setEditingTransaction(transaction);

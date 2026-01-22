@@ -6,11 +6,14 @@ import {
   Grid, List, Calendar as CalendarIcon, Plus, ChevronDown, Edit, Trash2,
   Film, Headphones, Briefcase, PenTool, Cloud, DollarSign, Layers, CreditCard,
   Smartphone, Wallet, ExternalLink, ChevronLeft, ChevronRight, X, Repeat, TrendingUp, TrendingDown,
-  Columns3, Upload, Download
+  Columns3, Upload, Download, ArrowUpDown, PiggyBank, CircleAlert
 } from 'lucide-react';
 import { Card } from '../components/ui/Card';
+import { Modal } from '../components/ui/Modal';
 import { SubscriptionFormModal } from '../components/features/SubscriptionFormModal';
 import { ResponsiveContainer, LineChart, Line, YAxis, XAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
+
+type SortableKeys = 'name' | 'price' | 'nextPayment';
 
 // --- Helpers ---
 const getLogoUrl = (sub: Subscription) => {
@@ -31,6 +34,13 @@ const formatDateDisplay = (dateString: string) => {
   if (!dateString) return '-';
   const date = new Date(dateString);
   return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+};
+
+const formatDaysUntil = (days: number) => {
+    if (days < 0) return 'Overdue';
+    if (days === 0) return 'Today';
+    if (days === 1) return 'Tomorrow';
+    return `in ${days} days`;
 };
 
 const getCategoryIcon = (category: string) => {
@@ -126,31 +136,6 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
-const Modal: React.FC<{
-    isOpen: boolean,
-    onClose: () => void,
-    title: string,
-    children: React.ReactNode,
-    maxWidth?: string
-}> = ({ isOpen, onClose, title, children, maxWidth = "max-w-lg" }) => {
-  if (!isOpen) return null;
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm transition-all overflow-y-auto">
-      <div className={`bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl w-full ${maxWidth} overflow-hidden animate-in fade-in zoom-in-95 duration-200 border my-8`}>
-        <div className="flex justify-between items-center px-5 py-4 border-b border-slate-200/50 dark:border-slate-800 sticky top-0 bg-white dark:bg-slate-900 z-10">
-          <h3 className="text-base font-semibold text-slate-900 dark:text-white">{title}</h3>
-          <button onClick={onClose} className="text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors p-1 rounded-full">
-            <X size={18} />
-          </button>
-        </div>
-        <div className="p-6 max-h-[80vh] overflow-y-auto">
-          {children}
-        </div>
-      </div>
-    </div>
-  );
-};
-
 const Switch = ({ checked, onChange }: { checked: boolean, onChange: () => void }) => (
     <button
         type="button"
@@ -200,6 +185,7 @@ const ColumnsDropdown: React.FC<{
         { key: 'status', label: 'Status' },
         { key: 'endDate', label: 'End Date' },
         { key: 'website', label: 'Website' },
+        { key: 'usage', label: 'Usage' },
     ];
 
     return (
@@ -229,85 +215,106 @@ const ListView: React.FC<{
     onDelete: (id: string | number) => void,
     onEdit: (sub: Subscription) => void,
     visibleColumns: { [key: string]: boolean },
-    showEmail: boolean
-}> = ({ data, onDelete, onEdit, visibleColumns, showEmail }) => (
-  <Card className="overflow-x-auto">
-    <table className="min-w-full text-left">
-      <thead className="bg-slate-50/50 dark:bg-slate-900/50 border-b border-gray-100 dark:border-slate-800">
-        <tr>
-          <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Service</th>
-          {visibleColumns.category && <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Category</th>}
-          {visibleColumns.cost && <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Cost</th>}
-          {visibleColumns.billingPeriod && <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Billing Period</th>}
-          {visibleColumns.nextPaymentDate && <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Next Payment</th>}
-          {visibleColumns.status && <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Status</th>}
-          {visibleColumns.paymentMethod && <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Payment Method</th>}
-          {visibleColumns.endDate && <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">End Date</th>}
-          {visibleColumns.website && <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Website</th>}
-          <th className="px-6 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-wide">Action</th>
-        </tr>
-      </thead>
-      <tbody className="divide-y divide-gray-100 dark:divide-slate-800">
-        {data.map((sub) => (
-          <tr key={sub.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800 transition-colors group">
-            <td className="px-6 py-3.5 whitespace-nowrap">
-              <div className="flex items-center">
-                <div className="h-9 w-9 rounded-xl p-1 flex items-center justify-center overflow-hidden border shadow-sm bg-white dark:bg-slate-700 border-gray-100 dark:border-slate-600">
-                  <img src={getLogoUrl(sub)} alt={sub.name} className="h-full w-full object-contain" onError={(e) => (e.currentTarget.src = 'https://via.placeholder.com/40?text='+sub.name[0])} />
+    showEmail: boolean,
+    sortConfig: { key: SortableKeys, direction: 'asc' | 'desc' } | null,
+    requestSort: (key: SortableKeys) => void
+}> = ({ data, onDelete, onEdit, visibleColumns, showEmail, sortConfig, requestSort }) => {
+    
+    const SortableHeader: React.FC<{ columnKey: SortableKeys, label: string }> = ({ columnKey, label }) => {
+        const isSorted = sortConfig?.key === columnKey;
+        return (
+            <th scope="col" className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide cursor-pointer" onClick={() => requestSort(columnKey)}>
+                <div className="flex items-center gap-1">
+                    {label}
+                    {isSorted ? (sortConfig?.direction === 'asc' ? '▲' : '▼') : <ArrowUpDown size={12} className="opacity-50" />}
                 </div>
-                <div className="ml-3">
-                  <div className="text-sm font-semibold text-slate-900 dark:text-white">{sub.name}</div>
-                   {showEmail && sub.email && (
-                        <p className="text-xs text-slate-400 truncate max-w-[200px]">{sub.email}</p>
-                   )}
-                </div>
-              </div>
-            </td>
-            {visibleColumns.category && <td className="px-6 py-3.5 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
-                <div className="flex items-center gap-2">
-                  {getCategoryIcon(sub.category)}
-                  <span className="truncate max-w-[100px]" title={sub.category}>{sub.category}</span>
-                </div>
-            </td>}
-            {visibleColumns.cost && <td className="px-6 py-3.5 whitespace-nowrap text-sm font-semibold text-slate-900 dark:text-white">
-                {formatCurrency(sub.price)}
-            </td>}
-            {visibleColumns.billingPeriod && <td className="px-6 py-3.5 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
-                {sub.billingPeriod}
-            </td>}
-            {visibleColumns.nextPaymentDate && <td className="px-6 py-3.5 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
-                 {sub.nextPayment !== '-' ? formatDateDisplay(sub.nextPayment) : '-'}
-            </td>}
-            {visibleColumns.status && <td className="px-6 py-3.5 whitespace-nowrap">
-                 <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border ${sub.status === 'Active' ? 'bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-100 dark:border-green-900/50' : 'bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-100 dark:border-slate-700'}`}>
-                   {sub.status}
-                 </span>
-            </td>}
-            {visibleColumns.paymentMethod && <td className="px-6 py-3.5 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
-                {sub.paymentMethod}
-            </td>}
-            {visibleColumns.endDate && <td className="px-6 py-3.5 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
-                {sub.endDate ? formatDateDisplay(sub.endDate) : '-'}
-            </td>}
-            {visibleColumns.website && <td className="px-6 py-3.5 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
-                {sub.website ? <a href={sub.website} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-blue-500 hover:underline">Visit <ExternalLink size={12}/></a> : '-'}
-            </td>}
-            <td className="px-6 py-3.5 whitespace-nowrap text-right text-sm font-medium">
-              <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                <button onClick={() => onEdit(sub)} className="p-1.5 rounded-md transition-all text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700">
-                  <Edit size={16} />
-                </button>
-                <button onClick={() => onDelete(sub.id)} className="p-1.5 rounded-md transition-all text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30">
-                  <Trash2 size={16} />
-                </button>
-              </div>
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  </Card>
-);
+            </th>
+        );
+    };
+
+    return (
+        <Card className="overflow-x-auto">
+            <table className="min-w-full text-left">
+              <thead className="bg-slate-50/50 dark:bg-slate-900/50 border-b border-gray-100 dark:border-slate-800">
+                <tr>
+                  <SortableHeader columnKey="name" label="Service" />
+                  {visibleColumns.category && <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Category</th>}
+                  {visibleColumns.cost && <SortableHeader columnKey="price" label="Cost" />}
+                  {visibleColumns.billingPeriod && <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Billing Period</th>}
+                  {visibleColumns.nextPaymentDate && <SortableHeader columnKey="nextPayment" label="Next Payment" />}
+                  {visibleColumns.status && <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Status</th>}
+                  {visibleColumns.paymentMethod && <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Payment Method</th>}
+                  {visibleColumns.endDate && <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">End Date</th>}
+                  {visibleColumns.website && <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Website</th>}
+                   {visibleColumns.usage && <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Usage</th>}
+                  <th className="px-6 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-wide">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 dark:divide-slate-800">
+                {data.map((sub) => (
+                  <tr key={sub.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800 transition-colors group">
+                    <td className="px-6 py-3.5 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <div className="h-9 w-9 rounded-xl p-1 flex items-center justify-center overflow-hidden border shadow-sm bg-white dark:bg-slate-700 border-gray-100 dark:border-slate-600">
+                          <img src={getLogoUrl(sub)} alt={sub.name} className="h-full w-full object-contain" onError={(e) => (e.currentTarget.src = 'https://via.placeholder.com/40?text='+sub.name[0])} />
+                        </div>
+                        <div className="ml-3">
+                          <div className="text-sm font-semibold text-slate-900 dark:text-white">{sub.name}</div>
+                           {showEmail && sub.email && (
+                                <p className="text-xs text-slate-400 truncate max-w-[200px]">{sub.email}</p>
+                           )}
+                        </div>
+                      </div>
+                    </td>
+                    {visibleColumns.category && <td className="px-6 py-3.5 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                        <div className="flex items-center gap-2">
+                          {getCategoryIcon(sub.category)}
+                          <span className="truncate max-w-[100px]" title={sub.category}>{sub.category}</span>
+                        </div>
+                    </td>}
+                    {visibleColumns.cost && <td className="px-6 py-3.5 whitespace-nowrap text-sm font-semibold text-slate-900 dark:text-white">
+                        {formatCurrency(sub.price)}
+                    </td>}
+                    {visibleColumns.billingPeriod && <td className="px-6 py-3.5 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                        {sub.billingPeriod}
+                    </td>}
+                    {visibleColumns.nextPaymentDate && <td className="px-6 py-3.5 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                         {sub.nextPayment !== '-' ? formatDateDisplay(sub.nextPayment) : '-'}
+                    </td>}
+                    {visibleColumns.status && <td className="px-6 py-3.5 whitespace-nowrap">
+                         <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border ${sub.status === 'Active' ? 'bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-100 dark:border-green-900/50' : 'bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-100 dark:border-slate-700'}`}>
+                           {sub.status}
+                         </span>
+                    </td>}
+                    {visibleColumns.paymentMethod && <td className="px-6 py-3.5 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                        {sub.paymentMethod}
+                    </td>}
+                    {visibleColumns.endDate && <td className="px-6 py-3.5 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                        {sub.endDate ? formatDateDisplay(sub.endDate) : '-'}
+                    </td>}
+                    {visibleColumns.website && <td className="px-6 py-3.5 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                        {sub.website ? <a href={sub.website} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-blue-500 hover:underline">Visit <ExternalLink size={12}/></a> : '-'}
+                    </td>}
+                    {visibleColumns.usage && <td className="px-6 py-3.5 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                        {sub.usage || '-'}
+                    </td>}
+                    <td className="px-6 py-3.5 whitespace-nowrap text-right text-sm font-medium">
+                      <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button onClick={() => onEdit(sub)} className="p-1.5 rounded-md transition-all text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700">
+                          <Edit size={16} />
+                        </button>
+                        <button onClick={() => onDelete(sub.id)} className="p-1.5 rounded-md transition-all text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30">
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+        </Card>
+    );
+}
 
 const GridView: React.FC<{
     data: Subscription[],
@@ -421,17 +428,12 @@ const CalendarView: React.FC<{
 // --- Main Page Component ---
 export const SubscriptionsPage: React.FC = () => {
     const { subscriptions, addSubscription, updateSubscription, deleteSubscription, bulkAddSubscriptions, loading } = useData();
-    const [filters, setFilters] = useState({ status: 'All', expenseType: 'All', billingPeriod: 'All', paymentMethod: 'All' });
+    const [filters, setFilters] = useState({ status: 'All', expenseType: 'All', billingPeriod: 'All', paymentMethod: 'All', category: 'All' });
     const [viewMode, setViewMode] = useState('list');
+    const [sortConfig, setSortConfig] = useState<{ key: SortableKeys, direction: 'asc' | 'desc' } | null>(null);
     const [visibleColumns, setVisibleColumns] = useState({
-        category: true,
-        cost: true,
-        billingPeriod: true,
-        paymentMethod: true,
-        nextPaymentDate: true,
-        status: true,
-        website: true,
-        endDate: true,
+        category: true, cost: true, billingPeriod: true, paymentMethod: true,
+        nextPaymentDate: true, status: true, website: true, endDate: true, usage: true,
     });
     const [showEmail, setShowEmail] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -440,7 +442,13 @@ export const SubscriptionsPage: React.FC = () => {
     const [editingSub, setEditingSub] = useState<Subscription | null>(null);
     const [subToDelete, setSubToDelete] = useState<Subscription | null>(null);
 
+    const inactiveSubscriptions = useMemo(() => subscriptions.filter(s => s.status === 'Inactive' && s.expenseType === 'Recurring'), [subscriptions]);
     const activeSubscriptions = useMemo(() => subscriptions.filter(s => s.status === 'Active' && s.expenseType === 'Recurring'), [subscriptions]);
+    
+    const categoryOptions = useMemo(() => {
+        const categories = new Set(subscriptions.map(s => s.category));
+        return Array.from(categories).map(c => ({ value: c, label: c }));
+    }, [subscriptions]);
     
     const paymentMethodOptions = useMemo(() => {
         const methods = new Set(subscriptions.map(s => s.paymentMethod));
@@ -454,9 +462,9 @@ export const SubscriptionsPage: React.FC = () => {
                 if (filters.expenseType !== 'All' && sub.expenseType !== filters.expenseType) return false;
                 if (filters.billingPeriod !== 'All' && sub.billingPeriod !== filters.billingPeriod) return false;
                 if (filters.paymentMethod !== 'All' && sub.paymentMethod !== filters.paymentMethod) return false;
+                if (filters.category !== 'All' && sub.category !== filters.category) return false;
                 return true;
-            })
-            .sort((a, b) => new Date(b.firstPayment).getTime() - new Date(a.firstPayment).getTime());
+            });
     }, [subscriptions, filters]);
     
     const subscriptionsWithNextPayment = useMemo(() => {
@@ -484,7 +492,32 @@ export const SubscriptionsPage: React.FC = () => {
             return { ...sub, nextPayment: nextPayment.toISOString() };
         });
     }, [filteredSubscriptions]);
+    
+    const sortedSubscriptions = useMemo(() => {
+        let sortableItems = [...subscriptionsWithNextPayment];
+        if (sortConfig !== null) {
+            sortableItems.sort((a, b) => {
+                const valA = a[sortConfig.key];
+                const valB = b[sortConfig.key];
+                if (valA === '-') return 1;
+                if (valB === '-') return -1;
+                if (valA < valB) return sortConfig.direction === 'asc' ? -1 : 1;
+                if (valA > valB) return sortConfig.direction === 'asc' ? 1 : -1;
+                return 0;
+            });
+        } else {
+             sortableItems.sort((a, b) => new Date(b.firstPayment).getTime() - new Date(a.firstPayment).getTime());
+        }
+        return sortableItems;
+    }, [subscriptionsWithNextPayment, sortConfig]);
 
+    const requestSort = (key: SortableKeys) => {
+        let direction: 'asc' | 'desc' = 'asc';
+        if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
+            direction = 'desc';
+        }
+        setSortConfig({ key, direction });
+    };
 
     const summaryCards = useMemo(() => {
         const monthlyTotal = activeSubscriptions.reduce((sum, sub) => sum + (sub.billingPeriod === 'Yearly' ? sub.price / 12 : sub.price), 0);
@@ -492,43 +525,34 @@ export const SubscriptionsPage: React.FC = () => {
             const currentCost = sub.billingPeriod === 'Yearly' ? sub.price / 12 : sub.price;
             return currentCost > (max?.price ?? 0) ? { ...sub, price: currentCost } : max;
         }, { price: 0, name: '-' });
-        const mostAffordable = activeSubscriptions.reduce((min, sub) => {
-            const currentCost = sub.billingPeriod === 'Yearly' ? sub.price / 12 : sub.price;
-            return currentCost < (min?.price ?? Infinity) ? { ...sub, price: currentCost } : min;
-        }, { price: Infinity, name: '-' });
+        const potentialSavings = inactiveSubscriptions.reduce((sum, sub) => sum + (sub.billingPeriod === 'Yearly' ? sub.price / 12 : sub.price), 0);
 
         return {
             activeItems: activeSubscriptions.length,
             avgMonthly: monthlyTotal,
             mostExpensive: mostExpensive,
-            mostAffordable: mostAffordable.name === '-' ? { price: 0, name: '-' } : mostAffordable
+            potentialSavings,
         };
-    }, [activeSubscriptions]);
+    }, [activeSubscriptions, inactiveSubscriptions]);
 
     const spendingProjectionData = useMemo(() => {
         const data = [];
         const today = new Date();
-        today.setDate(1); // Normalize to the start of the month for calculations
+        today.setDate(1);
 
-        // Project past 5 months, current month, and next 6 months
         for (let i = -5; i <= 6; i++) {
             const date = new Date(today.getFullYear(), today.getMonth() + i, 1);
             const monthName = date.toLocaleString('en-US', { month: 'short' });
-
             let monthlyTotal = 0;
             subscriptions.forEach(sub => {
                 if (sub.status !== 'Active' || sub.expenseType !== 'Recurring') return;
-
                 const firstPayment = new Date(sub.firstPayment);
                 const endDate = sub.endDate ? new Date(sub.endDate) : null;
-
                 const isActiveInMonth = firstPayment <= date && (!endDate || endDate >= date);
-                
                 if (isActiveInMonth) {
                     monthlyTotal += sub.billingPeriod === 'Yearly' ? sub.price / 12 : sub.price;
                 }
             });
-
             data.push({ 
                 name: monthName, 
                 past: i <= 0 ? monthlyTotal : undefined,
@@ -548,21 +572,19 @@ export const SubscriptionsPage: React.FC = () => {
     }, [activeSubscriptions]);
 
     const upcomingPayments = useMemo(() => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Normalize today's date
          return activeSubscriptions.map(sub => {
-             const today = new Date();
              const firstPayment = new Date(sub.firstPayment);
-             let nextPayment = new Date(firstPayment); // clone date
+             let nextPayment = new Date(firstPayment); 
              if (sub.billingPeriod === 'Monthly') {
-                 while (nextPayment < today) {
-                     nextPayment.setMonth(nextPayment.getMonth() + 1);
-                 }
-             } else { // Yearly
-                 while (nextPayment < today) {
-                     nextPayment.setFullYear(nextPayment.getFullYear() + 1);
-                 }
+                 while (nextPayment < today) nextPayment.setMonth(nextPayment.getMonth() + 1);
+             } else {
+                 while (nextPayment < today) nextPayment.setFullYear(nextPayment.getFullYear() + 1);
              }
-             return { ...sub, nextPayment: nextPayment.toISOString() };
-         }).sort((a,b) => new Date(a.nextPayment).getTime() - new Date(b.nextPayment).getTime()).slice(0, 5);
+             const daysUntil = Math.ceil((nextPayment.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+             return { ...sub, nextPayment: nextPayment.toISOString(), daysUntil };
+         }).sort((a,b) => a.daysUntil - b.daysUntil).slice(0, 5);
     }, [activeSubscriptions]);
     
     const paymentMethods = useMemo(() => {
@@ -575,42 +597,20 @@ export const SubscriptionsPage: React.FC = () => {
         return Array.from(methodMap.entries()).map(([name, data]) => ({ name, ...data })).sort((a, b) => b.total - a.total);
     }, [activeSubscriptions]);
     
-    const handleAdd = () => {
-        setEditingSub(null);
-        setAddModalOpen(true);
-    };
-
-    const handleEdit = (sub: Subscription) => {
-        setEditingSub(sub);
-        setAddModalOpen(true);
-    };
-
-    const handleDelete = (id: number | string) => {
-        const sub = subscriptions.find(s => s.id === id);
-        if (sub) setSubToDelete(sub);
-    };
-
-    const confirmDelete = () => {
-        if (subToDelete) {
-            deleteSubscription(subToDelete.id);
-            setSubToDelete(null);
-        }
-    };
+    const handleAdd = () => { setEditingSub(null); setAddModalOpen(true); };
+    const handleEdit = (sub: Subscription) => { setEditingSub(sub); setAddModalOpen(true); };
+    const handleDelete = (id: number | string) => { const sub = subscriptions.find(s => s.id === id); if (sub) setSubToDelete(sub); };
+    const confirmDelete = () => { if (subToDelete) { deleteSubscription(subToDelete.id); setSubToDelete(null); } };
+    const handleImportClick = () => { fileInputRef.current?.click(); };
     
     const handleExportCSV = () => {
-        const headers = ['id', 'name', 'category', 'price', 'expenseType', 'billingPeriod', 'billingDay', 'firstPayment', 'endDate', 'paymentMethod', 'website', 'status', 'logoUrl', 'email', 'signupMethod', 'signupIdentifier'];
+        const headers = ['id', 'name', 'category', 'price', 'expenseType', 'billingPeriod', 'billingDay', 'firstPayment', 'endDate', 'paymentMethod', 'website', 'status', 'logoUrl', 'email', 'signupMethod', 'signupIdentifier', 'usage'];
         const escapeCSV = (value: any) => {
           const str = String(value ?? '');
-          if (str.includes(',') || str.includes('"') || str.includes('\n')) {
-            return `"${str.replace(/"/g, '""')}"`;
-          }
+          if (str.includes(',') || str.includes('"') || str.includes('\n')) return `"${str.replace(/"/g, '""')}"`;
           return str;
         };
-        const csvContent = [
-            headers.join(','),
-            ...subscriptions.map(sub => headers.map(header => escapeCSV(sub[header as keyof Subscription])).join(','))
-        ].join('\n');
-        
+        const csvContent = [ headers.join(','), ...subscriptions.map(sub => headers.map(header => escapeCSV(sub[header as keyof Subscription])).join(','))].join('\n');
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement("a");
         const url = URL.createObjectURL(blob);
@@ -621,59 +621,39 @@ export const SubscriptionsPage: React.FC = () => {
         link.click();
         document.body.removeChild(link);
     };
-    
-    const handleImportClick = () => {
-        fileInputRef.current?.click();
-    };
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (!file) return;
-
+        const file = event.target.files?.[0]; if (!file) return;
         const reader = new FileReader();
         reader.onload = async (e) => {
             try {
-                const text = e.target?.result as string;
-                const lines = text.trim().split(/\r?\n/);
-                const header = lines[0].split(',').map(h => h.trim());
-                const rows = lines.slice(1);
-                
+                const text = e.target?.result as string; const lines = text.trim().split(/\r?\n/);
+                const header = lines[0].split(',').map(h => h.trim()); const rows = lines.slice(1);
                 const subsToImport: Omit<Subscription, 'id'>[] = rows.map(row => {
-                    const values = row.split(','); // Simplified parsing, assumes no commas in values
-                    const subObject: any = {};
+                    const values = row.split(','); const subObject: any = {};
                     header.forEach((key, index) => {
                         let value: any = values[index];
                         if (key === 'price' || key === 'billingDay') value = parseFloat(value) || 0;
                         subObject[key] = value;
-                    });
-                    return subObject;
+                    }); return subObject;
                 });
-                
                 if(window.confirm(`Found ${subsToImport.length} subscriptions to import. Do you want to proceed?`)){
-                    await bulkAddSubscriptions(subsToImport);
-                    alert("Import successful!");
+                    await bulkAddSubscriptions(subsToImport); alert("Import successful!");
                 }
-            } catch (error) {
-                alert('Failed to import CSV. Please check the file format.');
-                console.error(error);
-            } finally {
-                if(fileInputRef.current) fileInputRef.current.value = "";
-            }
-        };
-        reader.readAsText(file);
+            } catch (error) { alert('Failed to import CSV. Please check the file format.'); console.error(error);
+            } finally { if(fileInputRef.current) fileInputRef.current.value = ""; }
+        }; reader.readAsText(file);
     };
 
-    if (loading) {
-        return <div className="text-center p-10">Loading subscriptions...</div>;
-    }
+    if (loading) return <div className="text-center p-10">Loading subscriptions...</div>;
 
     return (
         <div className="space-y-6">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                 <Card className="col-span-2 md:col-span-1"><h4 className="text-sm text-slate-500">Active Items</h4><p className="text-2xl font-bold">{summaryCards.activeItems}</p></Card>
-                 <Card className="col-span-2 md:col-span-1"><h4 className="text-sm text-slate-500">Avg. Monthly Expenses</h4><p className="text-2xl font-bold">{formatCurrency(summaryCards.avgMonthly)}</p></Card>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                 <Card><h4 className="text-sm text-slate-500">Active Items</h4><p className="text-2xl font-bold">{summaryCards.activeItems}</p></Card>
+                 <Card><h4 className="text-sm text-slate-500">Avg. Monthly Expenses</h4><p className="text-2xl font-bold">{formatCurrency(summaryCards.avgMonthly)}</p></Card>
                  <Card><div className="flex justify-between items-center"><h4 className="text-sm text-slate-500">Most Expensive</h4><TrendingUp className="text-red-500" size={18}/></div><p className="text-lg font-bold">{formatCurrency(summaryCards.mostExpensive.price)}</p><p className="text-xs text-slate-400 truncate">{summaryCards.mostExpensive.name}</p></Card>
-                 <Card><div className="flex justify-between items-center"><h4 className="text-sm text-slate-500">Most Affordable</h4><TrendingDown className="text-green-500" size={18}/></div><p className="text-lg font-bold">{formatCurrency(summaryCards.mostAffordable.price)}</p><p className="text-xs text-slate-400 truncate">{summaryCards.mostAffordable.name}</p></Card>
+                 <Card><div className="flex justify-between items-center"><h4 className="text-sm text-slate-500">Potential Savings</h4><PiggyBank className="text-green-500" size={18}/></div><p className="text-lg font-bold">{formatCurrency(summaryCards.potentialSavings)}</p><p className="text-xs text-slate-400">from inactive subs</p></Card>
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
@@ -686,45 +666,31 @@ export const SubscriptionsPage: React.FC = () => {
                              <YAxis fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => formatCurrency(Number(value))}/>
                              <Tooltip content={<CustomTooltip />} />
                              <Legend formatter={(value) => value === 'past' ? 'Past & Current' : 'Forecast'} />
-                             <Line 
-                                 type="monotone" 
-                                 dataKey="past" 
-                                 stroke="#8b5cf6" 
-                                 strokeWidth={2} 
-                                 dot={{ r: 4 }} 
-                                 activeDot={{ r: 6 }} 
-                                 name="Past & Current"
-                             />
-                            <Line 
-                                 type="monotone" 
-                                 dataKey="forecast" 
-                                 stroke="#8b5cf6" 
-                                 strokeWidth={2} 
-                                 strokeDasharray="5 5"
-                                 dot={false}
-                                 activeDot={{ r: 6 }}
-                                 name="Forecast"
-                             />
+                             <Line type="monotone" dataKey="past" stroke="#8b5cf6" strokeWidth={2} dot={{ r: 4 }} activeDot={{ r: 6 }} name="Past & Current" />
+                             <Line type="monotone" dataKey="forecast" stroke="#8b5cf6" strokeWidth={2} strokeDasharray="5 5" dot={false} activeDot={{ r: 6 }} name="Forecast" />
                          </LineChart>
                      </ResponsiveContainer>
                  </Card>
                  <Card className="lg:col-span-2">
-                    <h3 className="text-lg font-semibold mb-4">Upcoming Payments</h3>
-                    <div className="space-y-3">
-                        {upcomingPayments.map((sub) => (
-                            <div key={sub.id} className="flex items-center justify-between text-sm">
-                              <div className="flex items-center overflow-hidden">
-                                <div className="h-8 w-8 rounded-lg p-1 flex-shrink-0 flex items-center justify-center overflow-hidden border shadow-sm bg-white dark:bg-slate-700 border-gray-100 dark:border-slate-600 mr-3">
-                                    <img src={getLogoUrl(sub)} alt={sub.name} className="h-full w-full object-contain" onError={(e) => (e.currentTarget.src = 'https://via.placeholder.com/40?text='+sub.name[0])} />
+                    <h3 className="text-lg font-semibold mb-4 flex items-center gap-2"><CircleAlert size={18} className="text-amber-500" /> Upcoming Payments</h3>
+                    <div className="space-y-2">
+                        {upcomingPayments.map((sub) => {
+                            const urgencyColor = sub.daysUntil <= 2 ? 'border-red-500/50 bg-red-500/10' : sub.daysUntil <= 7 ? 'border-amber-500/50 bg-amber-500/10' : 'border-transparent';
+                            return (
+                                <div key={sub.id} className={`flex items-center justify-between p-2 rounded-lg border ${urgencyColor}`}>
+                                  <div className="flex items-center overflow-hidden">
+                                    <div className="h-8 w-8 rounded-lg p-1 flex-shrink-0 flex items-center justify-center overflow-hidden border shadow-sm bg-white dark:bg-slate-700 border-gray-100 dark:border-slate-600 mr-3">
+                                        <img src={getLogoUrl(sub)} alt={sub.name} className="h-full w-full object-contain" onError={(e) => (e.currentTarget.src = 'https://via.placeholder.com/40?text='+sub.name[0])} />
+                                    </div>
+                                    <div className="truncate">
+                                        <p className="font-semibold text-sm text-slate-900 dark:text-white truncate">{sub.name}</p>
+                                        <p className={`text-xs font-semibold ${sub.daysUntil <= 2 ? 'text-red-500' : sub.daysUntil <= 7 ? 'text-amber-500' : 'text-slate-500 dark:text-slate-400'}`}>{formatDaysUntil(sub.daysUntil)}</p>
+                                    </div>
+                                  </div>
+                                  <span className="font-semibold text-slate-900 dark:text-white text-sm pl-2">{formatCurrency(sub.price)}</span>
                                 </div>
-                                <div className="truncate">
-                                    <p className="font-semibold text-slate-900 dark:text-white truncate">{sub.name}</p>
-                                    <p className="text-xs text-slate-500 dark:text-slate-400">{formatDateDisplay(sub.nextPayment)}</p>
-                                </div>
-                              </div>
-                              <span className="font-semibold text-slate-900 dark:text-white pl-2">{formatCurrency(sub.price)}</span>
-                            </div>
-                        ))}
+                            )
+                        })}
                     </div>
                  </Card>
             </div>
@@ -734,7 +700,7 @@ export const SubscriptionsPage: React.FC = () => {
                     <h3 className="text-lg font-semibold mb-4">Category Breakdown</h3>
                     <div className="space-y-2">
                         {categoryBreakdownData.slice(0, 10).map((item) => (
-                            <div key={item.name} className="flex items-center justify-between text-sm p-2 rounded-lg transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                            <button key={item.name} onClick={() => setFilters(p => ({...p, category: item.name}))} className="w-full flex items-center justify-between text-sm p-2 rounded-lg transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50 text-left">
                                 <div className="flex items-center gap-3 truncate">
                                     <div className="w-8 h-8 flex-shrink-0 bg-slate-100 dark:bg-slate-700/50 rounded-lg flex items-center justify-center">
                                         {getCategoryIcon(item.name)}
@@ -742,7 +708,7 @@ export const SubscriptionsPage: React.FC = () => {
                                     <span className="font-medium text-slate-700 dark:text-slate-300 truncate">{item.name}</span>
                                 </div>
                                 <span className="font-semibold text-slate-800 dark:text-slate-200 tracking-tight">{formatCurrency(item.value)}</span>
-                            </div>
+                            </button>
                         ))}
                     </div>
                 </Card>
@@ -769,24 +735,17 @@ export const SubscriptionsPage: React.FC = () => {
                     <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">All Subscriptions</h2>
                      <div className="flex items-center gap-2">
                         <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept=".csv" />
-                        <button onClick={handleImportClick} className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-700/50 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700">
-                            <Upload className="h-4 w-4" />
-                        </button>
-                        <button onClick={handleExportCSV} className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-700/50 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700">
-                            <Download className="h-4 w-4" />
-                        </button>
-                        <button onClick={handleAdd} className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-slate-800 dark:bg-slate-200 dark:text-slate-900 rounded-lg hover:bg-slate-700 dark:hover:bg-slate-300">
-                            <Plus className="h-4 w-4" /> Add Subscription
-                        </button>
+                        <button onClick={handleImportClick} className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-700/50 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700"><Upload className="h-4 w-4" /></button>
+                        <button onClick={handleExportCSV} className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-700/50 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700"><Download className="h-4 w-4" /></button>
+                        <button onClick={handleAdd} className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-slate-800 dark:bg-slate-200 dark:text-slate-900 rounded-lg hover:bg-slate-700 dark:hover:bg-slate-300"><Plus className="h-4 w-4" /> Add Subscription</button>
                     </div>
                 </div>
-
                 <div className="border-t dark:border-slate-700 my-4"></div>
-
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div className="flex items-center gap-2 flex-wrap">
                         <span className="text-sm font-medium text-slate-500">Filter:</span>
                         <FilterDropdown title="All Status" value={filters.status} onChange={(v) => setFilters(p => ({...p, status: v}))} options={[{value: 'All', label: 'All Status'}, {value: 'Active', label: 'Active'}, {value: 'Inactive', label: 'Inactive'}]} />
+                        <FilterDropdown title="All Categories" value={filters.category} onChange={(v) => setFilters(p => ({...p, category: v}))} options={[{value: 'All', label: 'All Categories'}, ...categoryOptions]} />
                         <FilterDropdown title="All Types" value={filters.expenseType} onChange={(v) => setFilters(p => ({...p, expenseType: v}))} options={[{value: 'All', label: 'All Types'}, {value: 'Recurring', label: 'Recurring'}, {value: 'One-Time', label: 'One-Time'}]} />
                         <FilterDropdown title="All Periods" value={filters.billingPeriod} onChange={(v) => setFilters(p => ({...p, billingPeriod: v}))} options={[{value: 'All', label: 'All Periods'}, {value: 'Monthly', label: 'Monthly'}, {value: 'Yearly', label: 'Yearly'}]} />
                         <FilterDropdown title="All Payment Methods" value={filters.paymentMethod} onChange={(v) => setFilters(p => ({...p, paymentMethod: v}))} options={[{value: 'All', label: 'All Payment Methods'}, ...paymentMethodOptions]} />
@@ -810,19 +769,16 @@ export const SubscriptionsPage: React.FC = () => {
                 </div>
             </Card>
 
-            {viewMode === 'list' && <ListView data={subscriptionsWithNextPayment} onDelete={handleDelete} onEdit={handleEdit} visibleColumns={visibleColumns} showEmail={showEmail} />}
-            {viewMode === 'grid' && <GridView data={filteredSubscriptions} onDelete={handleDelete} onEdit={handleEdit} />}
-            {viewMode === 'calendar' && <CalendarView data={filteredSubscriptions} onEdit={handleEdit} />}
+            {viewMode === 'list' && <ListView data={sortedSubscriptions} onDelete={handleDelete} onEdit={handleEdit} visibleColumns={visibleColumns} showEmail={showEmail} sortConfig={sortConfig} requestSort={requestSort} />}
+            {viewMode === 'grid' && <GridView data={sortedSubscriptions} onDelete={handleDelete} onEdit={handleEdit} />}
+            {viewMode === 'calendar' && <CalendarView data={sortedSubscriptions} onEdit={handleEdit} />}
             
             <SubscriptionFormModal 
                 isOpen={isAddModalOpen} 
                 onClose={() => setAddModalOpen(false)}
                 onSave={async (subData) => {
-                    if (editingSub) {
-                        await updateSubscription({ ...editingSub, ...subData });
-                    } else {
-                        await addSubscription(subData);
-                    }
+                    if (editingSub) { await updateSubscription({ ...editingSub, ...subData }); } 
+                    else { await addSubscription(subData); }
                     setAddModalOpen(false);
                 }}
                 subscription={editingSub}

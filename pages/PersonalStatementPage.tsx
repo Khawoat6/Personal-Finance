@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { useData } from '../hooks/useData';
 import { Card } from '../components/ui/Card';
@@ -151,19 +152,3 @@ export const PersonalStatementPage: React.FC = () => {
         </div>
     );
 };
-
-// Dummy Lucide Icons
-// FIX: Update createLucideIcon to handle the 'size' prop for width and height.
-const createLucideIcon = (name: string, path: React.ReactNode) => {
-    const Icon: React.FC<React.SVGProps<SVGSVGElement> & { size?: number | string }> = ({ size, ...props }) => (
-        <svg {...props} xmlns="http://www.w3.org/2000/svg" width={size ?? 24} height={size ?? 24} viewBox="0 0 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            {path}
-            <title>{name}</title>
-        </svg>
-    );
-    Icon.displayName = name;
-    return Icon;
-};
-
-const ChevronDown = createLucideIcon('ChevronDown', <polyline points="6 9 12 15 18 9"></polyline>);
-const ChevronRight = createLucideIcon('ChevronRight', <polyline points="9 18 15 12 9 6"></polyline>);
