@@ -7,9 +7,9 @@ import {
     Trophy,
     GanttChart,
     ChartPie,
-    ReceiptText,
-    ShieldHalf,
     WalletCards,
+    ClipboardList,
+    Settings,
 } from 'lucide-react';
 import { AppLogo } from '../ui/AppLogo';
 
@@ -19,17 +19,22 @@ const navGroups = [
         items: [
             { to: '/dashboard', label: 'Home', icon: LayoutDashboard },
             { to: '/transactions', label: 'Spending', icon: Wallet },
+            { to: '/budgets', label: 'Budgets', icon: ClipboardList },
             { to: '/goals', label: 'Goals', icon: Trophy },
+        ]
+    },
+    {
+        title: 'REPORTS',
+        items: [
             { to: '/reports', label: 'Forecast', icon: GanttChart },
             { to: '/statement', label: 'Statement', icon: ChartPie },
         ]
     },
     {
-        title: 'SERVICES',
+        title: 'MANAGE',
         items: [
-            { to: '/subscriptions', label: 'Subscription', icon: WalletCards },
-            { to: '/budgets', label: 'Estate Planning', icon: ShieldHalf },
-            { to: '/settings', label: 'Tax', icon: ReceiptText },
+            { to: '/subscriptions', label: 'Subscriptions', icon: WalletCards },
+            { to: '/settings', label: 'Settings', icon: Settings },
         ]
     }
 ];

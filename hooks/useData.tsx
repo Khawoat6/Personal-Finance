@@ -16,6 +16,7 @@ interface DataContextType extends AppData {
     addGoal: (goal: Omit<Goal, 'id'>) => Promise<void>;
     updateGoal: (goal: Goal) => Promise<void>;
     deleteGoal: (id: string) => Promise<void>;
+    contributeToGoal: (goalId: string, amount: number, accountId: string) => Promise<void>;
     addSubscription: (subscription: Omit<Subscription, 'id'>) => Promise<void>;
     updateSubscription: (subscription: Subscription) => Promise<void>;
     deleteSubscription: (id: number | string) => Promise<void>;
@@ -166,6 +167,45 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         const newData = { ...data, goals: newGoals };
         await saveData(newData);
     };
+
+    const contributeToGoal = async (goalId: string, amount: number, accountId: string) => {
+        const goal = data.goals.find(g => g.id === goalId);
+        const account = data.accounts.find(a => a.id === accountId);
+
+        if (!goal || !account) {
+            console.error("Goal or account not found");
+            return;
+        }
+
+        if (account.balance < amount) {
+            alert("Insufficient funds in the selected account.");
+            return;
+        }
+
+        // 1. Update Goal
+        const updatedGoal: Goal = { ...goal, currentAmount: goal.currentAmount + amount };
+        const newGoals = data.goals.map(g => (g.id === goalId ? updatedGoal : g));
+
+        // 2. Create Transaction for the contribution
+        const newTransaction: Transaction = {
+            id: `tx-${Date.now()}`,
+            date: new Date().toISOString(),
+            amount: amount,
+            type: 'expense',
+            categoryId: 'saving', // This is the ID for "4. Saving – เก็บออม"
+            accountId: accountId,
+            note: `Contribution to goal: ${goal.name}`,
+        };
+        const newTransactions = [...data.transactions, newTransaction];
+
+        // 3. Update Account Balance
+        const updatedAccount: Account = { ...account, balance: account.balance - amount };
+        const newAccounts = data.accounts.map(a => (a.id === accountId ? updatedAccount : a));
+
+        // 4. Save all changes
+        const newData = { ...data, goals: newGoals, transactions: newTransactions, accounts: newAccounts };
+        await saveData(newData);
+    };
     
     const addSubscription = async (subscription: Omit<Subscription, 'id'>) => {
         const newSubscription: Subscription = { ...subscription, id: `sub-${Date.now()}` };
@@ -214,6 +254,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         addGoal,
         updateGoal,
         deleteGoal,
+        contributeToGoal,
         addSubscription,
         updateSubscription,
         deleteSubscription,
