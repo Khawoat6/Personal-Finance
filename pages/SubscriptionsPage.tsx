@@ -3,10 +3,10 @@ import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useData } from '../hooks/useData';
 import type { Subscription } from '../types';
 import { 
-  Grid, List, Calendar as CalendarIcon, Plus, ChevronDown, Edit, Trash2,
-  Film, Headphones, Briefcase, PenTool, Cloud, DollarSign, Layers, CreditCard,
-  Smartphone, Wallet, ExternalLink, ChevronLeft, ChevronRight, X, Repeat, TrendingUp, TrendingDown,
-  Columns3, Upload, Download, ArrowUpDown, PiggyBank, CircleAlert
+  AppWindow, Rows3, CalendarDays, PlusSquare, ChevronDown, FilePenLine, Trash2,
+  Clapperboard, Music2, Laptop, Paintbrush, CloudCog, BadgeDollarSign, Package, CreditCard,
+  Wallet, WalletCards, ExternalLink, ChevronLeft, ChevronRight, X, TrendingUp,
+  LayoutGrid, FileUp, FileDown, ChevronsUpDown, PiggyBank, CircleAlert
 } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { Modal } from '../components/ui/Modal';
@@ -46,14 +46,14 @@ const formatDaysUntil = (days: number) => {
 const getCategoryIcon = (category: string) => {
   const iconProps = { size: 18, className: "text-slate-500 dark:text-slate-400" };
   switch (category) {
-    case 'Entertainment': return <Film {...iconProps} />;
-    case 'Music': case 'Music Streaming': return <Headphones {...iconProps} />;
-    case 'Productivity': case 'Task Management': return <Briefcase {...iconProps} />;
-    case 'Design': case 'Art': return <PenTool {...iconProps} />;
-    case 'Cloud Storage': case 'Hosting': return <Cloud {...iconProps} />;
-    case 'Finance': case 'Banking': case 'Investing': return <DollarSign {...iconProps} />;
-    case 'Video': case 'Video Streaming': return <Film {...iconProps} />;
-    default: return <Layers {...iconProps} />;
+    case 'Entertainment': return <Clapperboard {...iconProps} />;
+    case 'Music': case 'Music Streaming': return <Music2 {...iconProps} />;
+    case 'Productivity': case 'Task Management': return <Laptop {...iconProps} />;
+    case 'Design': case 'Art': return <Paintbrush {...iconProps} />;
+    case 'Cloud Storage': case 'Hosting': return <CloudCog {...iconProps} />;
+    case 'Finance': case 'Banking': case 'Investing': return <BadgeDollarSign {...iconProps} />;
+    case 'Video': case 'Video Streaming': return <Clapperboard {...iconProps} />;
+    default: return <Package {...iconProps} />;
   }
 };
 
@@ -61,12 +61,7 @@ const getPaymentMethodIcon = (method: string) => {
     const iconProps = { size: 24, className: "text-slate-600 dark:text-slate-400" };
     switch (method.toLowerCase()) {
         case 'credit card': return <CreditCard {...iconProps} />;
-        case 'debit card': return (
-            <div className="w-6 h-6 relative flex items-center justify-center">
-                <div className="w-5 h-5 rounded-full bg-red-500 absolute left-0.5"></div>
-                <div className="w-5 h-5 rounded-full bg-yellow-400 opacity-80 absolute right-0.5"></div>
-            </div>
-        );
+        case 'debit card': return <WalletCards {...iconProps} />;
         default: return <Wallet {...iconProps} />;
     }
 };
@@ -191,7 +186,7 @@ const ColumnsDropdown: React.FC<{
     return (
         <div className="relative" ref={ref}>
             <button onClick={() => setIsOpen(!isOpen)} className="flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all text-sm bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700">
-               <Columns3 size={16} /> Columns <ChevronDown size={16} />
+               <LayoutGrid size={16} /> Columns <ChevronDown size={16} />
             </button>
             {isOpen && (
                 <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-slate-800 rounded-lg shadow-xl border dark:border-slate-700 z-20">
@@ -226,7 +221,7 @@ const ListView: React.FC<{
             <th scope="col" className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide cursor-pointer" onClick={() => requestSort(columnKey)}>
                 <div className="flex items-center gap-1">
                     {label}
-                    {isSorted ? (sortConfig?.direction === 'asc' ? '▲' : '▼') : <ArrowUpDown size={12} className="opacity-50" />}
+                    {isSorted ? (sortConfig?.direction === 'asc' ? '▲' : '▼') : <ChevronsUpDown size={12} className="opacity-50" />}
                 </div>
             </th>
         );
@@ -301,7 +296,7 @@ const ListView: React.FC<{
                     <td className="px-6 py-3.5 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button onClick={() => onEdit(sub)} className="p-1.5 rounded-md transition-all text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700">
-                          <Edit size={16} />
+                          <FilePenLine size={16} />
                         </button>
                         <button onClick={() => onDelete(sub.id)} className="p-1.5 rounded-md transition-all text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30">
                           <Trash2 size={16} />
@@ -330,7 +325,7 @@ const GridView: React.FC<{
           </div>
           <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity absolute top-4 right-4 backdrop-blur-sm p-1 rounded-lg border shadow-sm bg-white/80 dark:bg-slate-900/80 border-gray-100 dark:border-slate-700">
              <button onClick={() => onEdit(sub)} className="p-1 text-slate-400 dark:hover:text-white hover:text-slate-900">
-              <Edit size={14} />
+              <FilePenLine size={14} />
             </button>
             <button onClick={() => onDelete(sub.id)} className="p-1 text-slate-400 dark:hover:text-red-400 hover:text-red-600">
               <Trash2 size={14} />
@@ -735,9 +730,9 @@ export const SubscriptionsPage: React.FC = () => {
                     <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">All Subscriptions</h2>
                      <div className="flex items-center gap-2">
                         <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept=".csv" />
-                        <button onClick={handleImportClick} className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-700/50 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700"><Upload className="h-4 w-4" /></button>
-                        <button onClick={handleExportCSV} className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-700/50 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700"><Download className="h-4 w-4" /></button>
-                        <button onClick={handleAdd} className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-slate-800 dark:bg-slate-200 dark:text-slate-900 rounded-lg hover:bg-slate-700 dark:hover:bg-slate-300"><Plus className="h-4 w-4" /> Add Subscription</button>
+                        <button onClick={handleImportClick} className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-700/50 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700"><FileUp className="h-4 w-4" /></button>
+                        <button onClick={handleExportCSV} className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-700/50 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700"><FileDown className="h-4 w-4" /></button>
+                        <button onClick={handleAdd} className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-slate-800 dark:bg-slate-200 dark:text-slate-900 rounded-lg hover:bg-slate-700 dark:hover:bg-slate-300"><PlusSquare className="h-4 w-4" /> Add Subscription</button>
                     </div>
                 </div>
                 <div className="border-t dark:border-slate-700 my-4"></div>
@@ -761,9 +756,9 @@ export const SubscriptionsPage: React.FC = () => {
                             </div>
                          )}
                         <div className="p-1 rounded-lg flex bg-slate-100 dark:bg-slate-800">
-                            <button onClick={() => setViewMode('list')} className={`px-3 py-1.5 rounded-md transition-all text-sm flex items-center gap-2 ${viewMode === 'list' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500'}`}><List size={16} /> List</button>
-                            <button onClick={() => setViewMode('grid')} className={`px-3 py-1.5 rounded-md transition-all text-sm flex items-center gap-2 ${viewMode === 'grid' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500'}`}><Grid size={16} /> Grid</button>
-                            <button onClick={() => setViewMode('calendar')} className={`px-3 py-1.5 rounded-md transition-all text-sm flex items-center gap-2 ${viewMode === 'calendar' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500'}`}><CalendarIcon size={16} /> Calendar</button>
+                            <button onClick={() => setViewMode('list')} className={`px-3 py-1.5 rounded-md transition-all text-sm flex items-center gap-2 ${viewMode === 'list' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500'}`}><Rows3 size={16} /> List</button>
+                            <button onClick={() => setViewMode('grid')} className={`px-3 py-1.5 rounded-md transition-all text-sm flex items-center gap-2 ${viewMode === 'grid' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500'}`}><AppWindow size={16} /> Grid</button>
+                            <button onClick={() => setViewMode('calendar')} className={`px-3 py-1.5 rounded-md transition-all text-sm flex items-center gap-2 ${viewMode === 'calendar' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500'}`}><CalendarDays size={16} /> Calendar</button>
                         </div>
                     </div>
                 </div>

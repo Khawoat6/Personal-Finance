@@ -40,6 +40,7 @@ export interface Goal {
   targetAmount: number;
   currentAmount: number;
   deadline: string; // ISO 8601 format
+  category?: string;
 }
 
 export interface Subscription {

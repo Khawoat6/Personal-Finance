@@ -5,7 +5,7 @@ import { formatCurrency, formatDate } from '../utils/formatters';
 import type { Transaction } from '../types';
 import { Card } from '../components/ui/Card';
 import { TransactionModal } from '../components/features/TransactionModal';
-import { Edit, Trash2, PlusCircle } from 'lucide-react';
+import { Pencil, Trash, PlusCircle } from 'lucide-react';
 
 export const TransactionsPage: React.FC<{ setHeaderActions: (actions: React.ReactNode) => void }> = ({ setHeaderActions }) => {
     const { transactions, categories, accounts, deleteTransaction, loading } = useData();
@@ -126,10 +126,10 @@ export const TransactionsPage: React.FC<{ setHeaderActions: (actions: React.Reac
                                         <td className="px-6 py-4 text-center">
                                             <div className="flex items-center justify-center space-x-2">
                                                 <button onClick={() => handleEdit(t)} className="p-1.5 rounded-md hover:bg-slate-200 dark:hover:bg-slate-700">
-                                                    <Edit className="h-4 w-4 text-slate-500" />
+                                                    <Pencil className="h-4 w-4 text-slate-500" />
                                                 </button>
                                                 <button onClick={() => handleDelete(t.id)} className="p-1.5 rounded-md hover:bg-red-100 dark:hover:bg-red-900/50">
-                                                    <Trash2 className="h-4 w-4 text-red-500" />
+                                                    <Trash className="h-4 w-4 text-red-500" />
                                                 </button>
                                             </div>
                                         </td>

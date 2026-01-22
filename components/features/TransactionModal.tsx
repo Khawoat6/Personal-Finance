@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import type { Transaction } from '../../types';
 import { useData } from '../../hooks/useData';
-import { X } from 'lucide-react';
+import { XCircle } from 'lucide-react';
 
 interface TransactionModalProps {
     isOpen: boolean;
@@ -69,7 +69,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
                         {transaction ? 'Edit Transaction' : 'Add Transaction'}
                     </h2>
                     <button onClick={onClose} className="p-1 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700">
-                        <X className="h-5 w-5 text-slate-500 dark:text-slate-400" />
+                        <XCircle className="h-5 w-5 text-slate-500 dark:text-slate-400" />
                     </button>
                 </div>
                 <form onSubmit={handleSubmit}>

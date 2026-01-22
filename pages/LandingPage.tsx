@@ -2,17 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
-
-const OriginLogo = ({ className = '' }: { className?: string }) => (
-    <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
-        <path d="M14 25.6667C20.4434 25.6667 25.6667 20.4434 25.6667 14C25.6667 7.55663 20.4434 2.33331 14 2.33331C7.55663 2.33331 2.33334 7.55663 2.33334 14C2.33334 20.4434 7.55663 25.6667 14 25.6667Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-        <path d="M17.5 15.1667C17.5 17.1325 15.9325 18.6667 14 18.6667C12.0675 18.6667 10.5 17.1325 10.5 15.1667C10.5 13.2008 12.0675 11.6667 14 11.6667C15.9325 11.6667 17.5 13.2008 17.5 15.1667Z" stroke="currentColor" strokeWidth="2"/>
-        <path d="M10.5 15.1667H5.83334" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-        <path d="M22.1667 15.1667H17.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-        <path d="M14 11.6667V7" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-        <path d="M14 21V18.6667" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-    </svg>
-);
+import { AppLogo } from '../components/ui/AppLogo';
 
 const LandingHeader: React.FC = () => {
     const [isScrolled, setIsScrolled] = useState(false);
@@ -29,8 +19,8 @@ const LandingHeader: React.FC = () => {
         <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? 'bg-zinc-900/80 backdrop-blur-sm shadow-lg' : 'bg-transparent'}`}>
             <div className="container mx-auto px-6 py-4 flex justify-between items-center">
                 <div className="flex items-center gap-3">
-                    <OriginLogo />
-                    <span className="text-xl font-medium text-white">Origin</span>
+                    <AppLogo />
+                    <span className="text-xl font-medium text-white">Nova Folio</span>
                 </div>
                 <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-zinc-300">
                     <a href="#" className="hover:text-white transition-colors">Products</a>
@@ -69,7 +59,7 @@ const SimplifySection: React.FC = () => (
     <section className="py-20 md:py-32 text-center">
         <h2 className="text-5xl md:text-6xl font-serif italic">Simplify your money</h2>
         <div className="mt-12 px-6">
-            <img src="https://storage.googleapis.com/maker-LLM-tool-responses/origin-app-simplify.png" alt="Origin App on phone" className="max-w-4xl mx-auto"/>
+            <img src="https://storage.googleapis.com/maker-LLM-tool-responses/origin-app-simplify.png" alt="Nova Folio App on phone" className="max-w-4xl mx-auto"/>
         </div>
     </section>
 );
@@ -141,10 +131,10 @@ const LandingFooter: React.FC = () => (
         <div className="container mx-auto px-6 mt-16 border-t border-zinc-800 pt-8">
              <div className="flex flex-col md:flex-row justify-between items-center gap-6">
                 <div className="flex items-center gap-3">
-                    <OriginLogo className="text-white"/>
-                    <span className="text-lg font-medium text-white">Origin</span>
+                    <AppLogo className="text-white"/>
+                    <span className="text-lg font-medium text-white">Nova Folio</span>
                 </div>
-                <p className="text-xs text-zinc-500 text-center">© 2024 Origin Financial, Inc.</p>
+                <p className="text-xs text-zinc-500 text-center">© 2024 Nova Folio, Inc.</p>
             </div>
         </div>
     </footer>

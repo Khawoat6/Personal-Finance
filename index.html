@@ -8,11 +8,11 @@
     <title>Personal Finance Tracker</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
       body {
-        font-family: 'IBM Plex Sans Thai', -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", "Arial", sans-serif;
+        font-family: 'Inter', 'IBM Plex Sans Thai', -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", "Arial", sans-serif;
       }
     </style>
     <script>
@@ -21,37 +21,49 @@
         theme: {
           extend: {
             fontFamily: {
-              sans: ['IBM Plex Sans Thai', 'sans-serif'],
+              sans: ['Inter', 'IBM Plex Sans Thai', 'sans-serif'],
               serif: ['Playfair Display', 'serif'],
             },
             colors: {
-              primary: {
-                DEFAULT: 'hsl(222.2 47.4% 11.2%)',
-                foreground: 'hsl(210 40% 98%)',
+              slate: {
+                50: '#F9F9F7',
+                100: '#efefed',
+                200: '#e0e0e0',
+                300: '#bdbdbd',
+                400: '#a3a3a3',
+                500: '#757575',
+                600: '#393939',
+                700: '#2C2C2C',
+                800: '#161616',
+                900: '#050505',
               },
-              secondary: {
-                DEFAULT: 'hsl(210 40% 96.1%)',
-                foreground: 'hsl(222.2 8.9% 11.2%)',
+              zinc: {
+                50: '#F9F9F7',
+                100: '#efefed',
+                200: '#e0e0e0',
+                300: '#bdbdbd',
+                400: '#a3a3a3',
+                500: '#757575',
+                600: '#393939',
+                700: '#2f2f2f',
+                800: '#161616',
+                900: '#01000a',
               },
-              muted: {
-                DEFAULT: 'hsl(210 40% 96.1%)',
-                foreground: 'hsl(215.4 16.3% 46.9%)',
-              },
-              accent: {
-                DEFAULT: 'hsl(210 40% 98%)',
-                foreground: 'hsl(222.2 47.4% 11.2%)',
+              purple: {
+                600: '#847dff',
+                700: '#4b49aa',
               },
               destructive: {
                 DEFAULT: 'hsl(0 84.2% 60.2%)',
                 foreground: 'hsl(210 40% 98%)',
               },
-              border: 'hsl(214.3 31.8% 91.4%)',
-              ring: 'hsl(222.2 84% 4.9%)',
+              border: 'rgba(1, 0, 10, 0.08)',
+              ring: '#847dff',
             },
             borderRadius: {
-              lg: `0.5rem`,
-              md: `calc(0.5rem - 2px)`,
-              sm: `calc(0.5rem - 4px)`,
+              lg: `8px`,
+              md: `calc(8px - 2px)`,
+              sm: `calc(8px - 4px)`,
             },
           }
         }

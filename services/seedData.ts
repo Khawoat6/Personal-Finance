@@ -110,6 +110,7 @@ export const generateSeedData = (): AppData => {
             targetAmount: 100000,
             currentAmount: 25000,
             deadline: new Date(today.getFullYear() + 1, today.getMonth(), today.getDate()).toISOString(),
+            category: 'Technology',
         },
     ];
     

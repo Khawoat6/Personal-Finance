@@ -4,7 +4,7 @@ import { useData } from '../hooks/useData';
 import { Card } from '../components/ui/Card';
 import { formatCurrency } from '../utils/formatters';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { Plus } from 'lucide-react';
+import { PlusCircle } from 'lucide-react';
 
 const NetWorthChart: React.FC = () => {
     const { transactions, accounts } = useData();
@@ -79,7 +79,7 @@ const NetWorthChart: React.FC = () => {
                     </p>
                 </div>
                  <button className="p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-slate-800 transition-colors">
-                    <Plus size={20} className="text-zinc-600 dark:text-slate-400" />
+                    <PlusCircle size={20} className="text-zinc-600 dark:text-slate-400" />
                 </button>
             </div>
             
@@ -149,7 +149,7 @@ export const DashboardPage: React.FC<{ setHeaderActions: (actions: React.ReactNo
 
     return (
         <div className="space-y-8">
-            <h1 className="text-3xl text-zinc-900 dark:text-slate-100">Good evening, Phattaraphon</h1>
+            <h1 className="text-3xl font-serif text-zinc-900 dark:text-slate-100">Good evening, Phattaraphon</h1>
 
             <div className="flex items-center gap-2 p-1 rounded-xl bg-zinc-100 dark:bg-slate-800 w-fit">
                 <TabButton name="Overview" />

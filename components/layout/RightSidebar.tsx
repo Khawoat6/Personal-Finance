@@ -3,14 +3,14 @@ import React from 'react';
 import { useData } from '../../hooks/useData';
 import { ProgressBar } from '../ui/ProgressBar';
 import { formatCurrency } from '../../utils/formatters';
-import { Landmark, Target } from 'lucide-react';
+import { Building2, Trophy } from 'lucide-react';
 
 export const RightSidebar: React.FC = () => {
     const { accounts, goals, loading } = useData();
 
     if (loading) {
         return (
-            <aside className="w-80 flex-shrink-0 bg-white dark:bg-slate-800/50 border-l border-zinc-200 dark:border-slate-800 p-6 hidden lg:block">
+            <aside className="w-80 flex-shrink-0 p-6 hidden lg:block">
                 <div className="animate-pulse space-y-8">
                     <div>
                         <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-1/3 mb-4"></div>
@@ -32,7 +32,7 @@ export const RightSidebar: React.FC = () => {
     }
     
     return (
-        <aside className="w-80 flex-shrink-0 bg-white dark:bg-slate-800/50 border-l border-zinc-200 dark:border-slate-800 p-6 hidden lg:block overflow-y-auto">
+        <aside className="w-80 flex-shrink-0 p-6 hidden lg:block overflow-y-auto">
             <div className="space-y-8">
                 <div>
                     <h3 className="text-sm font-semibold text-zinc-500 dark:text-slate-400 uppercase tracking-wider mb-4">Accounts</h3>
@@ -41,7 +41,7 @@ export const RightSidebar: React.FC = () => {
                             <div key={account.id} className="flex items-center justify-between p-3 rounded-lg hover:bg-zinc-100 dark:hover:bg-slate-800 transition-colors">
                                 <div className="flex items-center gap-3 overflow-hidden">
                                     <div className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-slate-700 flex items-center justify-center flex-shrink-0">
-                                        <Landmark size={16} className="text-zinc-500 dark:text-slate-400" />
+                                        <Building2 size={16} className="text-zinc-500 dark:text-slate-400" />
                                     </div>
                                     <span className="font-medium text-zinc-800 dark:text-slate-200 truncate">{account.name}</span>
                                 </div>
@@ -52,13 +52,13 @@ export const RightSidebar: React.FC = () => {
                 </div>
 
                 <div>
-                    <h3 className="text-sm font-semibold text-zinc-500 dark:text-slate-400 uppercase tracking-wider mb-4">Savings Goals</h3>
+                    <h3 className="text-sm font-semibold text-zinc-500 dark:text-slate-400 uppercase tracking-wider mb-4">Goals</h3>
                     <div className="space-y-4">
                         {goals.length > 0 ? goals.map(goal => (
                             <div key={goal.id} className="p-4 rounded-xl border border-zinc-200 dark:border-slate-700 bg-zinc-50 dark:bg-slate-800">
                                 <div className="flex items-start justify-between mb-2">
                                     <h4 className="font-semibold text-zinc-800 dark:text-slate-200">{goal.name}</h4>
-                                    <Target size={18} className="text-zinc-400 dark:text-slate-500 flex-shrink-0" />
+                                    <Trophy size={18} className="text-zinc-400 dark:text-slate-500 flex-shrink-0" />
                                 </div>
                                 <ProgressBar value={goal.currentAmount} max={goal.targetAmount} colorClass="bg-purple-600" />
                                 <div className="flex justify-between items-baseline mt-2 text-xs">
@@ -75,4 +75,3 @@ export const RightSidebar: React.FC = () => {
         </aside>
     );
 };
-    

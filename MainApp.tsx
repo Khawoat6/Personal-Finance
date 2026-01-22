@@ -26,11 +26,11 @@ export const MainApp: React.FC = () => {
             document.documentElement.classList.remove('dark');
         }
         // Set body background for the main app, overriding the landing page default
-        document.body.className = 'bg-[#F9F9F7] dark:bg-slate-900';
+        document.body.className = 'bg-slate-50 dark:bg-slate-900';
     }, []);
 
     return (
-        <div className="flex h-screen bg-[#F9F9F7] dark:bg-slate-900 text-zinc-800 dark:text-slate-200 font-sans">
+        <div className="flex h-screen bg-slate-50 dark:bg-slate-900 text-zinc-800 dark:text-slate-200 font-sans">
             <Sidebar />
             <div className="flex-1 flex flex-col overflow-hidden">
                 <header className="h-20 flex-shrink-0 flex items-center justify-end px-8">
@@ -59,7 +59,7 @@ export const MainApp: React.FC = () => {
                         <Route path="/transactions" element={<TransactionsPage setHeaderActions={setHeaderActions} />} />
                         <Route path="/budgets" element={<BudgetsPage />} />
                         <Route path="/subscriptions" element={<SubscriptionsPage />} />
-                        <Route path="/goals" element={<GoalsPage />} />
+                        <Route path="/goals" element={<GoalsPage setHeaderActions={setHeaderActions} />} />
                         <Route path="/reports" element={<ReportsPage />} />
                         <Route path="/statement" element={<PersonalStatementPage />} />
                         <Route path="/settings" element={<SettingsPage />} />

@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo } from 'react';
-import { Sparkles, Bot } from 'lucide-react';
+import { Sparkles, BrainCircuit } from 'lucide-react';
 import { useData } from '../../hooks/useData';
 import { GoogleGenAI } from '@google/genai';
 import { Modal } from '../ui/Modal';
@@ -113,7 +113,7 @@ export const AIAssistant: React.FC = () => {
                 ) : (
                     <div className="flex gap-4">
                         <div className="w-10 h-10 rounded-full bg-purple-100 dark:bg-slate-700 flex items-center justify-center flex-shrink-0">
-                            <Bot className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                            <BrainCircuit className="w-6 h-6 text-purple-600 dark:text-purple-400" />
                         </div>
                          <SimpleMarkdown text={aiSummaryContent} />
                     </div>
