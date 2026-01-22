@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { SubscriptionFormModal } from '../components/features/SubscriptionFormModal';
-import { ResponsiveContainer, LineChart, Line, YAxis, XAxis, CartesianGrid, Tooltip } from 'recharts';
+import { ResponsiveContainer, LineChart, Line, YAxis, XAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 
 // --- Helpers ---
 const getLogoUrl = (sub: Subscription) => {
@@ -79,6 +79,23 @@ const getPaymentMethodIcon = (method: string) => {
 
 
 // --- Sub-Components ---
+
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    const data = payload[0].payload;
+    const value = data.forecast ?? data.past;
+    if (value === undefined || value === null) return null;
+
+    return (
+      <div className="p-2 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm rounded-lg border border-slate-200 dark:border-slate-700 shadow-lg">
+        <p className="label font-semibold text-slate-800 dark:text-slate-200">{`${label}`}</p>
+        <p className="intro text-slate-600 dark:text-slate-400">{`Monthly Cost: ${formatCurrency(value)}`}</p>
+      </div>
+    );
+  }
+
+  return null;
+};
 
 const Modal: React.FC<{
     isOpen: boolean,
@@ -322,21 +339,36 @@ export const SubscriptionsPage: React.FC = () => {
 
     const spendingProjectionData = useMemo(() => {
         const data = [];
-        for (let i = 5; i >= 0; i--) {
-            const date = new Date();
-            date.setMonth(date.getMonth() - i);
+        const today = new Date();
+        today.setDate(1); // Normalize to the start of the month for calculations
+
+        // Project past 5 months, current month, and next 6 months
+        for (let i = -5; i <= 6; i++) {
+            const date = new Date(today.getFullYear(), today.getMonth() + i, 1);
             const monthName = date.toLocaleString('en-US', { month: 'short' });
-            let total = 0;
-            activeSubscriptions.forEach(sub => {
+
+            let monthlyTotal = 0;
+            subscriptions.forEach(sub => {
+                if (sub.status !== 'Active' || sub.expenseType !== 'Recurring') return;
+
                 const firstPayment = new Date(sub.firstPayment);
-                if (firstPayment <= date) {
-                     total += sub.billingPeriod === 'Yearly' ? sub.price / 12 : sub.price;
+                const endDate = sub.endDate ? new Date(sub.endDate) : null;
+
+                const isActiveInMonth = firstPayment <= date && (!endDate || endDate >= date);
+                
+                if (isActiveInMonth) {
+                    monthlyTotal += sub.billingPeriod === 'Yearly' ? sub.price / 12 : sub.price;
                 }
             });
-            data.push({ name: monthName, Expenses: total });
+
+            data.push({ 
+                name: monthName, 
+                past: i <= 0 ? monthlyTotal : undefined,
+                forecast: i >= 0 ? monthlyTotal : undefined,
+            });
         }
         return data;
-    }, [activeSubscriptions]);
+    }, [subscriptions]);
     
     const categoryBreakdownData = useMemo(() => {
         const categoryMap = new Map<string, number>();
@@ -437,8 +469,27 @@ export const SubscriptionsPage: React.FC = () => {
                              <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.2}/>
                              <XAxis dataKey="name" fontSize={12} tickLine={false} axisLine={false} />
                              <YAxis fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => formatCurrency(Number(value))}/>
-                             <Tooltip contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.8)', backdropFilter: 'blur(5px)', borderRadius: '0.5rem' }} formatter={(value: number) => formatCurrency(value)}/>
-                             <Line type="monotone" dataKey="Expenses" stroke="#8b5cf6" strokeWidth={2} dot={{ r: 4 }} activeDot={{ r: 6 }}/>
+                             <Tooltip content={<CustomTooltip />} />
+                             <Legend formatter={(value) => value === 'past' ? 'Past & Current' : 'Forecast'} />
+                             <Line 
+                                 type="monotone" 
+                                 dataKey="past" 
+                                 stroke="#8b5cf6" 
+                                 strokeWidth={2} 
+                                 dot={{ r: 4 }} 
+                                 activeDot={{ r: 6 }} 
+                                 name="Past & Current"
+                             />
+                            <Line 
+                                 type="monotone" 
+                                 dataKey="forecast" 
+                                 stroke="#8b5cf6" 
+                                 strokeWidth={2} 
+                                 strokeDasharray="5 5"
+                                 dot={false}
+                                 activeDot={{ r: 6 }}
+                                 name="Forecast"
+                             />
                          </LineChart>
                      </ResponsiveContainer>
                  </Card>
