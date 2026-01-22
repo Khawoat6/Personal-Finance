@@ -60,7 +60,7 @@ export const RightSidebar: React.FC = () => {
                                     <h4 className="font-semibold text-zinc-800 dark:text-slate-200">{goal.name}</h4>
                                     <Trophy size={18} className="text-zinc-400 dark:text-slate-500 flex-shrink-0" />
                                 </div>
-                                <ProgressBar value={goal.currentAmount} max={goal.targetAmount} colorClass="bg-purple-600" />
+                                <ProgressBar value={goal.currentAmount} max={goal.targetAmount} colorClass="bg-stone-700" />
                                 <div className="flex justify-between items-baseline mt-2 text-xs">
                                     <span className="font-medium text-zinc-600 dark:text-slate-300">{formatCurrency(goal.currentAmount)}</span>
                                     <span className="text-zinc-500 dark:text-slate-400"> of {formatCurrency(goal.targetAmount)}</span>

@@ -20,7 +20,7 @@ const LandingHeader: React.FC = () => {
             <div className="container mx-auto px-6 py-4 flex justify-between items-center">
                 <div className="flex items-center gap-3">
                     <AppLogo />
-                    <span className="text-xl font-medium text-white">Nova Folio</span>
+                    <span className="text-xl font-medium text-white">Sup Luxe</span>
                 </div>
                 <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-zinc-300">
                     <a href="#" className="hover:text-white transition-colors">Products</a>
@@ -59,7 +59,7 @@ const SimplifySection: React.FC = () => (
     <section className="py-20 md:py-32 text-center">
         <h2 className="text-5xl md:text-6xl font-serif italic">Simplify your money</h2>
         <div className="mt-12 px-6">
-            <img src="https://storage.googleapis.com/maker-LLM-tool-responses/origin-app-simplify.png" alt="Nova Folio App on phone" className="max-w-4xl mx-auto"/>
+            <img src="https://storage.googleapis.com/maker-LLM-tool-responses/origin-app-simplify.png" alt="Sup Luxe App on phone" className="max-w-4xl mx-auto"/>
         </div>
     </section>
 );
@@ -132,9 +132,9 @@ const LandingFooter: React.FC = () => (
              <div className="flex flex-col md:flex-row justify-between items-center gap-6">
                 <div className="flex items-center gap-3">
                     <AppLogo className="text-white"/>
-                    <span className="text-lg font-medium text-white">Nova Folio</span>
+                    <span className="text-lg font-medium text-white">Sup Luxe</span>
                 </div>
-                <p className="text-xs text-zinc-500 text-center">© 2024 Nova Folio, Inc.</p>
+                <p className="text-xs text-zinc-500 text-center">© 2024 Sup Luxe, Inc.</p>
             </div>
         </div>
     </footer>

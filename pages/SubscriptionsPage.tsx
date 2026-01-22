@@ -644,6 +644,7 @@ export const SubscriptionsPage: React.FC = () => {
 
     return (
         <div className="space-y-6">
+            <h1 className="text-3xl font-serif text-zinc-900 dark:text-slate-100">Subscriptions</h1>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                  <Card><h4 className="text-sm text-slate-500">Active Items</h4><p className="text-2xl font-bold">{summaryCards.activeItems}</p></Card>
                  <Card><h4 className="text-sm text-slate-500">Avg. Monthly Expenses</h4><p className="text-2xl font-bold">{formatCurrency(summaryCards.avgMonthly)}</p></Card>
@@ -661,8 +662,8 @@ export const SubscriptionsPage: React.FC = () => {
                              <YAxis fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => formatCurrency(Number(value))}/>
                              <Tooltip content={<CustomTooltip />} />
                              <Legend formatter={(value) => value === 'past' ? 'Past & Current' : 'Forecast'} />
-                             <Line type="monotone" dataKey="past" stroke="#8b5cf6" strokeWidth={2} dot={{ r: 4 }} activeDot={{ r: 6 }} name="Past & Current" />
-                             <Line type="monotone" dataKey="forecast" stroke="#8b5cf6" strokeWidth={2} strokeDasharray="5 5" dot={false} activeDot={{ r: 6 }} name="Forecast" />
+                             <Line type="monotone" dataKey="past" stroke="#78716c" strokeWidth={2} dot={{ r: 4 }} activeDot={{ r: 6 }} name="Past & Current" />
+                             <Line type="monotone" dataKey="forecast" stroke="#78716c" strokeWidth={2} strokeDasharray="5 5" dot={false} activeDot={{ r: 6 }} name="Forecast" />
                          </LineChart>
                      </ResponsiveContainer>
                  </Card>

@@ -53,10 +53,10 @@ const NavItem: React.FC<{ to: string, label: string, icon: React.ElementType }> 
 
 export const Sidebar: React.FC = () => {
     return (
-        <aside className="w-64 flex-shrink-0 flex flex-col">
+        <aside className="w-64 flex-shrink-0 flex flex-col border-r border-zinc-200 dark:border-slate-800">
             <div className="h-20 flex items-center px-6">
                 <AppLogo />
-                <span className="ml-2 text-xl font-medium text-zinc-900 dark:text-slate-100">Nova Folio</span>
+                <span className="ml-2 text-xl font-medium text-zinc-900 dark:text-slate-100">Sup Luxe</span>
             </div>
             
             <nav className="flex-1 px-4 py-4 space-y-6">

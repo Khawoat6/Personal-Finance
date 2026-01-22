@@ -87,7 +87,7 @@ export const GoalsPage: React.FC<{ setHeaderActions: (actions: React.ReactNode) 
                                         <span className="text-2xl font-bold text-slate-900 dark:text-slate-100">{formatCurrency(goal.currentAmount)}</span>
                                         <span className="text-sm text-slate-500 dark:text-slate-400">of {formatCurrency(goal.targetAmount)}</span>
                                     </div>
-                                    <ProgressBar value={goal.currentAmount} max={goal.targetAmount} colorClass="bg-purple-600" />
+                                    <ProgressBar value={goal.currentAmount} max={goal.targetAmount} colorClass="bg-stone-700" />
                                     <p className="text-right text-sm font-medium text-slate-600 dark:text-slate-300">{percentage.toFixed(2)}% Complete</p>
                                 </div>
                             </Card>

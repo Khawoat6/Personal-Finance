@@ -1,9 +1,10 @@
 
 import React, { useState, useEffect } from 'react';
 import type { Subscription } from '../../types';
+import { useData } from '../../hooks/useData';
 import { SUBSCRIPTION_CATEGORIES } from '../../constants';
-import { X, ChevronDown, Calendar, Sparkles } from 'lucide-react';
-import { GoogleGenAI } from '@google/genai';
+import { X, ChevronDown, Calendar, Sparkles, Package } from 'lucide-react';
+import { GoogleGenAI, Type } from '@google/genai';
 
 // --- UI Components ---
 const Modal: React.FC<{
@@ -22,7 +23,7 @@ const Modal: React.FC<{
                         <X size={18} className="text-slate-500" />
                     </button>
                 </div>
-                <div className="p-6">{children}</div>
+                <div className="p-6 max-h-[80vh] overflow-y-auto">{children}</div>
             </div>
         </div>
     );
@@ -42,12 +43,39 @@ const DateInputWrapper: React.FC<{ children: React.ReactNode; className?: string
     </div>
 );
 
+const Suggestion: React.FC<{
+    label: string;
+    suggestion: string;
+    onApply: () => void;
+}> = ({ label, suggestion, onApply }) => (
+     <div className="mt-2 p-2 bg-stone-100 dark:bg-stone-800/50 rounded-lg flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+            <Sparkles size={16} className="text-stone-500" />
+            <p className="text-xs text-stone-700 dark:text-stone-300">{label}: <span className="font-semibold">{suggestion}</span></p>
+        </div>
+        <button type="button" onClick={onApply} className="px-2 py-0.5 text-xs font-semibold bg-stone-200 text-stone-800 dark:bg-stone-700 dark:text-stone-200 rounded-md hover:bg-stone-300">Use</button>
+    </div>
+);
+
+
 const Input = "w-full px-3 py-2.5 border rounded-lg text-sm bg-white dark:bg-slate-800/50 border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-400 dark:focus:ring-slate-500 transition-colors";
 const Select = `${Input} appearance-none pr-8`;
 const Label = "block text-sm font-medium mb-1.5 text-slate-700 dark:text-slate-300";
 
 // --- Form Component ---
-const COMMON_SERVICES = ["Netflix", "Spotify", "YouTube Premium", "Amazon Prime", "Disney+", "iCloud", "Google One", "Microsoft 365", "Adobe Creative Cloud", "ChatGPT", "Gemini"];
+const COMMON_SERVICES = ["Netflix", "Spotify", "YouTube Premium", "Amazon Prime", "Disney+", "iCloud", "Google One", "Microsoft 365", "Adobe Creative Cloud", "ChatGPT", "Gemini", "Figma"];
+
+const getDomainFromUrl = (url: string): string | null => {
+    try {
+        if (!url.startsWith('http')) {
+            url = 'https://' + url;
+        }
+        const urlObject = new URL(url);
+        return urlObject.hostname.replace('www.', '');
+    } catch (e) {
+        return null;
+    }
+};
 
 export const SubscriptionFormModal: React.FC<{
     isOpen: boolean;
@@ -55,6 +83,7 @@ export const SubscriptionFormModal: React.FC<{
     onSave: (sub: Omit<Subscription, 'id'>) => void;
     subscription: Subscription | null;
 }> = ({ isOpen, onClose, onSave, subscription }) => {
+    const { subscriptions } = useData();
     const getTodayString = () => new Date().toISOString().split('T')[0];
 
     const initialFormState: Omit<Subscription, 'id'> = {
@@ -66,7 +95,8 @@ export const SubscriptionFormModal: React.FC<{
 
     const [formState, setFormState] = useState(initialFormState);
     const [suggestions, setSuggestions] = useState<string[]>([]);
-    const [aiSuggestion, setAiSuggestion] = useState<string | null>(null);
+    const [aiSuggestions, setAiSuggestions] = useState<{ category?: string; website?: string; usage?: string; }>({});
+    const [suggestedEmail, setSuggestedEmail] = useState<string | null>(null);
     const [isSuggesting, setIsSuggesting] = useState(false);
 
     useEffect(() => {
@@ -76,7 +106,8 @@ export const SubscriptionFormModal: React.FC<{
                 ? { ...baseState, ...subscription, price: Number(subscription.price) } 
                 : baseState;
             setFormState(editState);
-            setAiSuggestion(null);
+            setAiSuggestions({});
+            setSuggestedEmail(null);
             setIsSuggesting(false);
         }
     }, [isOpen, subscription]);
@@ -97,24 +128,60 @@ export const SubscriptionFormModal: React.FC<{
     const handleSuggestionClick = (name: string) => {
         setFormState(prev => ({ ...prev, name }));
         setSuggestions([]);
+        // Trigger AI suggestions after selecting a common service
+        handleNameBlur({ target: { value: name } } as any);
     };
     
-    const handleNameBlur = async () => {
-        if (formState.name.length < 3) return;
+    const handleNameBlur = async (e: React.FocusEvent<HTMLInputElement>) => {
+        const name = e.target.value;
+        if (name.length < 3) return;
+
         setIsSuggesting(true);
-        setAiSuggestion(null);
+        setAiSuggestions({});
+        
+        // 1. Local Email Suggestion
+        const emailCounts = subscriptions
+            .map(s => s.email).filter((e): e is string => !!e)
+            .reduce((acc, email) => {
+                acc[email] = (acc[email] || 0) + 1;
+                return acc;
+            }, {} as Record<string, number>);
+        
+        const mostFrequentEmail = Object.entries(emailCounts).sort((a, b) => b[1] - a[1])[0]?.[0];
+        setSuggestedEmail(mostFrequentEmail || null);
+
+        // 2. AI Suggestions
         try {
             const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
-            const prompt = `Based on the subscription name "${formState.name}", what is the most likely category from this list: ${SUBSCRIPTION_CATEGORIES.join(', ')}? Respond with only the category name from the list provided.`;
+            const schema = {
+                type: Type.OBJECT,
+                properties: {
+                    category: { type: Type.STRING, description: `The category from this list: ${SUBSCRIPTION_CATEGORIES.join(', ')}` },
+                    website: { type: Type.STRING, description: 'The official website URL.' },
+                    usage: { type: Type.STRING, description: 'Typical usage level (High, Medium, Low, or Unused).' },
+                },
+                required: ['category', 'website', 'usage']
+            };
             const response = await ai.models.generateContent({
                 model: 'gemini-3-flash-preview',
-                contents: prompt,
+                contents: `Based on the subscription name "${name}", provide its category, official website, and typical usage level.`,
+                config: {
+                    responseMimeType: "application/json",
+                    responseSchema: schema,
+                },
             });
-            const suggestedCategory = response.text?.trim();
 
-            if (suggestedCategory && SUBSCRIPTION_CATEGORIES.includes(suggestedCategory)) {
-                setAiSuggestion(suggestedCategory);
+            const aiData = JSON.parse(response.text ?? '{}');
+
+            if (aiData.category && aiData.website && aiData.usage) {
+                 setAiSuggestions(aiData);
+                 const domain = getDomainFromUrl(aiData.website);
+                 if (domain) {
+                     const newLogoUrl = `https://logo.clearbit.com/${domain}`;
+                     setFormState(prev => ({...prev, logoUrl: newLogoUrl }));
+                 }
             }
+
         } catch (error) {
             console.error("AI suggestion failed:", error);
         } finally {
@@ -122,10 +189,17 @@ export const SubscriptionFormModal: React.FC<{
         }
     };
 
-    const applyAiSuggestion = () => {
-        if (aiSuggestion) {
-            setFormState(prev => ({ ...prev, category: aiSuggestion }));
-            setAiSuggestion(null);
+    const applyAiSuggestion = (field: 'category' | 'website' | 'usage') => {
+        if (aiSuggestions[field]) {
+            setFormState(prev => ({ ...prev, [field]: aiSuggestions[field] }));
+            setAiSuggestions(prev => ({ ...prev, [field]: undefined }));
+        }
+    };
+    
+    const applyEmailSuggestion = () => {
+        if (suggestedEmail) {
+            setFormState(prev => ({ ...prev, email: suggestedEmail }));
+            setSuggestedEmail(null);
         }
     };
 
@@ -135,17 +209,24 @@ export const SubscriptionFormModal: React.FC<{
         onSave(formState);
     };
 
-    const showIdentifierInput = formState.signupMethod === 'Google' || formState.signupMethod === 'Apple ID';
-
     return (
         <Modal isOpen={isOpen} onClose={onClose} title={subscription ? "Edit Subscription" : "Add New Subscription"}>
             <form onSubmit={handleSubmit} className="space-y-5">
-                <div className="grid grid-cols-2 gap-4">
-                    <div className="relative">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                     <div className="relative md:col-span-2">
                         <label className={Label}>Service Name</label>
-                        <input required name="name" type="text" placeholder="e.g. Netflix" autoComplete="off" className={Input} value={formState.name} onChange={handleChange} onBlur={handleNameBlur} />
+                        <div className="flex items-center gap-3">
+                            <div className="w-11 h-11 flex-shrink-0 rounded-xl p-1.5 flex items-center justify-center overflow-hidden border shadow-sm bg-white dark:bg-slate-700 border-gray-100 dark:border-slate-600">
+                                {formState.logoUrl ? 
+                                    <img src={formState.logoUrl} alt={formState.name} className="h-full w-full object-contain" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement?.querySelector('svg')?.removeAttribute('style') }}/> : 
+                                    <Package className="text-slate-400" size={20} />
+                                }
+                                {!formState.logoUrl && <Package className="text-slate-400" size={20} />}
+                            </div>
+                            <input required name="name" type="text" placeholder="e.g. Netflix" autoComplete="off" className={Input} value={formState.name} onChange={handleChange} onBlur={handleNameBlur} />
+                        </div>
                         {suggestions.length > 0 && (
-                             <div className="absolute z-10 w-full mt-1 bg-white dark:bg-slate-800 border dark:border-slate-700 rounded-md shadow-lg">
+                             <div className="absolute z-10 w-full mt-1 bg-white dark:bg-slate-800 border dark:border-slate-700 rounded-md shadow-lg ml-14">
                                  {suggestions.map(s => <div key={s} onClick={() => handleSuggestionClick(s)} className="px-3 py-2 text-sm cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700">{s}</div>)}
                              </div>
                         )}
@@ -160,20 +241,45 @@ export const SubscriptionFormModal: React.FC<{
                     <div>
                         <label className={Label}>Category</label>
                         <SelectWrapper><select name="category" value={formState.category} onChange={handleChange} className={Select}>{SUBSCRIPTION_CATEGORIES.map(cat => <option key={cat} value={cat}>{cat}</option>)}</select></SelectWrapper>
-                        {isSuggesting && <p className="text-xs text-slate-400 mt-1.5 animate-pulse">AI is thinking...</p>}
-                        {aiSuggestion && (
-                            <div className="mt-2 p-2 bg-purple-50 dark:bg-purple-900/30 rounded-lg flex items-center justify-between gap-2">
-                                <div className="flex items-center gap-2">
-                                    <Sparkles size={16} className="text-purple-500" />
-                                    <p className="text-xs text-purple-700 dark:text-purple-300">AI Suggestion: <span className="font-semibold">{aiSuggestion}</span></p>
-                                </div>
-                                <button type="button" onClick={applyAiSuggestion} className="px-2 py-0.5 text-xs font-semibold bg-purple-200 text-purple-800 dark:bg-purple-400/50 dark:text-white rounded-md hover:bg-purple-300">Use</button>
-                            </div>
-                        )}
+                        {isSuggesting && !aiSuggestions.category && <p className="text-xs text-slate-400 mt-1.5 animate-pulse">AI is thinking...</p>}
+                        {aiSuggestions.category && <Suggestion label="AI Suggestion" suggestion={aiSuggestions.category} onApply={() => applyAiSuggestion('category')} />}
                     </div>
                     <div>
                         <label className={Label}>Payment Method</label>
                         <SelectWrapper><select name="paymentMethod" value={formState.paymentMethod} onChange={handleChange} className={Select}><option>Credit Card</option><option>Debit Card</option><option>PayPal</option><option>Bank Transfer</option><option>Apple Pay</option><option>Google Pay</option></select></SelectWrapper>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                     <div>
+                        <label className={Label}>Website</label>
+                        <input name="website" type="text" placeholder="https://..." className={Input} value={formState.website} onChange={handleChange} />
+                         {aiSuggestions.website && <Suggestion label="AI Suggestion" suggestion={aiSuggestions.website} onApply={() => applyAiSuggestion('website')} />}
+                    </div>
+                     <div>
+                        <label className={Label}>Logo URL</label>
+                        <input name="logoUrl" type="text" placeholder="https://..." className={Input} value={formState.logoUrl} onChange={handleChange} />
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                    <div>
+                        <label className={Label}>Usage Level (Optional)</label>
+                        <SelectWrapper>
+                            <select name="usage" value={formState.usage || ''} onChange={handleChange} className={Select}>
+                                <option value="">Not Specified</option>
+                                <option value="High">High</option>
+                                <option value="Medium">Medium</option>
+                                <option value="Low">Low</option>
+                                <option value="Unused">Unused</option>
+                            </select>
+                        </SelectWrapper>
+                        {aiSuggestions.usage && <Suggestion label="AI Suggestion" suggestion={aiSuggestions.usage} onApply={() => applyAiSuggestion('usage')} />}
+                    </div>
+                     <div>
+                        <label className={Label}>Email (Optional)</label>
+                        <input name="email" type="email" placeholder="user@example.com" className={Input} value={formState.email} onChange={handleChange} />
+                        {suggestedEmail && formState.email !== suggestedEmail && <Suggestion label="Suggest Email" suggestion={suggestedEmail} onApply={applyEmailSuggestion} />}
                     </div>
                 </div>
 
@@ -203,11 +309,6 @@ export const SubscriptionFormModal: React.FC<{
                 
                 <div className="border-t dark:border-slate-700 my-2"></div>
                 
-                 <div>
-                    <label className={Label}>Email (Optional)</label>
-                    <input name="email" type="email" placeholder="user@example.com" className={Input} value={formState.email} onChange={handleChange} />
-                </div>
-                
                 <div className="grid grid-cols-2 gap-4">
                     <div>
                         <label className={Label}>Sign-up Method (Optional)</label>
@@ -220,35 +321,6 @@ export const SubscriptionFormModal: React.FC<{
                            </select>
                         </SelectWrapper>
                     </div>
-                    {showIdentifierInput && (
-                        <div>
-                           <label className={Label}>Account Used (Optional)</label>
-                           <input name="signupIdentifier" type="text" placeholder={formState.signupMethod === 'Google' ? "user@gmail.com" : "user@icloud.com"} className={Input} value={formState.signupIdentifier} onChange={handleChange} />
-                        </div>
-                    )}
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                     <div>
-                        <label className={Label}>Usage Level (Optional)</label>
-                        <SelectWrapper>
-                            <select name="usage" value={formState.usage || ''} onChange={handleChange} className={Select}>
-                                <option value="">Not Specified</option>
-                                <option value="High">High</option>
-                                <option value="Medium">Medium</option>
-                                <option value="Low">Low</option>
-                                <option value="Unused">Unused</option>
-                            </select>
-                        </SelectWrapper>
-                    </div>
-                    <div>
-                        <label className={Label}>Website</label>
-                        <input name="website" type="text" placeholder="https://..." className={Input} value={formState.website} onChange={handleChange} />
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                   
                     <div>
                         <label className={Label}>Status</label>
                         <SelectWrapper><select name="status" value={formState.status} onChange={handleChange} className={Select}><option>Active</option><option>Inactive</option></select></SelectWrapper>

@@ -88,8 +88,8 @@ const NetWorthChart: React.FC = () => {
                     <AreaChart data={chartData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
                         <defs>
                             <linearGradient id="colorBalance" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="#8884d8" stopOpacity={0.3}/>
-                                <stop offset="95%" stopColor="#8884d8" stopOpacity={0}/>
+                                <stop offset="5%" stopColor="#a8a29e" stopOpacity={0.3}/>
+                                <stop offset="95%" stopColor="#a8a29e" stopOpacity={0}/>
                             </linearGradient>
                         </defs>
                         <Tooltip 
@@ -110,7 +110,7 @@ const NetWorthChart: React.FC = () => {
                             tick={{ fill: 'rgb(100 116 139)', fontSize: 12 }}
                             dy={10}
                         />
-                        <Area type="monotone" dataKey="balance" stroke="#8884d8" strokeWidth={2} fillOpacity={1} fill="url(#colorBalance)" />
+                        <Area type="monotone" dataKey="balance" stroke="#a8a29e" strokeWidth={2} fillOpacity={1} fill="url(#colorBalance)" />
                     </AreaChart>
                 </ResponsiveContainer>
             </div>
