@@ -40,9 +40,14 @@ export const PersonalStatementPage: React.FC = () => {
         });
 
         const calculateParentTotals = (categoryId: string): number[] => {
+            const category = categoryMap.get(categoryId);
+            if (!category) {
+                return Array(12).fill(0);
+            }
+
             const children = childMap.get(categoryId) || [];
             if (children.length === 0) {
-                return categoryMap.get(categoryId)!.monthlyBudgets!;
+                return category.monthlyBudgets!;
             }
             const newMonthlyBudgets = Array(12).fill(0);
             children.forEach(childId => {
@@ -51,16 +56,18 @@ export const PersonalStatementPage: React.FC = () => {
                     newMonthlyBudgets[i] += childBudgets[i];
                 }
             });
-            const category = categoryMap.get(categoryId)!;
             category.monthlyBudgets = newMonthlyBudgets;
-            categoryMap.set(categoryId, category);
             return newMonthlyBudgets;
         };
+
         categories.filter(c => !c.parentCategoryId).forEach(c => calculateParentTotals(c.id));
         
         const finalReport: ReportRow[] = [];
         const buildFlatReport = (categoryId: string, level: number) => {
-            const category = categoryMap.get(categoryId)!;
+            const category = categoryMap.get(categoryId);
+            if (!category) {
+                return;
+            }
             const children = childMap.get(categoryId) || [];
             finalReport.push({
                 id: category.id,
@@ -82,21 +89,23 @@ export const PersonalStatementPage: React.FC = () => {
             monthlyBudgets: budgets, total: budgets.reduce((a, b) => a + b, 0)
         });
         
-        buildFlatReport('income', 0);
-        buildFlatReport('taxes', 0);
+        const getBudgets = (id: string): number[] => categoryMap.get(id)?.monthlyBudgets || Array(12).fill(0);
+
+        if (categoryMap.has('income')) buildFlatReport('income', 0);
+        if (categoryMap.has('taxes')) buildFlatReport('taxes', 0);
         
-        const incomeBudgets = categoryMap.get('income')!.monthlyBudgets!;
-        const taxesBudgets = categoryMap.get('taxes')!.monthlyBudgets!;
+        const incomeBudgets = getBudgets('income');
+        const taxesBudgets = getBudgets('taxes');
         const afterTaxBudgets = incomeBudgets.map((v, i) => v - taxesBudgets[i]);
         finalReport.push(createSummaryRow('after-tax', '3. After Tax Income', afterTaxBudgets));
         
-        buildFlatReport('saving', 0);
-        buildFlatReport('investing', 0);
-        buildFlatReport('expenses', 0);
+        if (categoryMap.has('saving')) buildFlatReport('saving', 0);
+        if (categoryMap.has('investing')) buildFlatReport('investing', 0);
+        if (categoryMap.has('expenses')) buildFlatReport('expenses', 0);
 
-        const savingBudgets = categoryMap.get('saving')!.monthlyBudgets!;
-        const investingBudgets = categoryMap.get('investing')!.monthlyBudgets!;
-        const expensesBudgets = categoryMap.get('expenses')!.monthlyBudgets!;
+        const savingBudgets = getBudgets('saving');
+        const investingBudgets = getBudgets('investing');
+        const expensesBudgets = getBudgets('expenses');
         const netCashFlowBudgets = afterTaxBudgets.map((v, i) => v - savingBudgets[i] - investingBudgets[i] - expensesBudgets[i]);
         finalReport.push(createSummaryRow('net-cash-flow', 'Net Monthly Cash Flow', netCashFlowBudgets));
         

@@ -1,4 +1,3 @@
-
 import { createClient } from '@supabase/supabase-js';
 
 // --- IMPORTANT SETUP STEP ---
@@ -28,4 +27,11 @@ if (supabaseUrl.includes('your-project-url') || supabaseAnonKey.includes('your-a
     console.warn(warningMessage);
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+    auth: {
+        storage: window.localStorage,
+        autoRefreshToken: true,
+        persistSession: true,
+        detectSessionInUrl: true,
+    },
+});
