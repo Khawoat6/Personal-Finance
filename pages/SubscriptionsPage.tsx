@@ -1,11 +1,12 @@
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useData } from '../hooks/useData';
 import type { Subscription } from '../types';
 import { 
   Grid, List, Calendar as CalendarIcon, Plus, ChevronDown, Edit, Trash2,
   Film, Headphones, Briefcase, PenTool, Cloud, DollarSign, Layers, CreditCard,
   Smartphone, Wallet, ExternalLink, ChevronLeft, ChevronRight, X, Repeat, TrendingUp, TrendingDown,
+  Columns3
 } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { SubscriptionFormModal } from '../components/features/SubscriptionFormModal';
@@ -122,20 +123,98 @@ const Modal: React.FC<{
   );
 };
 
+const Switch = ({ checked, onChange }: { checked: boolean, onChange: () => void }) => (
+    <button
+        type="button"
+        role="switch"
+        aria-checked={checked}
+        onClick={onChange}
+        className={`${
+            checked ? 'bg-slate-900 dark:bg-blue-600' : 'bg-slate-200 dark:bg-slate-700'
+        } relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none`}
+    >
+        <span
+            aria-hidden="true"
+            className={`${
+                checked ? 'translate-x-4' : 'translate-x-0'
+            } pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out`}
+        />
+    </button>
+);
+
+const ColumnsDropdown: React.FC<{
+    columns: { [key: string]: boolean },
+    setColumns: React.Dispatch<React.SetStateAction<{ [key: string]: boolean }>>
+}> = ({ columns, setColumns }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const ref = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (ref.current && !ref.current.contains(event.target as Node)) {
+                setIsOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [ref]);
+
+    const toggleColumn = (key: string) => {
+        setColumns(prev => ({ ...prev, [key]: !prev[key] }));
+    }
+
+    const allColumns = [
+        { key: 'category', label: 'Category' },
+        { key: 'cost', label: 'Cost' },
+        { key: 'billingPeriod', label: 'Billing Period' },
+        { key: 'paymentMethod', label: 'Payment Method' },
+        { key: 'nextPaymentDate', label: 'Next Payment Date' },
+        { key: 'status', label: 'Status' },
+        { key: 'endDate', label: 'End Date' },
+        { key: 'website', label: 'Website' },
+    ];
+
+    return (
+        <div className="relative" ref={ref}>
+            <button onClick={() => setIsOpen(!isOpen)} className="flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all text-sm bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700">
+               <Columns3 size={16} /> Columns <ChevronDown size={16} />
+            </button>
+            {isOpen && (
+                <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-slate-800 rounded-lg shadow-xl border dark:border-slate-700 z-20">
+                    <div className="p-2 space-y-1">
+                        {allColumns.map(col => (
+                            <label key={col.key} className="flex items-center justify-between w-full px-2 py-1.5 text-sm rounded-md cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700">
+                                <span>{col.label}</span>
+                                <Switch checked={columns[col.key]} onChange={() => toggleColumn(col.key)} />
+                            </label>
+                        ))}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
+
 const ListView: React.FC<{
-    data: Subscription[],
+    data: (Subscription & { nextPayment: string })[],
     onDelete: (id: string | number) => void,
     onEdit: (sub: Subscription) => void,
-}> = ({ data, onDelete, onEdit }) => (
+    visibleColumns: { [key: string]: boolean }
+}> = ({ data, onDelete, onEdit, visibleColumns }) => (
   <Card className="overflow-x-auto">
     <table className="min-w-full text-left">
       <thead className="bg-slate-50/50 dark:bg-slate-900/50 border-b border-gray-100 dark:border-slate-800">
         <tr>
           <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Service</th>
-          <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Category</th>
-          <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Cost</th>
-          <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Next Payment</th>
-          <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Status</th>
+          {visibleColumns.category && <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Category</th>}
+          {visibleColumns.cost && <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Cost</th>}
+          {visibleColumns.billingPeriod && <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Billing Period</th>}
+          {visibleColumns.nextPaymentDate && <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Next Payment</th>}
+          {visibleColumns.status && <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Status</th>}
+          {visibleColumns.paymentMethod && <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Payment Method</th>}
+          {visibleColumns.endDate && <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">End Date</th>}
+          {visibleColumns.website && <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Website</th>}
           <th className="px-6 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-wide">Action</th>
         </tr>
       </thead>
@@ -152,23 +231,35 @@ const ListView: React.FC<{
                 </div>
               </div>
             </td>
-            <td className="px-6 py-3.5 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+            {visibleColumns.category && <td className="px-6 py-3.5 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
                 <div className="flex items-center gap-2">
                   {getCategoryIcon(sub.category)}
                   <span className="truncate max-w-[100px]" title={sub.category}>{sub.category}</span>
                 </div>
-            </td>
-            <td className="px-6 py-3.5 whitespace-nowrap text-sm font-semibold text-slate-900 dark:text-white">
-                {formatCurrency(sub.price)} <span className="text-xs text-slate-400">/{sub.billingPeriod === 'Monthly' ? 'mo' : 'yr'}</span>
-            </td>
-            <td className="px-6 py-3.5 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
-                 {formatDateDisplay(sub.firstPayment)}
-            </td>
-            <td className="px-6 py-3.5 whitespace-nowrap">
+            </td>}
+            {visibleColumns.cost && <td className="px-6 py-3.5 whitespace-nowrap text-sm font-semibold text-slate-900 dark:text-white">
+                {formatCurrency(sub.price)}
+            </td>}
+            {visibleColumns.billingPeriod && <td className="px-6 py-3.5 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                {sub.billingPeriod}
+            </td>}
+            {visibleColumns.nextPaymentDate && <td className="px-6 py-3.5 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                 {sub.nextPayment !== '-' ? formatDateDisplay(sub.nextPayment) : '-'}
+            </td>}
+            {visibleColumns.status && <td className="px-6 py-3.5 whitespace-nowrap">
                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border ${sub.status === 'Active' ? 'bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-100 dark:border-green-900/50' : 'bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-100 dark:border-slate-700'}`}>
                    {sub.status}
                  </span>
-            </td>
+            </td>}
+            {visibleColumns.paymentMethod && <td className="px-6 py-3.5 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                {sub.paymentMethod}
+            </td>}
+            {visibleColumns.endDate && <td className="px-6 py-3.5 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                {sub.endDate ? formatDateDisplay(sub.endDate) : '-'}
+            </td>}
+            {visibleColumns.website && <td className="px-6 py-3.5 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                {sub.website ? <a href={sub.website} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-blue-500 hover:underline">Visit <ExternalLink size={12}/></a> : '-'}
+            </td>}
             <td className="px-6 py-3.5 whitespace-nowrap text-right text-sm font-medium">
               <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                 <button onClick={() => onEdit(sub)} className="p-1.5 rounded-md transition-all text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700">
@@ -301,6 +392,16 @@ export const SubscriptionsPage: React.FC = () => {
     const { subscriptions, addSubscription, updateSubscription, deleteSubscription, loading } = useData();
     const [filters, setFilters] = useState({ status: 'All', expenseType: 'All' });
     const [viewMode, setViewMode] = useState('list');
+    const [visibleColumns, setVisibleColumns] = useState({
+        category: true,
+        cost: true,
+        billingPeriod: true,
+        paymentMethod: true,
+        nextPaymentDate: true,
+        status: true,
+        website: false,
+        endDate: false,
+    });
 
     const [isAddModalOpen, setAddModalOpen] = useState(false);
     const [editingSub, setEditingSub] = useState<Subscription | null>(null);
@@ -317,6 +418,33 @@ export const SubscriptionsPage: React.FC = () => {
             })
             .sort((a, b) => new Date(b.firstPayment).getTime() - new Date(a.firstPayment).getTime());
     }, [subscriptions, filters]);
+    
+    const subscriptionsWithNextPayment = useMemo(() => {
+        return filteredSubscriptions.map(sub => {
+            if (sub.status !== 'Active' || sub.expenseType !== 'Recurring') {
+                return { ...sub, nextPayment: '-' };
+            }
+            const today = new Date();
+            const firstPayment = new Date(sub.firstPayment);
+            let nextPayment = new Date(firstPayment);
+            
+            if (nextPayment > today) { 
+                return { ...sub, nextPayment: nextPayment.toISOString() };
+            }
+
+            if (sub.billingPeriod === 'Monthly') {
+                while (nextPayment < today) {
+                    nextPayment.setMonth(nextPayment.getMonth() + 1);
+                }
+            } else { // Yearly
+                while (nextPayment < today) {
+                    nextPayment.setFullYear(nextPayment.getFullYear() + 1);
+                }
+            }
+            return { ...sub, nextPayment: nextPayment.toISOString() };
+        });
+    }, [filteredSubscriptions]);
+
 
     const summaryCards = useMemo(() => {
         const monthlyTotal = activeSubscriptions.reduce((sum, sub) => sum + (sub.billingPeriod === 'Yearly' ? sub.price / 12 : sub.price), 0);
@@ -546,13 +674,18 @@ export const SubscriptionsPage: React.FC = () => {
                 </Card>
             </div>
 
-            <div className="p-1 rounded-lg flex bg-slate-100 dark:bg-slate-800 w-min ml-auto">
-                <button onClick={() => setViewMode('list')} className={`px-3 py-1.5 rounded-md transition-all text-sm flex items-center gap-2 ${viewMode === 'list' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500'}`}><List size={16} /> List</button>
-                <button onClick={() => setViewMode('grid')} className={`px-3 py-1.5 rounded-md transition-all text-sm flex items-center gap-2 ${viewMode === 'grid' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500'}`}><Grid size={16} /> Grid</button>
-                <button onClick={() => setViewMode('calendar')} className={`px-3 py-1.5 rounded-md transition-all text-sm flex items-center gap-2 ${viewMode === 'calendar' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500'}`}><CalendarIcon size={16} /> Calendar</button>
+            <div className="flex items-center justify-end gap-2">
+                 {viewMode === 'list' && (
+                    <ColumnsDropdown columns={visibleColumns} setColumns={setVisibleColumns} />
+                 )}
+                <div className="p-1 rounded-lg flex bg-slate-100 dark:bg-slate-800">
+                    <button onClick={() => setViewMode('list')} className={`px-3 py-1.5 rounded-md transition-all text-sm flex items-center gap-2 ${viewMode === 'list' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500'}`}><List size={16} /> List</button>
+                    <button onClick={() => setViewMode('grid')} className={`px-3 py-1.5 rounded-md transition-all text-sm flex items-center gap-2 ${viewMode === 'grid' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500'}`}><Grid size={16} /> Grid</button>
+                    <button onClick={() => setViewMode('calendar')} className={`px-3 py-1.5 rounded-md transition-all text-sm flex items-center gap-2 ${viewMode === 'calendar' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500'}`}><CalendarIcon size={16} /> Calendar</button>
+                </div>
             </div>
 
-            {viewMode === 'list' && <ListView data={filteredSubscriptions} onDelete={handleDelete} onEdit={handleEdit} />}
+            {viewMode === 'list' && <ListView data={subscriptionsWithNextPayment} onDelete={handleDelete} onEdit={handleEdit} visibleColumns={visibleColumns} />}
             {viewMode === 'grid' && <GridView data={filteredSubscriptions} onDelete={handleDelete} onEdit={handleEdit} />}
             {viewMode === 'calendar' && <CalendarView data={filteredSubscriptions} onEdit={handleEdit} />}
             
