@@ -732,16 +732,16 @@ export const SubscriptionsPage: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Card>
                     <h3 className="text-lg font-semibold mb-4">Category Breakdown</h3>
-                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-2">
                         {categoryBreakdownData.slice(0, 10).map((item) => (
-                            <div key={item.name} className="flex items-center gap-3 p-3 rounded-lg bg-slate-100 dark:bg-slate-700/50">
-                                <div className="w-9 h-9 flex-shrink-0 bg-white dark:bg-slate-700 rounded-lg flex items-center justify-center">
-                                    {getCategoryIcon(item.name)}
+                            <div key={item.name} className="flex items-center justify-between text-sm p-2 rounded-lg transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                                <div className="flex items-center gap-3 truncate">
+                                    <div className="w-8 h-8 flex-shrink-0 bg-slate-100 dark:bg-slate-700/50 rounded-lg flex items-center justify-center">
+                                        {getCategoryIcon(item.name)}
+                                    </div>
+                                    <span className="font-medium text-slate-700 dark:text-slate-300 truncate">{item.name}</span>
                                 </div>
-                                <div className="truncate">
-                                    <span className="font-semibold text-sm text-slate-800 dark:text-slate-200 truncate block">{item.name}</span>
-                                    <p className="font-mono text-sm text-slate-500 dark:text-slate-400">{formatCurrency(item.value)}</p>
-                                </div>
+                                <span className="font-semibold text-slate-800 dark:text-slate-200 tracking-tight">{formatCurrency(item.value)}</span>
                             </div>
                         ))}
                     </div>
