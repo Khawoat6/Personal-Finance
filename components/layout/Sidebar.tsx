@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import {
@@ -11,7 +10,6 @@ import {
     ClipboardList,
     Settings,
 } from 'lucide-react';
-import { AppLogo } from '../ui/AppLogo';
 
 const navGroups = [
     {
@@ -60,8 +58,7 @@ export const Sidebar: React.FC = () => {
     return (
         <aside className="w-64 flex-shrink-0 flex flex-col border-r border-zinc-200 dark:border-slate-800">
             <div className="h-20 flex items-center px-6">
-                <AppLogo />
-                <span className="ml-2 text-xl font-medium text-zinc-900 dark:text-slate-100">Sup Luxe</span>
+                <span className="text-2xl font-bold font-serif tracking-wider text-zinc-900 dark:text-slate-100">FINDEE</span>
             </div>
             
             <nav className="flex-1 px-4 py-4 space-y-6">

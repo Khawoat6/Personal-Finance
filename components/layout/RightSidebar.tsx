@@ -1,9 +1,9 @@
-
 import React from 'react';
 import { useData } from '../../hooks/useData';
 import { ProgressBar } from '../ui/ProgressBar';
 import { formatCurrency } from '../../utils/formatters';
 import { Building2, Trophy } from 'lucide-react';
+import { CreditScoreWidget } from '../features/CreditScoreWidget';
 
 // --- Main Sidebar Component ---
 export const RightSidebar: React.FC = () => {
@@ -13,6 +13,8 @@ export const RightSidebar: React.FC = () => {
         return (
             <aside className="w-80 flex-shrink-0 p-6 hidden lg:block">
                 <div className="animate-pulse space-y-8">
+                    <div className="h-48 bg-slate-200 dark:bg-slate-700 rounded-2xl"></div>
+
                     <div>
                         <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-1/3 mb-4"></div>
                         <div className="space-y-3">
@@ -35,6 +37,7 @@ export const RightSidebar: React.FC = () => {
     return (
         <aside className="w-80 flex-shrink-0 p-6 hidden lg:block overflow-y-auto">
             <div className="space-y-8">
+                <CreditScoreWidget />
                 <div>
                     <h3 className="text-sm font-semibold text-zinc-500 dark:text-slate-400 uppercase tracking-wider mb-4">Accounts</h3>
                     <div className="space-y-1">

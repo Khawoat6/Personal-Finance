@@ -1,8 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
 import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
-import { AppLogo } from '../components/ui/AppLogo';
 
 const LandingHeader: React.FC = () => {
     const [isScrolled, setIsScrolled] = useState(false);
@@ -18,9 +16,8 @@ const LandingHeader: React.FC = () => {
     return (
         <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? 'bg-zinc-900/80 backdrop-blur-sm shadow-lg' : 'bg-transparent'}`}>
             <div className="container mx-auto px-6 py-4 flex justify-between items-center">
-                <div className="flex items-center gap-3">
-                    <AppLogo />
-                    <span className="text-xl font-medium text-white">Sup Luxe</span>
+                <div className="flex items-center">
+                    <span className="text-2xl font-bold font-serif tracking-wider text-white">FINDEE</span>
                 </div>
                 <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-zinc-300">
                     <a href="#" className="hover:text-white transition-colors">Products</a>
@@ -59,7 +56,7 @@ const SimplifySection: React.FC = () => (
     <section className="py-20 md:py-32 text-center">
         <h2 className="text-5xl md:text-6xl font-serif italic">Simplify your money</h2>
         <div className="mt-12 px-6">
-            <img src="https://storage.googleapis.com/maker-LLM-tool-responses/origin-app-simplify.png" alt="Sup Luxe App on phone" className="max-w-4xl mx-auto"/>
+            <img src="https://storage.googleapis.com/maker-LLM-tool-responses/origin-app-simplify.png" alt="FINDEE App on phone" className="max-w-4xl mx-auto"/>
         </div>
     </section>
 );
@@ -130,11 +127,10 @@ const LandingFooter: React.FC = () => (
         </div>
         <div className="container mx-auto px-6 mt-16 border-t border-zinc-800 pt-8">
              <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-                <div className="flex items-center gap-3">
-                    <AppLogo className="text-white"/>
-                    <span className="text-lg font-medium text-white">Sup Luxe</span>
+                <div className="flex items-center">
+                    <span className="text-2xl font-bold font-serif tracking-wider text-white">FINDEE</span>
                 </div>
-                <p className="text-xs text-zinc-500 text-center">© 2024 Sup Luxe, Inc.</p>
+                <p className="text-xs text-zinc-500 text-center">© 2024 FINDEE, Inc.</p>
             </div>
         </div>
     </footer>

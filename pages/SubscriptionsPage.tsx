@@ -744,8 +744,8 @@ export const SubscriptionsPage: React.FC = () => {
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                  <Card><h4 className="text-sm text-slate-500">Active Items</h4><p className="text-2xl font-bold">{summaryCards.activeItems}</p></Card>
                  <Card><h4 className="text-sm text-slate-500">Avg. Monthly Expenses</h4><p className="text-2xl font-bold">{formatCurrency(summaryCards.avgMonthly)}</p></Card>
-                 <Card><div className="flex justify-between items-center"><h4 className="text-sm text-slate-500">Most Expensive</h4><TrendingUp className="text-red-500" size={18}/></div><p className="text-lg font-bold">{formatCurrency(summaryCards.mostExpensive.price)}</p><p className="text-xs text-slate-400 truncate">{summaryCards.mostExpensive.name}</p></Card>
-                 <Card><div className="flex justify-between items-center"><h4 className="text-sm text-slate-500">Potential Savings</h4><PiggyBank className="text-green-500" size={18}/></div><p className="text-lg font-bold">{formatCurrency(summaryCards.potentialSavings)}</p><p className="text-xs text-slate-400">from inactive subs</p></Card>
+                 <Card><h4 className="text-sm text-slate-500">Most Expensive</h4><p className="text-2xl font-bold">{formatCurrency(summaryCards.mostExpensive.price)}</p><p className="text-xs text-slate-400 truncate">{summaryCards.mostExpensive.name}</p></Card>
+                 <Card><h4 className="text-sm text-slate-500">Potential Savings</h4><p className="text-2xl font-bold">{formatCurrency(summaryCards.potentialSavings)}</p><p className="text-xs text-slate-400">from inactive subs</p></Card>
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
@@ -757,7 +757,6 @@ export const SubscriptionsPage: React.FC = () => {
                              <XAxis dataKey="name" fontSize={12} tickLine={false} axisLine={false} />
                              <YAxis fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => formatCurrency(Number(value))}/>
                              <Tooltip content={<CustomTooltip />} />
-                             <Legend formatter={(value) => value === 'past' ? 'Past & Current' : 'Forecast'} />
                              <Line type="monotone" dataKey="past" stroke="#78716c" strokeWidth={2} dot={{ r: 4 }} activeDot={{ r: 6 }} name="Past & Current" />
                              <Line type="monotone" dataKey="forecast" stroke="#78716c" strokeWidth={2} strokeDasharray="5 5" dot={false} activeDot={{ r: 6 }} name="Forecast" />
                          </LineChart>
