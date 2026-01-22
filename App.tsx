@@ -28,34 +28,38 @@ const App: React.FC = () => {
         }
     }, []);
 
-    const getPageTitle = () => {
+    const getPageConfig = () => {
         switch (location.pathname) {
-            case '/': return 'Dashboard';
-            case '/transactions': return 'Transactions';
-            case '/budgets': return 'Budgets';
-            case '/subscriptions': return 'Subscriptions';
-            case '/goals': return 'Goals';
-            case '/reports': return 'Reports';
-            case '/statement': return 'Personal Statement';
-            case '/settings': return 'Settings';
-            default: return 'Personal Finance';
+            case '/': return { title: 'Dashboard', showAddButton: true };
+            case '/transactions': return { title: 'Transactions', showAddButton: true };
+            case '/budgets': return { title: 'Budgets', showAddButton: false };
+            case '/subscriptions': return { title: 'Subscriptions', showAddButton: false };
+            case '/goals': return { title: 'Goals', showAddButton: false };
+            case '/reports': return { title: 'Reports', showAddButton: false };
+            case '/statement': return { title: 'Personal Statement', showAddButton: false };
+            case '/settings': return { title: 'Settings', showAddButton: false };
+            default: return { title: 'Personal Finance', showAddButton: true };
         }
     };
     
+    const pageConfig = getPageConfig();
+
     return (
         <DataProvider>
             <div className="flex h-screen bg-gray-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200">
                 <Sidebar />
                 <main className="flex-1 flex flex-col overflow-hidden">
                     <header className="flex items-center justify-between p-4 md:p-6 border-b border-gray-200 dark:border-slate-800">
-                        <h1 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-slate-100">{getPageTitle()}</h1>
-                        <button
-                            onClick={() => setIsModalOpen(true)}
-                            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-slate-800 dark:bg-slate-200 dark:text-slate-900 rounded-lg hover:bg-slate-700 dark:hover:bg-slate-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-slate-500 transition-colors"
-                        >
-                            <PlusCircle className="h-4 w-4" />
-                            <span>Add Transaction</span>
-                        </button>
+                        <h1 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-slate-100">{pageConfig.title}</h1>
+                        {pageConfig.showAddButton && (
+                            <button
+                                onClick={() => setIsModalOpen(true)}
+                                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-slate-800 dark:bg-slate-200 dark:text-slate-900 rounded-lg hover:bg-slate-700 dark:hover:bg-slate-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-slate-500 transition-colors"
+                            >
+                                <PlusCircle className="h-4 w-4" />
+                                <span>Add Transaction</span>
+                            </button>
+                        )}
                     </header>
                     <div className="flex-1 overflow-y-auto p-4 md:p-6">
                         <Routes>
