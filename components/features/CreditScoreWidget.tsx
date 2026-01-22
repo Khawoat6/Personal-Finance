@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Clock, Pencil } from 'lucide-react';
+import { GaugeCircle, Pencil } from 'lucide-react';
 
 export const CreditScoreWidget: React.FC = () => {
     const [score, setScore] = useState(691);
@@ -62,34 +62,34 @@ export const CreditScoreWidget: React.FC = () => {
         <div className="bg-white dark:bg-slate-800 rounded-2xl border border-zinc-200 dark:border-slate-700 p-4 mb-8">
             <div className="flex justify-between items-center">
                 <div className="flex items-center gap-2">
-                    <Clock size={16} className="text-zinc-500 dark:text-slate-400" />
+                    <GaugeCircle size={16} className="text-zinc-500 dark:text-slate-400" />
                     <h4 className="font-semibold text-zinc-800 dark:text-slate-200">Credit Score</h4>
                 </div>
             </div>
 
             <div className="mt-4">
-                <p className="text-zinc-500 dark:text-slate-400 flex items-baseline">
-                    Your credit score is
-                    <span className="text-3xl font-bold text-zinc-900 dark:text-slate-100 ml-2 w-24 text-left group relative" onClick={handleEditClick}>
+                 <div className="flex items-baseline gap-2">
+                    <p className="text-zinc-500 dark:text-slate-400">Your credit score is</p>
+                    <div className="group relative flex items-center gap-2 cursor-pointer" onClick={handleEditClick}>
                         {isEditing ? (
-                             <input
+                            <input
                                 ref={inputRef}
                                 type="number"
                                 value={inputValue}
                                 onChange={(e) => setInputValue(e.target.value)}
                                 onBlur={handleSave}
                                 onKeyDown={handleKeyDown}
-                                className="w-full bg-slate-100 dark:bg-slate-700 font-bold text-zinc-900 dark:text-slate-100 rounded-md p-0 focus:outline-none focus:ring-2 ring-teal-500 text-center"
+                                className="w-28 text-4xl font-bold bg-slate-100 dark:bg-slate-700 text-zinc-900 dark:text-slate-100 rounded-md p-0 focus:outline-none focus:ring-2 ring-teal-500 text-center"
                             />
                         ) : (
                             <>
-                                <span className="cursor-pointer">{score}</span>
-                                <Pencil size={14} className="absolute top-1/2 -right-4 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity text-slate-500 cursor-pointer"/>
+                                <span className="text-4xl font-bold text-zinc-900 dark:text-slate-100">{score}</span>
+                                <Pencil size={16} className="opacity-0 group-hover:opacity-100 transition-opacity text-slate-500" />
                             </>
                         )}
-                    </span>
-                </p>
-                <p className="text-sm text-zinc-500 dark:text-slate-400 mt-1">
+                    </div>
+                </div>
+                <p className="text-sm text-zinc-500 dark:text-slate-400 mt-2">
                     This score is considered to be <span className="font-semibold text-zinc-700 dark:text-slate-300">{scoreLevel}</span>.
                 </p>
             </div>
