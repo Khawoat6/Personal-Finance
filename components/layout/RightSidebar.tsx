@@ -1,7 +1,7 @@
 import React from 'react';
 import { useData } from '../../hooks/useData';
 import { ProgressBar } from '../ui/ProgressBar';
-import { formatCurrency } from '../../utils/formatters';
+import { formatCurrencyInteger as formatCurrency } from '../../utils/formatters';
 import { Building2, Trophy } from 'lucide-react';
 import { CreditScoreWidget } from '../features/CreditScoreWidget';
 
