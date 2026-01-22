@@ -32,7 +32,7 @@ export const MainApp: React.FC = () => {
     return (
         <div className="flex h-screen bg-slate-50 dark:bg-slate-900 text-zinc-800 dark:text-slate-200 font-sans">
             <Sidebar />
-            <div className="flex-1 flex flex-col overflow-hidden">
+            <div className="flex-1 flex flex-col overflow-hidden border-r border-zinc-200 dark:border-slate-800">
                 <header className="h-20 flex-shrink-0 flex items-center justify-end px-8">
                     <div className="flex items-center gap-2">
                         {headerActions}
