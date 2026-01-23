@@ -1,6 +1,6 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
-import type { AppData, Transaction, Budget, Goal, Account, Category, Subscription } from '../types';
+import type { AppData, Transaction, Budget, Goal, Account, Category, Subscription, Profile, RiskProfile } from '../types';
 import { db } from '../services/db';
 
 interface DataContextType extends AppData {
@@ -21,6 +21,8 @@ interface DataContextType extends AppData {
     updateSubscription: (subscription: Subscription) => Promise<void>;
     deleteSubscription: (id: number | string) => Promise<void>;
     bulkAddSubscriptions: (subscriptions: Omit<Subscription, 'id'>[]) => Promise<void>;
+    updateProfile: (profile: Profile) => Promise<void>;
+    updateRiskProfile: (riskProfile: RiskProfile) => Promise<void>;
     importData: (data: AppData) => Promise<void>;
     exportData: () => AppData;
 }
@@ -29,6 +31,8 @@ const DataContext = createContext<DataContextType | undefined>(undefined);
 
 export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [data, setData] = useState<AppData>({
+        profile: {},
+        riskProfile: {},
         transactions: [],
         categories: [],
         accounts: [],
@@ -333,6 +337,16 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         await saveData({ ...data, subscriptions: updatedSubscriptions });
     };
 
+    const updateProfile = async (updatedProfile: Profile) => {
+        const newData = { ...data, profile: updatedProfile };
+        await saveData(newData);
+    };
+
+    const updateRiskProfile = async (updatedRiskProfile: RiskProfile) => {
+        const newData = { ...data, riskProfile: updatedRiskProfile };
+        await saveData(newData);
+    };
+
     const importData = async (importedData: AppData) => {
         await saveData(importedData);
     };
@@ -360,6 +374,8 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         updateSubscription,
         deleteSubscription,
         bulkAddSubscriptions,
+        updateProfile,
+        updateRiskProfile,
         importData,
         exportData
     };

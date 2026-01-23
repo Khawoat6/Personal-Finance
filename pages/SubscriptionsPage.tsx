@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useData } from '../hooks/useData';
 import type { Subscription } from '../types';
@@ -244,8 +243,10 @@ const Switch = ({ checked, onChange }: { checked: boolean, onChange: () => void 
 
 const ColumnsDropdown: React.FC<{
     columns: { [key: string]: boolean },
-    setColumns: React.Dispatch<React.SetStateAction<{ [key: string]: boolean }>>
-}> = ({ columns, setColumns }) => {
+    setColumns: React.Dispatch<React.SetStateAction<{ [key: string]: boolean }>>,
+    showEmail: boolean,
+    setShowEmail: (val: boolean) => void
+}> = ({ columns, setColumns, showEmail, setShowEmail }) => {
     const [isOpen, setIsOpen] = useState(false);
     const ref = useRef<HTMLDivElement>(null);
 
@@ -281,8 +282,12 @@ const ColumnsDropdown: React.FC<{
                <LayoutGrid size={16} /> Columns <ChevronDown size={16} />
             </button>
             {isOpen && (
-                <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-slate-800 rounded-lg shadow-xl border dark:border-slate-700 z-20">
+                <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-slate-800 rounded-lg shadow-xl border dark:border-slate-700 z-20">
                     <div className="p-2 space-y-1">
+                        <label className="flex items-center justify-between w-full px-2 py-1.5 text-sm rounded-md cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 border-b dark:border-slate-700 pb-2 mb-1">
+                            <span className="font-semibold">Show Email Address</span>
+                            <Switch checked={showEmail} onChange={() => setShowEmail(!showEmail)} />
+                        </label>
                         {allColumns.map(col => (
                             <label key={col.key} className="flex items-center justify-between w-full px-2 py-1.5 text-sm rounded-md cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700">
                                 <span>{col.label}</span>
@@ -410,37 +415,36 @@ const GridView: React.FC<{
 }> = ({ data, onDelete, onEdit }) => (
   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
     {data.map((sub) => (
-      <Card key={sub.id} className="p-5 hover:shadow-md transition-all hover:-translate-y-0.5 relative group">
-        <div className="flex justify-between items-start mb-3">
-          <div className="h-12 w-12 rounded-xl p-1.5 border shadow-sm flex items-center justify-center bg-white dark:bg-slate-700 border-gray-100 dark:border-slate-600">
-             <img src={getLogoUrl(sub)} alt={sub.name} className="h-full w-full object-contain" onError={(e) => (e.currentTarget.src = 'https://via.placeholder.com/40?text='+sub.name[0])} />
-          </div>
-          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity absolute top-4 right-4 backdrop-blur-sm p-1 rounded-lg border shadow-sm bg-white/80 dark:bg-slate-900/80 border-gray-100 dark:border-slate-700">
-             <button onClick={() => onEdit(sub)} className="p-1 text-slate-400 dark:hover:text-white hover:text-slate-900">
-              <FilePenLine size={14} />
-            </button>
-            <button onClick={() => onDelete(sub.id)} className="p-1 text-slate-400 dark:hover:text-red-400 hover:text-red-600">
-              <Trash2 size={14} />
-            </button>
-          </div>
+      <Card key={sub.id} className="p-3 hover:shadow-md transition-all hover:-translate-y-0.5 relative group flex flex-col justify-between">
+        <div className="absolute top-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm p-0.5 rounded-lg border shadow-sm bg-white/60 dark:bg-slate-900/60 border-gray-100 dark:border-slate-700">
+           <button onClick={() => onEdit(sub)} className="p-1 text-slate-400 dark:hover:text-white hover:text-slate-900">
+            <FilePenLine size={14} />
+          </button>
+          <button onClick={() => onDelete(sub.id)} className="p-1 text-slate-400 dark:hover:text-red-400 hover:text-red-600">
+            <Trash2 size={14} />
+          </button>
         </div>
-        <h3 className="text-base font-bold mb-0.5 truncate text-slate-900 dark:text-white">{sub.name}</h3>
-        <p className="text-xs text-slate-500 dark:text-slate-400 mb-3 flex items-center gap-1.5">
-           {getCategoryIcon(sub.category)} <span className="truncate">{sub.category}</span>
-        </p>
-        <div className="flex items-end justify-between border-t pt-3 mt-1 border-slate-100 dark:border-slate-700">
-          <div>
-            <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wide">Cost</p>
-            <p className="text-base font-bold text-slate-900 dark:text-white">{formatCurrency(sub.price)}</p>
-          </div>
-          <div className="text-right">
-             <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wide">
-               {sub.expenseType === 'Recurring' ? 'Next Bill' : 'Date'}
-             </p>
-             <p className="text-xs font-medium text-slate-700 dark:text-slate-300">
-               {formatDateDisplay(sub.firstPayment)}
-             </p>
-          </div>
+        
+        <div className="flex items-start gap-3">
+            <div className="h-9 w-9 flex-shrink-0 rounded-lg p-1 border shadow-sm flex items-center justify-center bg-white dark:bg-slate-700 border-gray-100 dark:border-slate-600">
+                <img src={getLogoUrl(sub)} alt={sub.name} className="h-full w-full object-contain" onError={(e) => (e.currentTarget.src = 'https://via.placeholder.com/40?text='+sub.name[0])} />
+            </div>
+            <div className="overflow-hidden pr-8">
+                <h3 className="text-sm font-semibold truncate text-slate-800 dark:text-white">{sub.name}</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{sub.category}</p>
+            </div>
+        </div>
+
+        <div className="flex items-end justify-between pt-2 mt-2">
+            <div className="flex items-baseline gap-1">
+                <p className="text-base font-bold text-slate-800 dark:text-white">{formatCurrency(sub.price)}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">/{sub.billingPeriod === 'Monthly' ? 'mo' : 'yr'}</p>
+            </div>
+            <div className="text-right">
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                    {formatDateDisplay(sub.firstPayment)}
+                </p>
+            </div>
         </div>
       </Card>
     ))}
@@ -517,9 +521,11 @@ const MiniCalendarView: React.FC<{
 };
 
 // --- Main Page Component ---
+const initialFilters = { status: 'All', expenseType: 'All', billingPeriod: 'All', paymentMethod: 'All', category: 'All' };
+
 export const SubscriptionsPage: React.FC = () => {
     const { subscriptions, addSubscription, updateSubscription, deleteSubscription, bulkAddSubscriptions, loading } = useData();
-    const [filters, setFilters] = useState({ status: 'All', expenseType: 'All', billingPeriod: 'All', paymentMethod: 'All', category: 'All' });
+    const [filters, setFilters] = useState(initialFilters);
     const [viewMode, setViewMode] = useState('list');
     const [sortConfig, setSortConfig] = useState<{ key: SortableKeys, direction: 'asc' | 'desc' } | null>(null);
     const [visibleColumns, setVisibleColumns] = useState({
@@ -545,6 +551,19 @@ export const SubscriptionsPage: React.FC = () => {
         const methods = new Set(subscriptions.map(s => s.paymentMethod));
         return Array.from(methods).map(m => ({ value: m, label: m }));
     }, [subscriptions]);
+
+    const handleCategoryFilterClick = (categoryName: string) => {
+        setFilters(prevFilters => ({
+            ...prevFilters,
+            category: prevFilters.category === categoryName ? 'All' : categoryName
+        }));
+    };
+
+    const handleResetFilters = () => {
+        setFilters(initialFilters);
+    };
+
+    const isFilterActive = useMemo(() => Object.values(filters).some(v => v !== 'All'), [filters]);
 
     const filteredSubscriptions = useMemo(() => {
         return subscriptions
@@ -791,7 +810,7 @@ export const SubscriptionsPage: React.FC = () => {
                     <h3 className="text-lg font-semibold mb-4">Category Breakdown</h3>
                     <div className="space-y-2">
                         {categoryBreakdownData.slice(0, 10).map((item) => (
-                            <button key={item.name} onClick={() => setFilters(p => ({...p, category: item.name}))} className="w-full flex items-center justify-between text-sm p-2 rounded-lg transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50 text-left">
+                            <button key={item.name} onClick={() => handleCategoryFilterClick(item.name)} className="w-full flex items-center justify-between text-sm p-2 rounded-lg transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50 text-left">
                                 <div className="flex items-center gap-3 truncate">
                                     <div className="w-8 h-8 flex-shrink-0 bg-slate-100 dark:bg-slate-700/50 rounded-lg flex items-center justify-center">
                                         {getCategoryIcon(item.name)}
@@ -841,17 +860,19 @@ export const SubscriptionsPage: React.FC = () => {
                         <FilterDropdown title="All Types" value={filters.expenseType} onChange={(v) => setFilters(p => ({...p, expenseType: v}))} options={[{value: 'All', label: 'All Types'}, {value: 'Recurring', label: 'Recurring'}, {value: 'One-Time', label: 'One-Time'}]} />
                         <FilterDropdown title="All Periods" value={filters.billingPeriod} onChange={(v) => setFilters(p => ({...p, billingPeriod: v}))} options={[{value: 'All', label: 'All Periods'}, {value: 'Monthly', label: 'Monthly'}, {value: 'Yearly', label: 'Yearly'}]} />
                         <FilterDropdown title="All Payment Methods" value={filters.paymentMethod} onChange={(v) => setFilters(p => ({...p, paymentMethod: v}))} options={[{value: 'All', label: 'All Payment Methods'}, ...paymentMethodOptions]} />
+                         {isFilterActive && (
+                            <button
+                                onClick={handleResetFilters}
+                                className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline px-2"
+                            >
+                                Reset Filters
+                            </button>
+                        )}
                     </div>
                      <div className="flex items-center gap-2">
-                        {viewMode === 'list' && (
-                            <div className="flex items-center gap-4">
-                                <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300 cursor-pointer">
-                                   <span>Show Email</span>
-                                   <Switch checked={showEmail} onChange={() => setShowEmail(!showEmail)} />
-                                </label>
-                                <ColumnsDropdown columns={visibleColumns} setColumns={setVisibleColumns} />
-                            </div>
-                         )}
+                         <div className="flex items-center gap-2">
+                            <ColumnsDropdown columns={visibleColumns} setColumns={setVisibleColumns} showEmail={showEmail} setShowEmail={setShowEmail} />
+                         </div>
                          <div className="p-1 rounded-lg flex bg-slate-100 dark:bg-slate-800">
                             <button onClick={() => setViewMode('list')} className={`px-3 py-1.5 rounded-md transition-all text-sm flex items-center gap-2 ${viewMode === 'list' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500'}`}><Rows3 size={16} /> List</button>
                             <button onClick={() => setViewMode('grid')} className={`px-3 py-1.5 rounded-md transition-all text-sm flex items-center gap-2 ${viewMode === 'grid' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500'}`}><AppWindow size={16} /> Grid</button>

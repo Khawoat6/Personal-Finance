@@ -1,6 +1,6 @@
 // Fix: Corrected the import statement for React hooks.
 import React, { useState, useEffect } from 'react';
-import { Routes, Route, NavLink } from 'react-router-dom';
+import { Routes, Route, NavLink, Navigate } from 'react-router-dom';
 import { Sidebar } from './components/layout/Sidebar';
 import { RightSidebar } from './components/layout/RightSidebar';
 import { DashboardPage } from './pages/DashboardPage';
@@ -13,6 +13,10 @@ import { Plus, Settings, HelpCircle, Gift, Menu } from 'lucide-react';
 import { TransactionModal } from './components/features/TransactionModal';
 import { PersonalStatementPage } from './pages/PersonalStatementPage';
 import { SubscriptionsPage } from './pages/SubscriptionsPage';
+import { FinancialHealthPage } from './pages/FinancialHealthPage';
+import { TaxPlanningPage } from './pages/TaxPlanningPage';
+import { ProfilePage } from './pages/ProfilePage';
+import { RiskProfileModal } from './pages/RiskProfileModal';
 
 export const MainApp: React.FC = () => {
     const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
@@ -63,13 +67,17 @@ export const MainApp: React.FC = () => {
                 </header>
                 <main className="flex-1 overflow-y-auto px-4 sm:px-8 pb-8">
                     <Routes>
+                        <Route path="/" element={<Navigate to="/dashboard" replace />} />
                         <Route path="/dashboard" element={<DashboardPage setHeaderActions={setHeaderActions} />} />
                         <Route path="/transactions" element={<TransactionsPage setHeaderActions={setHeaderActions} />} />
                         <Route path="/budgets" element={<BudgetsPage />} />
                         <Route path="/subscriptions" element={<SubscriptionsPage />} />
                         <Route path="/goals" element={<GoalsPage setHeaderActions={setHeaderActions} />} />
                         <Route path="/reports" element={<ReportsPage />} />
+                        <Route path="/health" element={<FinancialHealthPage />} />
+                        <Route path="/tax-planning" element={<TaxPlanningPage />} />
                         <Route path="/statement" element={<PersonalStatementPage />} />
+                        <Route path="/profile" element={<ProfilePage />} />
                         <Route path="/settings" element={<SettingsPage />} />
                     </Routes>
                 </main>

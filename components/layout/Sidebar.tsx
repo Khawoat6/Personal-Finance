@@ -6,10 +6,13 @@ import {
     Trophy,
     GanttChart,
     ChartPie,
+    FileSpreadsheet,
     WalletCards,
     ClipboardList,
     Settings,
     X,
+    HeartPulse,
+    User,
 } from 'lucide-react';
 
 const navGroups = [
@@ -26,12 +29,15 @@ const navGroups = [
         title: 'REPORTS',
         items: [
             { to: '/reports', label: 'Forecast', icon: GanttChart },
+            { to: '/health', label: 'Health Check', icon: HeartPulse },
+            { to: '/tax-planning', label: 'Tax Planning', icon: FileSpreadsheet },
             { to: '/statement', label: 'Statement', icon: ChartPie },
         ]
     },
     {
         title: 'MANAGE',
         items: [
+            { to: '/profile', label: 'Profile', icon: User },
             { to: '/subscriptions', label: 'Subscriptions', icon: WalletCards },
             { to: '/settings', label: 'Settings', icon: Settings },
         ]

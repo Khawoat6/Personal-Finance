@@ -1,4 +1,3 @@
-
 import React, { useRef, useState, useEffect } from 'react';
 import { useData } from '../hooks/useData';
 import { Card } from '../components/ui/Card';
@@ -8,6 +7,9 @@ export const SettingsPage: React.FC = () => {
     const { exportData, importData } = useData();
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [currentTheme, setCurrentTheme] = useState(() => localStorage.getItem('theme') || 'light');
+    const [currency, setCurrency] = useState(() => localStorage.getItem('currency') || 'THB');
+    const [language, setLanguage] = useState(() => localStorage.getItem('language') || 'en');
+
 
     const handleThemeChange = (theme: 'light' | 'dark') => {
         setCurrentTheme(theme);
@@ -18,6 +20,21 @@ export const SettingsPage: React.FC = () => {
             document.documentElement.classList.remove('dark');
         }
     };
+    
+    const handleCurrencyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const newCurrency = e.target.value;
+        setCurrency(newCurrency);
+        localStorage.setItem('currency', newCurrency);
+        alert("Currency preference saved. App-wide change will apply on next refresh (feature in development).");
+    };
+
+    const handleLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const newLanguage = e.target.value;
+        setLanguage(newLanguage);
+        localStorage.setItem('language', newLanguage);
+        alert("Language preference saved. App-wide change will apply on next refresh (feature in development).");
+    };
+
 
     const handleExport = (format: 'json' | 'csv') => {
         const data = exportData();
@@ -108,6 +125,30 @@ export const SettingsPage: React.FC = () => {
                     >
                         <Moon size={16} /> Dark
                     </button>
+                </div>
+            </Card>
+
+            <Card>
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-1">Preferences</h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">Customize your experience.</p>
+                <div className="space-y-4">
+                    <div>
+                        <label htmlFor="currency" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Currency</label>
+                        <select id="currency" value={currency} onChange={handleCurrencyChange} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500 bg-white dark:bg-slate-700">
+                            <option value="THB">Thai Baht (THB)</option>
+                            <option value="USD">US Dollar (USD)</option>
+                            <option value="EUR">Euro (EUR)</option>
+                            <option value="JPY">Japanese Yen (JPY)</option>
+                            <option value="GBP">British Pound (GBP)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label htmlFor="language" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Language</label>
+                        <select id="language" value={language} onChange={handleLanguageChange} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500 bg-white dark:bg-slate-700">
+                            <option value="en">English</option>
+                            <option value="th">ภาษาไทย (Thai)</option>
+                        </select>
+                    </div>
                 </div>
             </Card>
 

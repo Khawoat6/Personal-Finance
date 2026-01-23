@@ -122,8 +122,12 @@ export const generateSeedData = (): AppData => {
     ];
     
     const subscriptions = [...DEFAULT_SUBSCRIPTIONS];
+    const profile = {};
+    const riskProfile = {};
 
     return {
+        profile,
+        riskProfile,
         transactions,
         categories,
         accounts,

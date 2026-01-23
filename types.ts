@@ -64,7 +64,31 @@ export interface Subscription {
   usage?: 'High' | 'Medium' | 'Low' | 'Unused';
 }
 
+export interface Profile {
+  fullName?: string;
+  age?: number;
+  gender?: 'Male' | 'Female' | 'Other' | 'Prefer not to say';
+  location?: string;
+  employmentStatus?: 'Full-time' | 'Part-time' | 'Self-employed' | 'Unemployed' | 'Student';
+  birthDate?: string;
+  address?: string;
+  phone?: string;
+  country?: string;
+  email?: string;
+  taxFilingStatus?: 'Single' | 'Married filing jointly' | 'Married filing separately' | 'Head of household' | 'Qualifying widow(er)';
+}
+
+export interface RiskProfile {
+  objective?: 'Capital Preservation' | 'Income' | 'Growth' | 'Aggressive Growth';
+  riskTolerance?: 'Conservative' | 'Moderately Conservative' | 'Moderate' | 'Moderately Aggressive' | 'Aggressive';
+  timeHorizon?: 'Short-term (< 3 years)' | 'Medium-term (3-7 years)' | 'Long-term (7-15 years)' | 'Very long-term (> 15 years)';
+  liquidityNeeds?: 'Within 1 year' | '1-3 years' | '3-5 years' | '> 5 years';
+  calculatedRiskProfile?: 'Conservative' | 'Moderately Conservative' | 'Moderate' | 'Moderately Aggressive' | 'Aggressive';
+}
+
 export interface AppData {
+  profile: Profile;
+  riskProfile: RiskProfile;
   transactions: Transaction[];
   categories: Category[];
   accounts: Account[];
