@@ -1,5 +1,5 @@
 
-import type { Category, Account, Subscription } from './types';
+import type { Category, Account, Subscription, CreditCard } from './types';
 
 const fillYear = (value: number) => Array(12).fill(value);
 
@@ -122,6 +122,34 @@ export const DEFAULT_ACCOUNTS: Account[] = [
     { id: 'acc-2', name: 'Main Bank Account', balance: 75000 },
     { id: 'acc-3', name: 'Credit Card', balance: -5000 },
 ];
+
+export const DEFAULT_CREDIT_CARDS: CreditCard[] = [
+    {
+        id: 'cc-1',
+        name: 'UOB Premier',
+        issuer: 'UOB',
+        last4: '1234',
+        statementDate: 20,
+        dueDate: 5,
+        creditLimit: 150000,
+        currentBalance: 25800,
+        cardType: 'Mastercard',
+        color: '#263238', // Dark grey/blue
+    },
+    {
+        id: 'cc-2',
+        name: 'Citi Rewards',
+        issuer: 'Citi',
+        last4: '5678',
+        statementDate: 15,
+        dueDate: 1,
+        creditLimit: 200000,
+        currentBalance: 89500,
+        cardType: 'Visa',
+        color: '#005f82', // Citi blue
+    },
+];
+
 
 export const SUBSCRIPTION_CATEGORIES = [
   'AI', 'APIs', 'Accounting', 'Advertising', 'Analytics', 'Art', 'Audio', 'Banking', 'Beauty', 'Blogging', 

@@ -13,6 +13,7 @@ import {
     X,
     HeartPulse,
     User,
+    CreditCard,
 } from 'lucide-react';
 
 const navGroups = [
@@ -38,6 +39,7 @@ const navGroups = [
         title: 'MANAGE',
         items: [
             { to: '/profile', label: 'Profile', icon: User },
+            { to: '/credit-cards', label: 'Credit Cards', icon: CreditCard },
             { to: '/subscriptions', label: 'Subscriptions', icon: WalletCards },
             { to: '/settings', label: 'Settings', icon: Settings },
         ]

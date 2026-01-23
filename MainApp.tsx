@@ -16,6 +16,7 @@ import { SubscriptionsPage } from './pages/SubscriptionsPage';
 import { FinancialHealthPage } from './pages/FinancialHealthPage';
 import { TaxPlanningPage } from './pages/TaxPlanningPage';
 import { ProfilePage } from './pages/ProfilePage';
+import { CreditCardsPage } from './pages/CreditCardsPage';
 import { RiskProfileModal } from './pages/RiskProfileModal';
 
 export const MainApp: React.FC = () => {
@@ -78,6 +79,7 @@ export const MainApp: React.FC = () => {
                         <Route path="/tax-planning" element={<TaxPlanningPage />} />
                         <Route path="/statement" element={<PersonalStatementPage />} />
                         <Route path="/profile" element={<ProfilePage />} />
+                        <Route path="/credit-cards" element={<CreditCardsPage setHeaderActions={setHeaderActions} />} />
                         <Route path="/settings" element={<SettingsPage />} />
                     </Routes>
                 </main>

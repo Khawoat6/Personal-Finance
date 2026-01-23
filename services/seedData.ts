@@ -1,4 +1,4 @@
-import { DEFAULT_CATEGORIES, DEFAULT_ACCOUNTS, DEFAULT_SUBSCRIPTIONS } from '../constants';
+import { DEFAULT_CATEGORIES, DEFAULT_ACCOUNTS, DEFAULT_SUBSCRIPTIONS, DEFAULT_CREDIT_CARDS } from '../constants';
 import type { AppData, Transaction } from '../types';
 
 export const generateSeedData = (): AppData => {
@@ -122,6 +122,7 @@ export const generateSeedData = (): AppData => {
     ];
     
     const subscriptions = [...DEFAULT_SUBSCRIPTIONS];
+    const creditCards = [...DEFAULT_CREDIT_CARDS];
     const profile = {};
     const riskProfile = {};
 
@@ -134,5 +135,6 @@ export const generateSeedData = (): AppData => {
         budgets,
         goals,
         subscriptions,
+        creditCards,
     };
 };

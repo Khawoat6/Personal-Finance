@@ -86,9 +86,23 @@ export interface RiskProfile {
   calculatedRiskProfile?: 'Conservative' | 'Moderately Conservative' | 'Moderate' | 'Moderately Aggressive' | 'Aggressive';
 }
 
+export interface CreditCard {
+  id: string;
+  name: string; // e.g., 'UOB Premier Miles'
+  issuer: 'UOB' | 'KTC' | 'Citi' | 'SCB' | 'Kasikorn' | 'Krungsri' | 'Amex' | 'Other';
+  last4: string;
+  statementDate: number; // Day of the month
+  dueDate: number; // Day of the month
+  creditLimit: number;
+  currentBalance: number;
+  cardType: 'Visa' | 'Mastercard' | 'Amex' | 'JCB';
+  color: string; // Hex code for card background
+}
+
 export interface AppData {
   profile: Profile;
   riskProfile: RiskProfile;
+  creditCards: CreditCard[];
   transactions: Transaction[];
   categories: Category[];
   accounts: Account[];

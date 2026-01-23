@@ -1,6 +1,6 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
-import type { AppData, Transaction, Budget, Goal, Account, Category, Subscription, Profile, RiskProfile } from '../types';
+import type { AppData, Transaction, Budget, Goal, Account, Category, Subscription, Profile, RiskProfile, CreditCard } from '../types';
 import { db } from '../services/db';
 
 interface DataContextType extends AppData {
@@ -23,6 +23,9 @@ interface DataContextType extends AppData {
     bulkAddSubscriptions: (subscriptions: Omit<Subscription, 'id'>[]) => Promise<void>;
     updateProfile: (profile: Profile) => Promise<void>;
     updateRiskProfile: (riskProfile: RiskProfile) => Promise<void>;
+    addCreditCard: (card: Omit<CreditCard, 'id'>) => Promise<void>;
+    updateCreditCard: (card: CreditCard) => Promise<void>;
+    deleteCreditCard: (id: string) => Promise<void>;
     importData: (data: AppData) => Promise<void>;
     exportData: () => AppData;
 }
@@ -39,6 +42,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         budgets: [],
         goals: [],
         subscriptions: [],
+        creditCards: [],
     });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<Error | null>(null);
@@ -346,6 +350,25 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         const newData = { ...data, riskProfile: updatedRiskProfile };
         await saveData(newData);
     };
+    
+    const addCreditCard = async (card: Omit<CreditCard, 'id'>) => {
+        const newCard: CreditCard = { ...card, id: `cc-${Date.now()}` };
+        const newData = { ...data, creditCards: [...data.creditCards, newCard] };
+        await saveData(newData);
+    };
+
+    const updateCreditCard = async (updatedCard: CreditCard) => {
+        const newCards = data.creditCards.map(c => c.id === updatedCard.id ? updatedCard : c);
+        const newData = { ...data, creditCards: newCards };
+        await saveData(newData);
+    };
+
+    const deleteCreditCard = async (id: string) => {
+        const newCards = data.creditCards.filter(c => c.id !== id);
+        const newData = { ...data, creditCards: newCards };
+        await saveData(newData);
+    };
+
 
     const importData = async (importedData: AppData) => {
         await saveData(importedData);
@@ -376,6 +399,9 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         bulkAddSubscriptions,
         updateProfile,
         updateRiskProfile,
+        addCreditCard,
+        updateCreditCard,
+        deleteCreditCard,
         importData,
         exportData
     };

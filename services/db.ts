@@ -1,6 +1,6 @@
 
 import localforage from 'localforage';
-import type { AppData, Transaction, Category, Account, Budget, Goal, Subscription, Profile, RiskProfile } from '../types';
+import type { AppData, Transaction, Category, Account, Budget, Goal, Subscription, Profile, RiskProfile, CreditCard } from '../types';
 import { generateSeedData } from './seedData';
 
 const DB_NAME = 'personalFinanceDB';
@@ -15,6 +15,7 @@ localforage.config({
 const KEYS = {
     PROFILE: 'profile',
     RISK_PROFILE: 'riskProfile',
+    CREDIT_CARDS: 'creditCards',
     TRANSACTIONS: 'transactions',
     CATEGORIES: 'categories',
     ACCOUNTS: 'accounts',
@@ -27,6 +28,7 @@ async function seedInitialData() {
     const seedData = generateSeedData();
     await localforage.setItem(KEYS.PROFILE, seedData.profile);
     await localforage.setItem(KEYS.RISK_PROFILE, seedData.riskProfile);
+    await localforage.setItem(KEYS.CREDIT_CARDS, seedData.creditCards);
     await localforage.setItem(KEYS.TRANSACTIONS, seedData.transactions);
     await localforage.setItem(KEYS.CATEGORIES, seedData.categories);
     await localforage.setItem(KEYS.ACCOUNTS, seedData.accounts);
@@ -46,18 +48,20 @@ export const db = {
 
         const profile = await localforage.getItem<Profile>(KEYS.PROFILE) || {};
         const riskProfile = await localforage.getItem<RiskProfile>(KEYS.RISK_PROFILE) || {};
+        const creditCards = await localforage.getItem<CreditCard[]>(KEYS.CREDIT_CARDS) || [];
         const categories = await localforage.getItem<Category[]>(KEYS.CATEGORIES) || [];
         const accounts = await localforage.getItem<Account[]>(KEYS.ACCOUNTS) || [];
         const budgets = await localforage.getItem<Budget[]>(KEYS.BUDGETS) || [];
         const goals = await localforage.getItem<Goal[]>(KEYS.GOALS) || [];
         const subscriptions = await localforage.getItem<Subscription[]>(KEYS.SUBSCRIPTIONS) || [];
 
-        return { profile, riskProfile, transactions, categories, accounts, budgets, goals, subscriptions };
+        return { profile, riskProfile, creditCards, transactions, categories, accounts, budgets, goals, subscriptions };
     },
 
     async saveData(data: AppData): Promise<void> {
         await localforage.setItem(KEYS.PROFILE, data.profile);
         await localforage.setItem(KEYS.RISK_PROFILE, data.riskProfile);
+        await localforage.setItem(KEYS.CREDIT_CARDS, data.creditCards);
         await localforage.setItem(KEYS.TRANSACTIONS, data.transactions);
         await localforage.setItem(KEYS.CATEGORIES, data.categories);
         await localforage.setItem(KEYS.ACCOUNTS, data.accounts);
