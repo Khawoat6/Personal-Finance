@@ -42,7 +42,108 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const loadData = useCallback(async () => {
         try {
             setLoading(true);
-            const allData = await db.getAllData();
+            let allData = await db.getAllData();
+            
+            // --- Auto-commit subscriptions ---
+            const today = new Date();
+            today.setHours(23, 59, 59, 999);
+            const newTransactions: Omit<Transaction, 'id'>[] = [];
+            const activeSubs = allData.subscriptions.filter(s => s.status === 'Active' && s.expenseType === 'Recurring');
+
+            for (const sub of activeSubs) {
+                const lastCommittedTx = allData.transactions
+                    .filter(t => t.subscriptionId === sub.id)
+                    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
+
+                let nextDueDate: Date;
+
+                if (lastCommittedTx) {
+                    nextDueDate = new Date(lastCommittedTx.date);
+                    if (sub.billingPeriod === 'Monthly') {
+                        nextDueDate.setMonth(nextDueDate.getMonth() + 1);
+                    } else {
+                        nextDueDate.setFullYear(nextDueDate.getFullYear() + 1);
+                    }
+                } else {
+                    nextDueDate = new Date(sub.firstPayment);
+                }
+                
+                nextDueDate.setHours(12, 0, 0, 0);
+                
+                while (nextDueDate <= today) {
+                    if (sub.endDate && new Date(sub.endDate) < nextDueDate) {
+                        break; // Stop if subscription has ended
+                    }
+
+                    const txDateString = nextDueDate.toISOString().split('T')[0];
+                    const existingTx = allData.transactions.find(t => 
+                        t.subscriptionId === sub.id &&
+                        t.date.startsWith(txDateString)
+                    );
+
+                    if (!existingTx) {
+                        let accountIdToUse = allData.accounts.find(a => a.name.toLowerCase().includes(sub.paymentMethod.toLowerCase()))?.id;
+                        if (!accountIdToUse) {
+                            accountIdToUse = allData.accounts.find(a => a.name.toLowerCase().includes('credit card'))?.id || allData.accounts[0]?.id;
+                        }
+                        
+                        let categoryIdToUse = allData.categories.find(c => c.name.toLowerCase() === sub.name.toLowerCase() && c.parentCategoryId === 'expenses-subscriptions')?.id;
+                        if (!categoryIdToUse) {
+                            categoryIdToUse = 'expenses-subscriptions';
+                        }
+
+                        if (accountIdToUse) {
+                            const newTx: Omit<Transaction, 'id'> = {
+                                date: nextDueDate.toISOString(),
+                                amount: sub.price,
+                                type: 'expense',
+                                categoryId: categoryIdToUse,
+                                accountId: accountIdToUse,
+                                note: `Subscription: ${sub.name}`,
+                                subscriptionId: sub.id,
+                            };
+                            newTransactions.push(newTx);
+                        }
+                    }
+
+                    if (sub.billingPeriod === 'Monthly') {
+                        nextDueDate.setMonth(nextDueDate.getMonth() + 1);
+                    } else {
+                        nextDueDate.setFullYear(nextDueDate.getFullYear() + 1);
+                    }
+                }
+            }
+
+            if (newTransactions.length > 0) {
+                console.log(`Auto-committing ${newTransactions.length} subscription transactions.`);
+                
+                const finalNewTxs: Transaction[] = newTransactions.map((tx, i) => ({
+                    ...tx,
+                    id: `tx-sub-auto-${Date.now()}-${i}`
+                }));
+
+                const accountBalanceChanges: Record<string, number> = {};
+                finalNewTxs.forEach(tx => {
+                    accountBalanceChanges[tx.accountId] = (accountBalanceChanges[tx.accountId] || 0) - tx.amount;
+                });
+
+                const finalAccounts = allData.accounts.map(acc => {
+                    if (accountBalanceChanges[acc.id]) {
+                        return { ...acc, balance: acc.balance + accountBalanceChanges[acc.id] };
+                    }
+                    return acc;
+                });
+                
+                allData = {
+                    ...allData,
+                    transactions: [...allData.transactions, ...finalNewTxs].sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()),
+                    accounts: finalAccounts
+                };
+                
+                await db.saveData(allData);
+            }
+            // --- End of auto-commit logic ---
+
             setData(allData);
         } catch (err) {
             setError(err as Error);
@@ -62,7 +163,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     const addTransaction = async (transaction: Omit<Transaction, 'id'>) => {
         const newTransaction: Transaction = { ...transaction, id: `tx-${Date.now()}` };
-        const newTransactions = [...data.transactions, newTransaction];
+        const newTransactions = [...data.transactions, newTransaction].sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
         const newAccounts = data.accounts.map(acc => {
             if (acc.id === newTransaction.accountId) {
@@ -84,7 +185,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
         const newTransactions = data.transactions.map(t =>
             t.id === updatedTransaction.id ? updatedTransaction : t
-        );
+        ).sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
         const amountDifference = (updatedTransaction.type === 'income' ? updatedTransaction.amount : -updatedTransaction.amount) - (oldTransaction.type === 'income' ? oldTransaction.amount : -oldTransaction.amount);
 

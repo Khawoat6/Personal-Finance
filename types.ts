@@ -8,6 +8,7 @@ export interface Transaction {
   accountId: string;
   note?: string;
   tags?: string[];
+  subscriptionId?: number | string;
 }
 
 export interface Category {

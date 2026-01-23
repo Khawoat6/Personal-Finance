@@ -9,6 +9,7 @@ import {
     WalletCards,
     ClipboardList,
     Settings,
+    X,
 } from 'lucide-react';
 
 const navGroups = [
@@ -54,25 +55,55 @@ const NavItem: React.FC<{ to: string, label: string, icon: React.ElementType }> 
     </NavLink>
 );
 
-export const Sidebar: React.FC = () => {
+interface SidebarProps {
+    isMobileOpen: boolean;
+    setMobileOpen: (isOpen: boolean) => void;
+}
+
+export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, setMobileOpen }) => {
+    const sidebarClasses = `
+        w-64 flex-shrink-0 flex flex-col border-r border-zinc-200 dark:border-slate-800 
+        bg-slate-50 dark:bg-slate-900
+        fixed md:static inset-y-0 left-0 z-40
+        transition-transform duration-300 ease-in-out
+        ${isMobileOpen ? 'translate-x-0' : '-translate-x-full'}
+        md:translate-x-0
+    `;
+
     return (
-        <aside className="w-64 flex-shrink-0 flex flex-col border-r border-zinc-200 dark:border-slate-800">
-            <div className="h-20 flex items-center px-6">
-                <span className="text-2xl font-bold font-serif tracking-wider text-zinc-900 dark:text-slate-100">FINDEE</span>
-            </div>
-            
-            <nav className="flex-1 px-4 py-4 space-y-6">
-                {navGroups.map((group) => (
-                    <div key={group.title}>
-                        <h3 className="px-3 mb-2 text-xs font-semibold tracking-wider text-zinc-400 dark:text-slate-500 uppercase">{group.title}</h3>
-                        <div className="space-y-1">
-                            {group.items.map((item) => (
-                                <NavItem key={item.to} {...item} />
-                            ))}
+        <>
+            {isMobileOpen && (
+                <div 
+                    className="fixed inset-0 bg-black/60 z-30 md:hidden" 
+                    onClick={() => setMobileOpen(false)}
+                    aria-hidden="true"
+                ></div>
+            )}
+            <aside className={sidebarClasses}>
+                <div className="h-20 flex items-center justify-between px-6">
+                    <img src="https://respectable-aquamarine-a7gbuo21fj.edgeone.app/app-icon-black-border-radius.png" alt="Findee Logo" className="h-14" />
+                    <button 
+                        onClick={() => setMobileOpen(false)} 
+                        className="md:hidden p-1 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full"
+                        aria-label="Close sidebar"
+                    >
+                        <X size={20} />
+                    </button>
+                </div>
+                
+                <nav className="flex-1 px-4 py-4 space-y-6">
+                    {navGroups.map((group) => (
+                        <div key={group.title}>
+                            <h3 className="px-3 mb-2 text-xs font-semibold tracking-wider text-zinc-400 dark:text-slate-500 uppercase">{group.title}</h3>
+                            <div className="space-y-1">
+                                {group.items.map((item) => (
+                                    <NavItem key={item.to} {...item} />
+                                ))}
+                            </div>
                         </div>
-                    </div>
-                ))}
-            </nav>
-        </aside>
+                    ))}
+                </nav>
+            </aside>
+        </>
     );
 };
