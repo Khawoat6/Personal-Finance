@@ -17,7 +17,7 @@ const LandingHeader: React.FC = () => {
         <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? 'bg-zinc-900/80 backdrop-blur-sm shadow-lg' : 'bg-transparent'}`}>
             <div className="container mx-auto px-6 py-4 flex justify-between items-center">
                 <div className="flex items-center">
-                    <span className="text-2xl font-bold font-serif tracking-wider text-white">FINDEE</span>
+                    <span className="text-2xl font-bold font-serif tracking-wider text-white">Findee</span>
                 </div>
                 <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-zinc-300">
                     <a href="#" className="hover:text-white transition-colors">Products</a>
@@ -56,7 +56,7 @@ const SimplifySection: React.FC = () => (
     <section className="py-20 md:py-32 text-center">
         <h2 className="text-5xl md:text-6xl font-serif italic">Simplify your money</h2>
         <div className="mt-12 px-6">
-            <img src="https://storage.googleapis.com/maker-LLM-tool-responses/origin-app-simplify.png" alt="FINDEE App on phone" className="max-w-4xl mx-auto"/>
+            <img src="https://storage.googleapis.com/maker-LLM-tool-responses/origin-app-simplify.png" alt="Findee App on phone" className="max-w-4xl mx-auto"/>
         </div>
     </section>
 );
@@ -128,9 +128,9 @@ const LandingFooter: React.FC = () => (
         <div className="container mx-auto px-6 mt-16 border-t border-zinc-800 pt-8">
              <div className="flex flex-col md:flex-row justify-between items-center gap-6">
                 <div className="flex items-center">
-                    <span className="text-2xl font-bold font-serif tracking-wider text-white">FINDEE</span>
+                    <span className="text-2xl font-bold font-serif tracking-wider text-white">Findee</span>
                 </div>
-                <p className="text-xs text-zinc-500 text-center">© 2024 FINDEE, Inc.</p>
+                <p className="text-xs text-zinc-500 text-center">© 2024 Findee, Inc.</p>
             </div>
         </div>
     </footer>
