@@ -25,7 +25,7 @@ export const SettingsPage: React.FC = () => {
         const newCurrency = e.target.value;
         setCurrency(newCurrency);
         localStorage.setItem('currency', newCurrency);
-        alert("Currency preference saved. App-wide change will apply on next refresh (feature in development).");
+        alert("Currency preference saved. The change will be applied app-wide after you refresh the page.");
     };
 
     const handleLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -140,6 +140,7 @@ export const SettingsPage: React.FC = () => {
                             <option value="EUR">Euro (EUR)</option>
                             <option value="JPY">Japanese Yen (JPY)</option>
                             <option value="GBP">British Pound (GBP)</option>
+                            <option value="BTC">Bitcoin (BTC)</option>
                         </select>
                     </div>
                     <div>

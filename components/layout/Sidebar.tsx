@@ -14,6 +14,9 @@ import {
     HeartPulse,
     User,
     CreditCard,
+    Users,
+    Map,
+    AppWindow,
 } from 'lucide-react';
 
 const navGroups = [
@@ -39,6 +42,9 @@ const navGroups = [
         title: 'MANAGE',
         items: [
             { to: '/profile', label: 'Profile', icon: User },
+            { to: '/relationships', label: 'Relationships', icon: Users },
+            { to: '/lifemap', label: 'Lifemap', icon: Map },
+            { to: '/tools', label: 'Tools', icon: AppWindow },
             { to: '/credit-cards', label: 'Credit Cards', icon: CreditCard },
             { to: '/subscriptions', label: 'Subscriptions', icon: WalletCards },
             { to: '/settings', label: 'Settings', icon: Settings },

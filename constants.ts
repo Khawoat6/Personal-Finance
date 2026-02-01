@@ -1,5 +1,5 @@
 
-import type { Category, Account, Subscription, CreditCard } from './types';
+import type { Category, Account, Subscription, CreditCard, Contact } from './types';
 
 const fillYear = (value: number) => Array(12).fill(value);
 
@@ -135,19 +135,62 @@ export const DEFAULT_CREDIT_CARDS: CreditCard[] = [
         currentBalance: 25800,
         cardType: 'Mastercard',
         color: '#263238', // Dark grey/blue
+        benefits: [
+            { id: 'b1-1', description: 'Priority Pass Airport Lounge Access (2 times/year)', category: 'Travel', used: false },
+            { id: 'b1-2', description: 'Complimentary Grab ride to/from airport (Code: UOBPREMIER)', category: 'Travel', used: true },
+            { id: 'b1-3', description: 'Travel Insurance up to 20M THB', category: 'Travel', used: false },
+            { id: 'b1-4', description: '1-for-1 dining deals at selected restaurants', category: 'Dining', used: false },
+            { id: 'b1-5', description: 'UNI$ to Miles Conversion (1:1)', category: 'Lifestyle', used: true },
+        ]
     },
     {
         id: 'cc-2',
-        name: 'Citi Rewards',
-        issuer: 'Citi',
+        name: 'UOB Cash Plus',
+        issuer: 'UOB',
         last4: '5678',
-        statementDate: 15,
-        dueDate: 1,
-        creditLimit: 200000,
-        currentBalance: 89500,
+        statementDate: 25,
+        dueDate: 10,
+        creditLimit: 50000,
+        currentBalance: 18300,
         cardType: 'Visa',
-        color: '#005f82', // Citi blue
+        color: '#005f82', // UOB blue
+        benefits: [
+            { id: 'b2-1', description: 'Cash on Call - Transfer credit to your account', category: 'Finance', used: true },
+            { id: 'b2-2', description: 'Flexible repayment plan up to 48 months', category: 'Finance', used: false },
+            { id: 'b2-3', description: 'No annual fee', category: 'Finance', used: true },
+            { id: 'b2-4', description: 'Cash withdrawal from any ATM', category: 'Finance', used: false },
+        ]
     },
+];
+
+export const DEFAULT_CONTACTS: Contact[] = [
+    // --- 4-Generation Family Tree (Tier 1) ---
+    { id: 'c-ggp1', firstName: 'George', lastName: 'Doe', relationship: 'Family', group: 'Doe Family', spouseId: 'c-ggm1', occupation: 'Retired Farmer', closeness: 1, status: 'Deceased' },
+    { id: 'c-ggm1', firstName: 'Susan', lastName: 'Doe', relationship: 'Family', group: 'Doe Family', spouseId: 'c-ggp1', occupation: 'Retired Teacher', closeness: 1, status: 'Active' },
+    { id: 'c-gp1', firstName: 'Richard', lastName: 'Doe', relationship: 'Family', group: 'Doe Family', parents: ['c-ggp1', 'c-ggm1'], spouseId: 'c-gm1', occupation: 'Retired Engineer', closeness: 1, status: 'Active' },
+    { id: 'c-gm1', firstName: 'Mary', lastName: 'Doe', relationship: 'Family', group: 'Doe Family', spouseId: 'c-gp1', occupation: 'Retired Nurse', closeness: 1, status: 'Active' },
+    { id: 'c1', firstName: 'John', lastName: 'Doe', photoUrl: 'https://randomuser.me/api/portraits/men/32.jpg', relationship: 'Family', group: 'Doe Family', birthday: '1965-05-20', connections: ['c2', 'c3'], occupation: 'Architect', firstMet: '1990-01-15', socials: { linkedin: 'https://linkedin.com' }, spouseId: 'c2', parents: ['c-gp1', 'c-gm1'], closeness: 1, status: 'Active' },
+    { id: 'c2', firstName: 'Jane', lastName: 'Doe', photoUrl: 'https://randomuser.me/api/portraits/women/44.jpg', relationship: 'Family', group: 'Doe Family', birthday: '1968-11-12', connections: ['c1', 'c3'], occupation: 'Doctor', firstMet: '1990-01-15', socials: { facebook: 'https://facebook.com' }, spouseId: 'c1', closeness: 1, status: 'Active' },
+    { id: 'c3', firstName: 'Peter', lastName: 'Doe', isUser: true, photoUrl: 'https://randomuser.me/api/portraits/men/33.jpg', relationship: 'Family', group: 'Doe Family', birthday: '1996-02-25', connections: ['c1', 'c2', 'c4'], occupation: 'You', firstMet: '1996-02-25', socials: {}, parents: ['c1', 'c2'], closeness: 1, status: 'Active' },
+
+    // --- Friends (Tier 1 & 2) ---
+    { id: 'c4', firstName: 'Alice', lastName: 'Smith', photoUrl: 'https://randomuser.me/api/portraits/women/50.jpg', relationship: 'Close Friend', group: 'University Squad', birthday: '1996-07-30', connections: ['c5', 'c6'], occupation: 'Graphic Designer', firstMet: '2015-08-20', socials: { instagram: 'https://instagram.com', twitter: 'https://twitter.com' }, closeness: 1, status: 'Active' },
+    { id: 'c7', firstName: 'Diana', lastName: 'Prince', photoUrl: 'https://randomuser.me/api/portraits/women/51.jpg', relationship: 'Close Friend', group: 'Physics Study Group', birthday: '1995-03-22', connections: ['c4'], occupation: 'Curator', firstMet: '2018-01-01', socials: { instagram: 'https://instagram.com' }, closeness: 1, status: 'Active' },
+    { id: 'c5', firstName: 'Bob', lastName: 'Johnson', photoUrl: 'https://randomuser.me/api/portraits/men/50.jpg', relationship: 'University Friend', group: 'University Squad', birthday: '1995-09-05', connections: ['c4', 'c6'], occupation: 'Software Engineer', firstMet: '2015-08-20', socials: { linkedin: 'https://linkedin.com' }, closeness: 2, status: 'Active' },
+    { id: 'c6', firstName: 'Charlie', lastName: 'Brown', photoUrl: 'https://randomuser.me/api/portraits/men/51.jpg', relationship: 'University Friend', group: 'University Squad', birthday: '1997-01-15', connections: ['c4', 'c5'], occupation: 'Musician', firstMet: '2016-03-10', socials: {}, closeness: 2, status: 'Lost Contact' },
+
+    // --- Work & Acquaintances (Tiers 3, 4, 5) ---
+    { id: 'c8', firstName: 'Edward', lastName: 'King', photoUrl: 'https://randomuser.me/api/portraits/men/60.jpg', relationship: 'Colleague', group: 'Chemistry Club', birthday: '1980-06-10', connections: ['c9', 'c10'], occupation: 'Project Manager', firstMet: '2020-02-01', socials: { linkedin: 'https://linkedin.com' }, closeness: 3, status: 'Active' },
+    { id: 'c9', firstName: 'Fiona', lastName: 'Queen', photoUrl: 'https://randomuser.me/api/portraits/women/60.jpg', relationship: 'Colleague', group: 'Chemistry Club', birthday: '1985-08-19', connections: ['c8', 'c10', 'c11'], occupation: 'HR Director', firstMet: '2019-11-15', socials: { linkedin: 'https://linkedin.com' }, closeness: 3, status: 'Active' },
+    { id: 'c10', firstName: 'George', lastName: 'Duke', photoUrl: 'https://randomuser.me/api/portraits/men/61.jpg', relationship: 'Colleague', group: 'Genetics Lab', birthday: '1990-10-01', connections: ['c8', 'c9'], occupation: 'Marketing Lead', firstMet: '2021-06-01', socials: { twitter: 'https://twitter.com' }, closeness: 4, status: 'Active' },
+    { id: 'c11', firstName: 'Hannah', lastName: 'Baron', photoUrl: 'https://randomuser.me/api/portraits/women/61.jpg', relationship: 'Colleague', group: 'Genetics Lab', birthday: '1992-12-05', connections: ['c9'], occupation: 'Accountant', firstMet: '2022-01-10', socials: {}, closeness: 4, status: 'Active' },
+    { id: 'c12', firstName: 'Ivy', lastName: 'Green', photoUrl: 'https://randomuser.me/api/portraits/women/70.jpg', relationship: 'Other', group: 'Physics Study Group', birthday: '1988-04-18', occupation: 'Botanist', firstMet: '2023-04-22', socials: {}, closeness: 5, status: 'Active' },
+    { id: 'c13', firstName: 'Jack', lastName: 'Black', photoUrl: 'https://randomuser.me/api/portraits/men/70.jpg', relationship: 'Other', birthday: '1979-09-01', occupation: 'Mechanic', firstMet: '2021-09-01', socials: {}, closeness: 5, status: 'Active' },
+    { id: 'c14', firstName: 'Karen', lastName: 'White', photoUrl: 'https://randomuser.me/api/portraits/women/71.jpg', relationship: 'Other', connections: ['c11'], group: 'Solar Energy Project', occupation: 'Barista', firstMet: '2023-01-05', socials: { instagram: 'https://instagram.com' }, closeness: 5, status: 'Active' },
+    
+    // --- Tiers 5 & 6 ---
+    { id: 'c15', firstName: 'Leo', lastName: 'Red', photoUrl: 'https://randomuser.me/api/portraits/men/71.jpg', relationship: 'Other', connections: ['c6'], group: 'Solar Energy Project', occupation: 'Artist', firstMet: '2022-07-19', socials: {}, closeness: 5, status: 'Active' },
+    { id: 'c16', firstName: 'Negative', lastName: 'Nancy', relationship: 'Other', group: 'Blacklist', occupation: 'Critic', closeness: 6, status: 'Archived' },
 ];
 
 

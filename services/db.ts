@@ -1,6 +1,6 @@
 
 import localforage from 'localforage';
-import type { AppData, Transaction, Category, Account, Budget, Goal, Subscription, Profile, RiskProfile, CreditCard } from '../types';
+import type { AppData, Transaction, Category, Account, Budget, Goal, Subscription, Profile, RiskProfile, CreditCard, Contact } from '../types';
 import { generateSeedData } from './seedData';
 
 const DB_NAME = 'personalFinanceDB';
@@ -22,6 +22,7 @@ const KEYS = {
     BUDGETS: 'budgets',
     GOALS: 'goals',
     SUBSCRIPTIONS: 'subscriptions',
+    CONTACTS: 'contacts',
 };
 
 async function seedInitialData() {
@@ -35,6 +36,7 @@ async function seedInitialData() {
     await localforage.setItem(KEYS.BUDGETS, seedData.budgets);
     await localforage.setItem(KEYS.GOALS, seedData.goals);
     await localforage.setItem(KEYS.SUBSCRIPTIONS, seedData.subscriptions);
+    await localforage.setItem(KEYS.CONTACTS, seedData.contacts);
     return seedData;
 }
 
@@ -54,8 +56,9 @@ export const db = {
         const budgets = await localforage.getItem<Budget[]>(KEYS.BUDGETS) || [];
         const goals = await localforage.getItem<Goal[]>(KEYS.GOALS) || [];
         const subscriptions = await localforage.getItem<Subscription[]>(KEYS.SUBSCRIPTIONS) || [];
+        const contacts = await localforage.getItem<Contact[]>(KEYS.CONTACTS) || [];
 
-        return { profile, riskProfile, creditCards, transactions, categories, accounts, budgets, goals, subscriptions };
+        return { profile, riskProfile, creditCards, transactions, categories, accounts, budgets, goals, subscriptions, contacts };
     },
 
     async saveData(data: AppData): Promise<void> {
@@ -68,6 +71,7 @@ export const db = {
         await localforage.setItem(KEYS.BUDGETS, data.budgets);
         await localforage.setItem(KEYS.GOALS, data.goals);
         await localforage.setItem(KEYS.SUBSCRIPTIONS, data.subscriptions);
+        await localforage.setItem(KEYS.CONTACTS, data.contacts);
     },
 
     async clearAllData(): Promise<void> {

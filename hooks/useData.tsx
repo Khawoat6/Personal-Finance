@@ -1,6 +1,6 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
-import type { AppData, Transaction, Budget, Goal, Account, Category, Subscription, Profile, RiskProfile, CreditCard } from '../types';
+import type { AppData, Transaction, Budget, Goal, Account, Category, Subscription, Profile, RiskProfile, CreditCard, Contact } from '../types';
 import { db } from '../services/db';
 
 interface DataContextType extends AppData {
@@ -26,6 +26,10 @@ interface DataContextType extends AppData {
     addCreditCard: (card: Omit<CreditCard, 'id'>) => Promise<void>;
     updateCreditCard: (card: CreditCard) => Promise<void>;
     deleteCreditCard: (id: string) => Promise<void>;
+    updateCreditCardBenefit: (cardId: string, benefitId: string, used: boolean) => Promise<void>;
+    addContact: (contact: Omit<Contact, 'id'>) => Promise<void>;
+    updateContact: (contact: Contact) => Promise<void>;
+    deleteContact: (id: string) => Promise<void>;
     importData: (data: AppData) => Promise<void>;
     exportData: () => AppData;
 }
@@ -43,6 +47,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         goals: [],
         subscriptions: [],
         creditCards: [],
+        contacts: [],
     });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<Error | null>(null);
@@ -369,6 +374,41 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         await saveData(newData);
     };
 
+    const updateCreditCardBenefit = async (cardId: string, benefitId: string, used: boolean) => {
+        const newCards = data.creditCards.map(card => {
+            if (card.id === cardId) {
+                const updatedBenefits = (card.benefits || []).map(benefit => {
+                    if (benefit.id === benefitId) {
+                        return { ...benefit, used };
+                    }
+                    return benefit;
+                });
+                return { ...card, benefits: updatedBenefits };
+            }
+            return card;
+        });
+        const newData = { ...data, creditCards: newCards };
+        await saveData(newData);
+    };
+
+    const addContact = async (contact: Omit<Contact, 'id'>) => {
+        const newContact: Contact = { ...contact, id: `ct-${Date.now()}` };
+        const newData = { ...data, contacts: [...data.contacts, newContact] };
+        await saveData(newData);
+    };
+
+    const updateContact = async (updatedContact: Contact) => {
+        const newContacts = data.contacts.map(c => c.id === updatedContact.id ? updatedContact : c);
+        const newData = { ...data, contacts: newContacts };
+        await saveData(newData);
+    };
+
+    const deleteContact = async (id: string) => {
+        const newContacts = data.contacts.filter(c => c.id !== id);
+        const newData = { ...data, contacts: newContacts };
+        await saveData(newData);
+    };
+
 
     const importData = async (importedData: AppData) => {
         await saveData(importedData);
@@ -402,6 +442,10 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         addCreditCard,
         updateCreditCard,
         deleteCreditCard,
+        updateCreditCardBenefit,
+        addContact,
+        updateContact,
+        deleteContact,
         importData,
         exportData
     };

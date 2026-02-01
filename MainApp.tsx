@@ -17,7 +17,10 @@ import { FinancialHealthPage } from './pages/FinancialHealthPage';
 import { TaxPlanningPage } from './pages/TaxPlanningPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { CreditCardsPage } from './pages/CreditCardsPage';
+import { RelationshipsPage } from './pages/RelationshipsPage';
 import { RiskProfileModal } from './pages/RiskProfileModal';
+import { LifemapPage } from './pages/LifemapPage';
+import { ToolsPage } from './pages/ToolsPage';
 
 export const MainApp: React.FC = () => {
     const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
@@ -80,6 +83,9 @@ export const MainApp: React.FC = () => {
                         <Route path="/statement" element={<PersonalStatementPage />} />
                         <Route path="/profile" element={<ProfilePage />} />
                         <Route path="/credit-cards" element={<CreditCardsPage setHeaderActions={setHeaderActions} />} />
+                        <Route path="/relationships" element={<RelationshipsPage setHeaderActions={setHeaderActions} />} />
+                        <Route path="/lifemap" element={<LifemapPage setHeaderActions={setHeaderActions} />} />
+                        <Route path="/tools" element={<ToolsPage />} />
                         <Route path="/settings" element={<SettingsPage />} />
                     </Routes>
                 </main>

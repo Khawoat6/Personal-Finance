@@ -110,17 +110,16 @@ export const TaxPlanningPage: React.FC = () => {
         const effectiveRate = income > 0 ? (totalTax / income) * 100 : 0;
 
         let highestBracket = 0;
+        let previousLimit = 0;
         for (const bracket of taxBrackets) {
-            if (taxableIncome > (bracket.limit === 150000 ? 0 : bracket.limit - taxBrackets[taxBrackets.indexOf(bracket)-1]?.limit + (taxBrackets.indexOf(bracket) > 1 ? taxBrackets[taxBrackets.indexOf(bracket)-1]?.limit : 0) )) {
-                 if (taxableIncome > bracket.limit) {
-                    highestBracket = bracket.rate * 100;
-                 } else if (taxableIncome <= bracket.limit && taxableIncome > (taxBrackets[taxBrackets.indexOf(bracket)-1]?.limit ?? 0) ) {
-                    highestBracket = bracket.rate * 100;
-                    break;
-                 }
+            if (taxableIncome > previousLimit) {
+                highestBracket = bracket.rate * 100;
             }
+            if (taxableIncome <= bracket.limit) {
+                break;
+            }
+            previousLimit = bracket.limit;
         }
-        if (taxableIncome <= 150000) highestBracket = 0;
 
 
         return {

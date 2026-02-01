@@ -3,7 +3,6 @@ import { useData } from '../hooks/useData';
 import { Card } from '../components/ui/Card';
 import { formatCurrency } from '../utils/formatters';
 import { HeartPulse, PiggyBank, ShieldAlert, Scale, Info, TrendingUp, Target, ArrowUpRight, ArrowDownRight, Minus } from 'lucide-react';
-// Fix: Added CartesianGrid to the import statement.
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, PieChart, Pie, Cell, Legend, CartesianGrid } from 'recharts';
 
 const ScoreGauge: React.FC<{ score: number }> = ({ score }) => {

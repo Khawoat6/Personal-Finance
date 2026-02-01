@@ -86,6 +86,13 @@ export interface RiskProfile {
   calculatedRiskProfile?: 'Conservative' | 'Moderately Conservative' | 'Moderate' | 'Moderately Aggressive' | 'Aggressive';
 }
 
+export interface CardBenefit {
+  id: string;
+  description: string;
+  category: 'Travel' | 'Dining' | 'Shopping' | 'Lifestyle' | 'Finance';
+  used: boolean;
+}
+
 export interface CreditCard {
   id: string;
   name: string; // e.g., 'UOB Premier Miles'
@@ -97,6 +104,36 @@ export interface CreditCard {
   currentBalance: number;
   cardType: 'Visa' | 'Mastercard' | 'Amex' | 'JCB';
   color: string; // Hex code for card background
+  benefits?: CardBenefit[];
+}
+
+export type ClosenessTier = 1 | 2 | 3 | 4 | 5 | 6;
+
+export interface Contact {
+  id: string;
+  firstName: string;
+  lastName: string;
+  photoUrl?: string;
+  phone?: string;
+  email?: string;
+  address?: string;
+  birthday?: string;
+  occupation?: string;
+  firstMet?: string; // ISO 8601 format
+  socials?: {
+    linkedin?: string;
+    twitter?: string;
+    facebook?: string;
+    instagram?: string;
+  };
+  relationship: 'Close Friend' | 'Family' | 'Relative' | 'University Friend' | 'Colleague' | 'Other';
+  group?: string; // For custom clustering in graph view
+  spouseId?: string;
+  parents?: string[];
+  connections?: string[]; // Array of other contact IDs
+  closeness?: ClosenessTier;
+  status?: 'Active' | 'Deceased' | 'Lost Contact' | 'Archived';
+  isUser?: boolean;
 }
 
 export interface AppData {
@@ -109,4 +146,29 @@ export interface AppData {
   budgets: Budget[];
   goals: Goal[];
   subscriptions: Subscription[];
+  contacts: Contact[];
+}
+
+export interface LifemapSettings {
+  lifemapName: string;
+  dateOfBirth: string; // ISO string
+  ageRange: number;
+}
+
+export interface LifemapCategory {
+  id: string;
+  name: string;
+  section: 'top' | 'bottom';
+  order: number;
+}
+
+export interface LifemapItem {
+  id: string;
+  categoryId: string;
+  title: string;
+  startAge: number;
+  endAge: number | null; // null means it goes to the end
+  color: 'blue' | 'red';
+  hideText: boolean;
+  lane?: number; // For rendering overlapping items
 }
