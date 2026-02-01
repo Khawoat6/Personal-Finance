@@ -521,7 +521,7 @@ const FamilyTreeView: React.FC<{ contacts: Contact[]; onEdit: (c: Contact) => vo
         rootIds = rootIds.filter(id => {
             if (processedRoots.has(id)) return false;
             const node = nodes.get(id);
-            // Fix: Added a `typeof` check to ensure spouseId is a string, resolving a TypeScript error where it was inferred as `unknown`.
+            // FIX: Added a `typeof` check to ensure spouseId is a string, resolving a TypeScript error where it was inferred as `unknown`.
             if (node && node.spouseId && typeof node.spouseId === 'string') {
                 processedRoots.add(node.spouseId);
             }

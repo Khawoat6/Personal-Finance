@@ -17,6 +17,7 @@ import {
     Users,
     Map,
     AppWindow,
+    Activity,
 } from 'lucide-react';
 
 const navGroups = [
@@ -32,6 +33,7 @@ const navGroups = [
     {
         title: 'REPORTS',
         items: [
+            { to: '/market-pulse', label: 'Market Pulse', icon: Activity },
             { to: '/reports', label: 'Forecast', icon: GanttChart },
             { to: '/health', label: 'Health Check', icon: HeartPulse },
             { to: '/tax-planning', label: 'Tax Planning', icon: FileSpreadsheet },

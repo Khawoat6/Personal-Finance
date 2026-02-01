@@ -1,6 +1,5 @@
-
 import localforage from 'localforage';
-import type { AppData, Transaction, Category, Account, Budget, Goal, Subscription, Profile, RiskProfile, CreditCard, Contact } from '../types';
+import type { AppData, Transaction, Category, Account, Budget, Goal, Subscription, Profile, RiskProfile, CreditCard, Contact, ToolGroup, Tool } from '../types';
 import { generateSeedData } from './seedData';
 
 const DB_NAME = 'personalFinanceDB';
@@ -23,6 +22,8 @@ const KEYS = {
     GOALS: 'goals',
     SUBSCRIPTIONS: 'subscriptions',
     CONTACTS: 'contacts',
+    TOOL_GROUPS: 'toolGroups',
+    TOOLS: 'tools',
 };
 
 async function seedInitialData() {
@@ -37,6 +38,8 @@ async function seedInitialData() {
     await localforage.setItem(KEYS.GOALS, seedData.goals);
     await localforage.setItem(KEYS.SUBSCRIPTIONS, seedData.subscriptions);
     await localforage.setItem(KEYS.CONTACTS, seedData.contacts);
+    await localforage.setItem(KEYS.TOOL_GROUPS, seedData.toolGroups);
+    await localforage.setItem(KEYS.TOOLS, seedData.tools);
     return seedData;
 }
 
@@ -57,8 +60,10 @@ export const db = {
         const goals = await localforage.getItem<Goal[]>(KEYS.GOALS) || [];
         const subscriptions = await localforage.getItem<Subscription[]>(KEYS.SUBSCRIPTIONS) || [];
         const contacts = await localforage.getItem<Contact[]>(KEYS.CONTACTS) || [];
+        const toolGroups = await localforage.getItem<ToolGroup[]>(KEYS.TOOL_GROUPS) || [];
+        const tools = await localforage.getItem<Tool[]>(KEYS.TOOLS) || [];
 
-        return { profile, riskProfile, creditCards, transactions, categories, accounts, budgets, goals, subscriptions, contacts };
+        return { profile, riskProfile, creditCards, transactions, categories, accounts, budgets, goals, subscriptions, contacts, toolGroups, tools };
     },
 
     async saveData(data: AppData): Promise<void> {
@@ -72,6 +77,8 @@ export const db = {
         await localforage.setItem(KEYS.GOALS, data.goals);
         await localforage.setItem(KEYS.SUBSCRIPTIONS, data.subscriptions);
         await localforage.setItem(KEYS.CONTACTS, data.contacts);
+        await localforage.setItem(KEYS.TOOL_GROUPS, data.toolGroups);
+        await localforage.setItem(KEYS.TOOLS, data.tools);
     },
 
     async clearAllData(): Promise<void> {

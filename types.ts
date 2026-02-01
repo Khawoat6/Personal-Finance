@@ -1,4 +1,3 @@
-
 export interface Transaction {
   id: string;
   date: string; // ISO 8601 format
@@ -136,6 +135,20 @@ export interface Contact {
   isUser?: boolean;
 }
 
+export interface Tool {
+    id: string;
+    name: string;
+    url: string;
+    groupId: string;
+    order: number;
+}
+
+export interface ToolGroup {
+    id: string;
+    title: string;
+    order: number;
+}
+
 export interface AppData {
   profile: Profile;
   riskProfile: RiskProfile;
@@ -147,6 +160,8 @@ export interface AppData {
   goals: Goal[];
   subscriptions: Subscription[];
   contacts: Contact[];
+  toolGroups: ToolGroup[];
+  tools: Tool[];
 }
 
 export interface LifemapSettings {

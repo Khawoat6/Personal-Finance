@@ -1,6 +1,8 @@
 
+
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
-import type { AppData, Transaction, Budget, Goal, Account, Category, Subscription, Profile, RiskProfile, CreditCard, Contact } from '../types';
+// FIX: Add Tool and ToolGroup types to import.
+import type { AppData, Transaction, Budget, Goal, Account, Category, Subscription, Profile, RiskProfile, CreditCard, Contact, Tool, ToolGroup } from '../types';
 import { db } from '../services/db';
 
 interface DataContextType extends AppData {
@@ -32,6 +34,15 @@ interface DataContextType extends AppData {
     deleteContact: (id: string) => Promise<void>;
     importData: (data: AppData) => Promise<void>;
     exportData: () => AppData;
+    // FIX: Add missing properties for tools and tool groups.
+    updateTools: (tools: Tool[]) => Promise<void>;
+    updateToolGroups: (toolGroups: ToolGroup[]) => Promise<void>;
+    addTool: (tool: Omit<Tool, 'id' | 'order'>) => Promise<void>;
+    updateTool: (tool: Tool) => Promise<void>;
+    deleteTool: (id: string) => Promise<void>;
+    addToolGroup: (title: string) => Promise<void>;
+    updateToolGroup: (group: ToolGroup) => Promise<void>;
+    deleteToolGroup: (id: string) => Promise<void>;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -48,6 +59,9 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         subscriptions: [],
         creditCards: [],
         contacts: [],
+        // FIX: Add missing initial state for tools and tool groups.
+        toolGroups: [],
+        tools: [],
     });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<Error | null>(null);
@@ -409,7 +423,6 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         await saveData(newData);
     };
 
-
     const importData = async (importedData: AppData) => {
         await saveData(importedData);
     };
@@ -417,6 +430,52 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const exportData = () => {
         return data;
     };
+
+    // FIX: Implement functions for tools and tool groups
+    const updateTools = async (updatedTools: Tool[]) => {
+        const newData = { ...data, tools: updatedTools };
+        await saveData(newData);
+    };
+
+    const updateToolGroups = async (updatedToolGroups: ToolGroup[]) => {
+        const newData = { ...data, toolGroups: updatedToolGroups };
+        await saveData(newData);
+    };
+
+    const addTool = async (tool: Omit<Tool, 'id' | 'order'>) => {
+        const maxOrder = Math.max(-1, ...data.tools.filter(t => t.groupId === tool.groupId).map(t => t.order));
+        const newTool: Tool = { ...tool, id: `t-${Date.now()}`, order: maxOrder + 1 };
+        const newTools = [...data.tools, newTool];
+        await saveData({ ...data, tools: newTools });
+    };
+
+    const updateTool = async (updatedTool: Tool) => {
+        const newTools = data.tools.map(t => (t.id === updatedTool.id ? updatedTool : t));
+        await saveData({ ...data, tools: newTools });
+    };
+
+    const deleteTool = async (id: string) => {
+        const newTools = data.tools.filter(t => t.id !== id);
+        await saveData({ ...data, tools: newTools });
+    };
+
+    const addToolGroup = async (title: string) => {
+        const maxOrder = Math.max(-1, ...data.toolGroups.map(g => g.order));
+        const newGroup: ToolGroup = { title, id: `tg-${Date.now()}`, order: maxOrder + 1 };
+        const newToolGroups = [...data.toolGroups, newGroup];
+        await saveData({ ...data, toolGroups: newToolGroups });
+    };
+
+    const updateToolGroup = async (updatedGroup: ToolGroup) => {
+        const newToolGroups = data.toolGroups.map(g => (g.id === updatedGroup.id ? updatedGroup : g));
+        await saveData({ ...data, toolGroups: newToolGroups });
+    };
+
+    const deleteToolGroup = async (id: string) => {
+        const newToolGroups = data.toolGroups.filter(g => g.id !== id);
+        await saveData({ ...data, toolGroups: newToolGroups });
+    };
+
 
     const value: DataContextType = {
         ...data,
@@ -447,7 +506,16 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         updateContact,
         deleteContact,
         importData,
-        exportData
+        exportData,
+        // FIX: Add tool functions to provider value
+        updateTools,
+        updateToolGroups,
+        addTool,
+        updateTool,
+        deleteTool,
+        addToolGroup,
+        updateToolGroup,
+        deleteToolGroup,
     };
 
     return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
