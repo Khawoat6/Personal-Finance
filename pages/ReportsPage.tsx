@@ -1,13 +1,11 @@
-
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { useData } from '../hooks/useData';
 import { formatCurrency } from '../utils/formatters';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceDot } from 'recharts';
-import { Info } from 'lucide-react';
+import { Info, Pencil } from 'lucide-react';
 
 const START_AGE = 30;
 const END_AGE = 90;
-const ANNUAL_RETURN = 0.0654;
 
 const TabButton: React.FC<{ name: string; active: boolean; onClick: () => void }> = ({ name, active, onClick }) => (
     <button
@@ -30,6 +28,75 @@ const MetricCard: React.FC<{ title: string; value: string; children: React.React
     </div>
 );
 
+const EditableMetricCard: React.FC<{ title: string; value: number; onSave: (newValue: number) => void; children: React.ReactNode }> = ({ title, value, onSave, children }) => {
+    const [isEditing, setIsEditing] = useState(false);
+    const [inputValue, setInputValue] = useState(String((value * 100).toFixed(2)));
+    const inputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        if (!isEditing) {
+            setInputValue(String((value * 100).toFixed(2)));
+        }
+    }, [value, isEditing]);
+    
+    useEffect(() => {
+        if (isEditing) {
+            inputRef.current?.focus();
+            inputRef.current?.select();
+        }
+    }, [isEditing]);
+
+    const handleSave = () => {
+        const newRate = parseFloat(inputValue);
+        if (!isNaN(newRate) && newRate >= 0 && newRate <= 100) {
+            onSave(newRate / 100);
+        } else {
+            setInputValue(String((value * 100).toFixed(2))); // Reset if invalid
+        }
+        setIsEditing(false);
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            handleSave();
+        } else if (e.key === 'Escape') {
+            setInputValue(String((value * 100).toFixed(2)));
+            setIsEditing(false);
+        }
+    };
+
+    return (
+        <div>
+            <h4 className="text-sm text-slate-400">{title}</h4>
+            <div className="flex items-baseline gap-2 mt-2 group cursor-pointer" onClick={() => !isEditing && setIsEditing(true)}>
+                {isEditing ? (
+                     <div className="relative">
+                        <input
+                            ref={inputRef}
+                            type="number"
+                            step="0.01"
+                            value={inputValue}
+                            onChange={(e) => setInputValue(e.target.value)}
+                            onBlur={handleSave}
+                            onKeyDown={handleKeyDown}
+                            className="w-36 text-4xl font-bold bg-transparent text-white focus:outline-none focus:ring-2 ring-sky-500 rounded-md p-0 pr-8"
+                        />
+                        <span className="absolute right-2 top-1/2 -translate-y-1/2 text-4xl font-bold text-white pointer-events-none">%</span>
+                     </div>
+                ) : (
+                    <>
+                        <p className="text-4xl font-bold text-white">{(value * 100).toFixed(2)}%</p>
+                        <Pencil size={16} className="text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </>
+                )}
+            </div>
+            <p className="text-xs text-slate-400 mt-2 max-w-xs">{children}</p>
+        </div>
+    );
+};
+
+
 const CustomTooltipContent = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
         return (
@@ -45,6 +112,17 @@ const CustomTooltipContent = ({ active, payload, label }: any) => {
 export const ReportsPage: React.FC = () => {
     const { accounts, categories, loading } = useData();
     const [activeTab, setActiveTab] = useState('Net worth');
+    
+    const [annualReturn, setAnnualReturn] = useState(() => {
+        const savedRate = localStorage.getItem('annualInvestmentReturnRate');
+        return savedRate ? parseFloat(savedRate) : 0.0654; // Default to 6.54%
+    });
+
+    const handleReturnRateSave = (newRate: number) => {
+        setAnnualReturn(newRate);
+        localStorage.setItem('annualInvestmentReturnRate', String(newRate));
+    };
+
 
     useEffect(() => {
         // Override main app background for this page
@@ -75,13 +153,13 @@ export const ReportsPage: React.FC = () => {
 
         for (let age = START_AGE; age <= END_AGE; age++) {
             data.push({ age: age, netWorth: currentWorth });
-            currentWorth = (currentWorth + (age < 65 ? annualSavings : 0)) * (1 + ANNUAL_RETURN);
+            currentWorth = (currentWorth + (age < 65 ? annualSavings : 0)) * (1 + annualReturn);
         }
         
         const medianNetWorth = data.find(d => d.age === END_AGE)?.netWorth || 0;
 
         return { chartData: data, medianNetWorth };
-    }, [accounts, categories, loading]);
+    }, [accounts, categories, loading, annualReturn]);
     
     const yAxisFormatter = (value: number) => {
         if (value === 0) return '฿0';
@@ -120,9 +198,13 @@ export const ReportsPage: React.FC = () => {
                     <MetricCard title="Median net worth at 90" value={formatCurrency(projectionData.medianNetWorth)}>
                         Most outcomes are concentrated around {formatCurrency(Math.round(projectionData.medianNetWorth / 100000) * 100000)}, which is the median result, making it a useful indicator of where you’re likely to land.
                     </MetricCard>
-                     <MetricCard title="Projected average annual return" value="6.54%">
-                        Your investment and retirement accounts are projected to grow at an average rate of 4.6% per year for the next 18 years, adjusted for inflation.
-                    </MetricCard>
+                     <EditableMetricCard
+                        title="Projected average annual return"
+                        value={annualReturn}
+                        onSave={handleReturnRateSave}
+                    >
+                        Enter your expected annual return rate. This will affect your future net worth projection.
+                    </EditableMetricCard>
                 </div>
 
                 <div className="h-[450px] mt-8 -ml-2">

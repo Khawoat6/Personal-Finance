@@ -597,7 +597,7 @@ const FamilyTreeView: React.FC<{ contacts: Contact[]; onEdit: (c: Contact) => vo
 };
 
 
-// --- Main Page Component ---
+// --- MAIN PAGE COMPONENT ---
 
 export const RelationshipsPage: React.FC<{ setHeaderActions: (actions: React.ReactNode) => void }> = ({ setHeaderActions }) => {
     const { contacts, deleteContact, loading } = useData();
