@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 // FIX: Add Tool and ToolGroup types to import.
-import type { AppData, Transaction, Budget, Goal, Account, Category, Subscription, Profile, RiskProfile, CreditCard, Contact, Tool, ToolGroup } from '../types';
+import type { AppData, Transaction, Budget, Goal, Account, Category, Subscription, Profile, RiskProfile, CreditCard, Contact, Tool, ToolGroup, LastWill, VisionBoardItem } from '../types';
 import { db } from '../services/db';
 
 interface DataContextType extends AppData {
@@ -34,6 +34,11 @@ interface DataContextType extends AppData {
     deleteContact: (id: string) => Promise<void>;
     importData: (data: AppData) => Promise<void>;
     exportData: () => AppData;
+    updateLastWill: (will: LastWill) => Promise<void>;
+    addVisionBoardItem: (item: Omit<VisionBoardItem, 'id'>) => Promise<void>;
+    updateVisionBoardItem: (item: VisionBoardItem) => Promise<void>;
+    deleteVisionBoardItem: (id: string) => Promise<void>;
+    setVisionBoardItems: (items: VisionBoardItem[]) => Promise<void>;
     // FIX: Add missing properties for tools and tool groups.
     updateTools: (tools: Tool[]) => Promise<void>;
     updateToolGroups: (toolGroups: ToolGroup[]) => Promise<void>;
@@ -59,6 +64,8 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         subscriptions: [],
         creditCards: [],
         contacts: [],
+        lastWill: { assetBeneficiaries: {}, specificGifts: [], digitalAssets: [] },
+        visionBoardItems: [],
         // FIX: Add missing initial state for tools and tool groups.
         toolGroups: [],
         tools: [],
@@ -423,6 +430,30 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         await saveData(newData);
     };
 
+    const updateLastWill = async (will: LastWill) => {
+        const newData = { ...data, lastWill: will };
+        await saveData(newData);
+    };
+
+    const addVisionBoardItem = async (item: Omit<VisionBoardItem, 'id'>) => {
+        const newItem: VisionBoardItem = { ...item, id: `vb-${Date.now()}` };
+        await saveData({ ...data, visionBoardItems: [...data.visionBoardItems, newItem] });
+    };
+
+    const updateVisionBoardItem = async (updatedItem: VisionBoardItem) => {
+        const newItems = data.visionBoardItems.map(item => item.id === updatedItem.id ? updatedItem : item);
+        await saveData({ ...data, visionBoardItems: newItems });
+    };
+
+    const deleteVisionBoardItem = async (id: string) => {
+        const newItems = data.visionBoardItems.filter(item => item.id !== id);
+        await saveData({ ...data, visionBoardItems: newItems });
+    };
+
+    const setVisionBoardItems = async (items: VisionBoardItem[]) => {
+        await saveData({ ...data, visionBoardItems: items });
+    };
+
     const importData = async (importedData: AppData) => {
         await saveData(importedData);
     };
@@ -507,6 +538,11 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         deleteContact,
         importData,
         exportData,
+        updateLastWill,
+        addVisionBoardItem,
+        updateVisionBoardItem,
+        deleteVisionBoardItem,
+        setVisionBoardItems,
         // FIX: Add tool functions to provider value
         updateTools,
         updateToolGroups,

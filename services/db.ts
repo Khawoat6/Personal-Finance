@@ -1,5 +1,5 @@
 import localforage from 'localforage';
-import type { AppData, Transaction, Category, Account, Budget, Goal, Subscription, Profile, RiskProfile, CreditCard, Contact, ToolGroup, Tool } from '../types';
+import type { AppData, Transaction, Category, Account, Budget, Goal, Subscription, Profile, RiskProfile, CreditCard, Contact, ToolGroup, Tool, LastWill, VisionBoardItem } from '../types';
 import { generateSeedData } from './seedData';
 
 const DB_NAME = 'personalFinanceDB';
@@ -24,6 +24,8 @@ const KEYS = {
     CONTACTS: 'contacts',
     TOOL_GROUPS: 'toolGroups',
     TOOLS: 'tools',
+    LAST_WILL: 'lastWill',
+    VISION_BOARD_ITEMS: 'visionBoardItems',
 };
 
 async function seedInitialData() {
@@ -40,6 +42,8 @@ async function seedInitialData() {
     await localforage.setItem(KEYS.CONTACTS, seedData.contacts);
     await localforage.setItem(KEYS.TOOL_GROUPS, seedData.toolGroups);
     await localforage.setItem(KEYS.TOOLS, seedData.tools);
+    await localforage.setItem(KEYS.LAST_WILL, seedData.lastWill);
+    await localforage.setItem(KEYS.VISION_BOARD_ITEMS, seedData.visionBoardItems);
     return seedData;
 }
 
@@ -62,8 +66,16 @@ export const db = {
         const contacts = await localforage.getItem<Contact[]>(KEYS.CONTACTS) || [];
         const toolGroups = await localforage.getItem<ToolGroup[]>(KEYS.TOOL_GROUPS) || [];
         const tools = await localforage.getItem<Tool[]>(KEYS.TOOLS) || [];
+        const lastWill = await localforage.getItem<LastWill>(KEYS.LAST_WILL) || { assetBeneficiaries: {}, specificGifts: [], digitalAssets: [] };
+        const visionBoardItems = await localforage.getItem<VisionBoardItem[]>(KEYS.VISION_BOARD_ITEMS) || [];
+        
+        // Ensure digitalAssets exists for backward compatibility
+        if (!lastWill.digitalAssets) {
+            lastWill.digitalAssets = [];
+        }
 
-        return { profile, riskProfile, creditCards, transactions, categories, accounts, budgets, goals, subscriptions, contacts, toolGroups, tools };
+
+        return { profile, riskProfile, creditCards, transactions, categories, accounts, budgets, goals, subscriptions, contacts, toolGroups, tools, lastWill, visionBoardItems };
     },
 
     async saveData(data: AppData): Promise<void> {
@@ -79,6 +91,8 @@ export const db = {
         await localforage.setItem(KEYS.CONTACTS, data.contacts);
         await localforage.setItem(KEYS.TOOL_GROUPS, data.toolGroups);
         await localforage.setItem(KEYS.TOOLS, data.tools);
+        await localforage.setItem(KEYS.LAST_WILL, data.lastWill);
+        await localforage.setItem(KEYS.VISION_BOARD_ITEMS, data.visionBoardItems);
     },
 
     async clearAllData(): Promise<void> {

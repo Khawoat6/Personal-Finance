@@ -53,22 +53,41 @@ export const MarketPulsePage: React.FC<{ setHeaderActions: (actions: React.React
         
         const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
 
+        const safeJsonParse = (jsonString: string, fallback: any) => {
+            try {
+                const match = jsonString.match(/```(json)?([\s\S]*?)```/);
+                const cleanString = match ? match[2] : jsonString;
+                return JSON.parse(cleanString);
+            } catch (e) {
+                console.error("Failed to parse JSON:", e, "Original string:", jsonString);
+                return fallback;
+            }
+        };
+
         // --- All Gemini API Calls ---
         const fetchSummary = ai.models.generateContent({ model: 'gemini-3-flash-preview', contents: "Provide a concise, one-paragraph summary of today's US stock market performance, including the general trend and any major influencing factors.", config: { tools: [{ googleSearch: {} }] } });
         const fetchSentiment = ai.models.generateContent({ model: 'gemini-3-flash-preview', contents: "Based on today's top financial news headlines, what is the overall market sentiment? Respond with a single word (e.g., Bullish, Bearish, Neutral, Fearful, Greedy) followed by a one-sentence explanation.", config: { tools: [{ googleSearch: {} }] } });
         
-        const fetchIndices = ai.models.generateContent({ model: 'gemini-3-flash-preview', contents: "Fetch the current price, change, and percentage change for the S&P 500, Nasdaq Composite, and Dow Jones Industrial Average.", config: { tools: [{ googleSearch: {} }], responseMimeType: 'application/json', responseSchema: { type: Type.OBJECT, properties: { indices: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { name: { type: Type.STRING }, price: { type: Type.STRING }, change: { type: Type.STRING }, percentChange: { type: Type.STRING } } } } } } } });
-        const fetchMovers = ai.models.generateContent({ model: 'gemini-3-flash-preview', contents: "List the top 3 gaining and top 3 losing stocks on the US market today, including their ticker, price, and percentage change.", config: { tools: [{ googleSearch: {} }], responseMimeType: 'application/json', responseSchema: { type: Type.OBJECT, properties: { gainers: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { ticker: { type: Type.STRING }, price: { type: Type.STRING }, percentChange: { type: Type.STRING } } } }, losers: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { ticker: { type: Type.STRING }, price: { type: Type.STRING }, percentChange: { type: Type.STRING } } } } } } } });
-        const fetchCrypto = ai.models.generateContent({ model: 'gemini-3-flash-preview', contents: "Provide the current price, 24h percentage change, and a one-sentence market summary for Bitcoin (BTC) and Ethereum (ETH).", config: { tools: [{ googleSearch: {} }], responseMimeType: 'application/json', responseSchema: { type: Type.OBJECT, properties: { BTC: { type: Type.OBJECT, properties: { price: { type: Type.STRING }, change24h: { type: Type.STRING }, summary: { type: Type.STRING } } }, ETH: { type: Type.OBJECT, properties: { price: { type: Type.STRING }, change24h: { type: Type.STRING }, summary: { type: Type.STRING } } } } } } });
-        const fetchEvents = ai.models.generateContent({ model: 'gemini-3-flash-preview', contents: "List the top 3 most important US economic events scheduled for this week, including the event name and date.", config: { tools: [{ googleSearch: {} }], responseMimeType: 'application/json', responseSchema: { type: Type.OBJECT, properties: { events: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { eventName: { type: Type.STRING }, date: { type: Type.STRING } } } } } } } });
+        const indicesPrompt = 'Fetch the current price, change, and percentage change for the S&P 500, Nasdaq Composite, and Dow Jones Industrial Average. Respond with only a valid JSON object with a single key "indices", which is an array of objects. Each object should have the keys "name", "price", "change", and "percentChange".';
+        const fetchIndices = ai.models.generateContent({ model: 'gemini-3-flash-preview', contents: indicesPrompt, config: { tools: [{ googleSearch: {} }] } });
+        
+        const moversPrompt = 'List the top 3 gaining and top 3 losing stocks on the US market today. Respond with only a valid JSON object with two keys: "gainers" and "losers". Each key should contain an array of objects, and each object should have "ticker", "price", and "percentChange" keys.';
+        const fetchMovers = ai.models.generateContent({ model: 'gemini-3-flash-preview', contents: moversPrompt, config: { tools: [{ googleSearch: {} }] } });
+        
+        const cryptoPrompt = 'Provide the current price, 24h percentage change, and a one-sentence market summary for Bitcoin (BTC) and Ethereum (ETH). Respond with only a valid JSON object containing two keys: "BTC" and "ETH". Each key should hold an object with "price", "change24h", and "summary" keys.';
+        const fetchCrypto = ai.models.generateContent({ model: 'gemini-3-flash-preview', contents: cryptoPrompt, config: { tools: [{ googleSearch: {} }] } });
+        
+        const eventsPrompt = 'List the top 3 most important US economic events scheduled for this week. Respond with only a valid JSON object with a single key "events", which is an array of objects. Each object should have "eventName" and "date" keys.';
+        const fetchEvents = ai.models.generateContent({ model: 'gemini-3-flash-preview', contents: eventsPrompt, config: { tools: [{ googleSearch: {} }] } });
+
 
         // --- Process Responses ---
         fetchSummary.then(res => setMarketSummary(res.text ?? "Could not load summary.")).finally(() => setLoadingStates(p => ({ ...p, summary: false })));
         fetchSentiment.then(res => setMarketSentiment(res.text ?? "Could not load sentiment.")).finally(() => setLoadingStates(p => ({ ...p, sentiment: false })));
-        fetchIndices.then(res => setIndices(JSON.parse(res.text ?? '{}').indices)).catch(console.error).finally(() => setLoadingStates(p => ({ ...p, indices: false })));
-        fetchMovers.then(res => setTopMovers(JSON.parse(res.text ?? '{}'))).catch(console.error).finally(() => setLoadingStates(p => ({ ...p, movers: false })));
-        fetchCrypto.then(res => setCryptoData(JSON.parse(res.text ?? '{}'))).catch(console.error).finally(() => setLoadingStates(p => ({ ...p, crypto: false })));
-        fetchEvents.then(res => setEconomicEvents(JSON.parse(res.text ?? '{}').events)).catch(console.error).finally(() => setLoadingStates(p => ({ ...p, events: false })));
+        fetchIndices.then(res => setIndices(safeJsonParse(res.text ?? '{}', { indices: [] }).indices)).catch(console.error).finally(() => setLoadingStates(p => ({ ...p, indices: false })));
+        fetchMovers.then(res => setTopMovers(safeJsonParse(res.text ?? '{}', {}))).catch(console.error).finally(() => setLoadingStates(p => ({ ...p, movers: false })));
+        fetchCrypto.then(res => setCryptoData(safeJsonParse(res.text ?? '{}', {}))).catch(console.error).finally(() => setLoadingStates(p => ({ ...p, crypto: false })));
+        fetchEvents.then(res => setEconomicEvents(safeJsonParse(res.text ?? '{}', { events: [] }).events)).catch(console.error).finally(() => setLoadingStates(p => ({ ...p, events: false })));
         
         setLastUpdated(new Date());
     }, []);

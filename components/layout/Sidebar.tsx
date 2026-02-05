@@ -18,6 +18,10 @@ import {
     Map,
     AppWindow,
     Activity,
+    TrendingDown,
+    HeartHandshake,
+    ScrollText,
+    Image,
 } from 'lucide-react';
 
 const navGroups = [
@@ -35,7 +39,9 @@ const navGroups = [
         items: [
             { to: '/market-pulse', label: 'Market Pulse', icon: Activity },
             { to: '/reports', label: 'Forecast', icon: GanttChart },
+            { to: '/software-meltdown', label: 'Software Stocks', icon: TrendingDown },
             { to: '/health', label: 'Health Check', icon: HeartPulse },
+            { to: '/relationship-balance-sheet', label: 'Balance Sheet', icon: HeartHandshake },
             { to: '/tax-planning', label: 'Tax Planning', icon: FileSpreadsheet },
             { to: '/statement', label: 'Statement', icon: ChartPie },
         ]
@@ -46,9 +52,11 @@ const navGroups = [
             { to: '/profile', label: 'Profile', icon: User },
             { to: '/relationships', label: 'Relationships', icon: Users },
             { to: '/lifemap', label: 'Lifemap', icon: Map },
+            { to: '/vision-board', label: 'Vision Board', icon: Image },
             { to: '/tools', label: 'Tools', icon: AppWindow },
             { to: '/credit-cards', label: 'Credit Cards', icon: CreditCard },
             { to: '/subscriptions', label: 'Subscriptions', icon: WalletCards },
+            { to: '/last-will', label: 'Last Will', icon: ScrollText },
             { to: '/settings', label: 'Settings', icon: Settings },
         ]
     }

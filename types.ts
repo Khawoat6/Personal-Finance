@@ -149,21 +149,6 @@ export interface ToolGroup {
     order: number;
 }
 
-export interface AppData {
-  profile: Profile;
-  riskProfile: RiskProfile;
-  creditCards: CreditCard[];
-  transactions: Transaction[];
-  categories: Category[];
-  accounts: Account[];
-  budgets: Budget[];
-  goals: Goal[];
-  subscriptions: Subscription[];
-  contacts: Contact[];
-  toolGroups: ToolGroup[];
-  tools: Tool[];
-}
-
 export interface LifemapSettings {
   lifemapName: string;
   dateOfBirth: string; // ISO string
@@ -186,4 +171,58 @@ export interface LifemapItem {
   color: 'blue' | 'red';
   hideText: boolean;
   lane?: number; // For rendering overlapping items
+}
+
+export interface AssetBeneficiary {
+  contactId: string;
+  percentage: number;
+}
+
+export interface SpecificGift {
+  id: string;
+  itemDescription: string;
+  contactId: string;
+}
+
+export interface DigitalAsset {
+  id: string;
+  accountName: string;
+  identifier: string; // username, email, wallet address, etc.
+  accessInstructions?: string;
+  wishes?: string;
+}
+
+export interface LastWill {
+  executorId?: string;
+  guardianId?: string;
+  assetBeneficiaries: { [accountId: string]: AssetBeneficiary[] };
+  specificGifts: SpecificGift[];
+  digitalAssets: DigitalAsset[];
+  finalWishes?: string;
+}
+
+export interface VisionBoardItem {
+  id: string;
+  year: number;
+  imageUrl: string; // data URL or web URL
+  title: string;
+  notes?: string;
+  order: number;
+}
+
+export interface AppData {
+  profile: Profile;
+  riskProfile: RiskProfile;
+  creditCards: CreditCard[];
+  transactions: Transaction[];
+  categories: Category[];
+  accounts: Account[];
+  budgets: Budget[];
+  goals: Goal[];
+  subscriptions: Subscription[];
+  contacts: Contact[];
+  toolGroups: ToolGroup[];
+  tools: Tool[];
+  lastWill: LastWill;
+  visionBoardItems: VisionBoardItem[];
 }

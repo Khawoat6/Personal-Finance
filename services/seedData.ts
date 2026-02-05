@@ -1,5 +1,5 @@
 import { DEFAULT_CATEGORIES, DEFAULT_ACCOUNTS, DEFAULT_SUBSCRIPTIONS, DEFAULT_CREDIT_CARDS, DEFAULT_CONTACTS } from '../constants';
-import type { AppData, Transaction, Tool, ToolGroup } from '../types';
+import type { AppData, Transaction, Tool, ToolGroup, LastWill, VisionBoardItem } from '../types';
 
 const defaultToolGroups: ToolGroup[] = [
     { id: "group-1", title: "1. Macro View", order: 0 },
@@ -325,6 +325,20 @@ export const generateSeedData = (): AppData => {
     const riskProfile = {};
     const toolGroups = [...defaultToolGroups];
     const tools = [...defaultTools];
+    const lastWill: LastWill = {
+        assetBeneficiaries: {},
+        specificGifts: [],
+        digitalAssets: [],
+    };
+    const visionBoardItems: VisionBoardItem[] = [
+        { id: 'vb-1', year: new Date().getFullYear(), imageUrl: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=800', title: 'Travel to the mountains', notes: 'Visit the Swiss Alps in the summer.', order: 0 },
+        { id: 'vb-2', year: new Date().getFullYear(), imageUrl: 'https://images.unsplash.com/photo-1554224155-1696413565d3?q=80&w=800', title: 'Improve finances', notes: 'Increase savings rate to 25%.', order: 1 },
+        { id: "vb-3", year: new Date().getFullYear(), imageUrl: 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?q=80&w=800', title: 'Career Growth', notes: 'Get promoted to Senior Engineer.', order: 2 },
+        { id: "vb-4", year: new Date().getFullYear(), imageUrl: 'https://images.unsplash.com/photo-1512436991641-6745cdb1723f?q=80&w=800', title: 'Upgrade Wardrobe', notes: 'Develop a personal style.', order: 3 },
+        { id: "vb-5", year: new Date().getFullYear(), imageUrl: 'https://images.unsplash.com/photo-1515023677547-59f68c34253a?q=80&w=800', title: 'Learn to Play Guitar', order: 4 },
+        { id: "vb-6", year: new Date().getFullYear() + 1, imageUrl: 'https://images.unsplash.com/photo-1568605117036-5fe5e7185743?q=80&w=800', title: 'Buy a House', order: 0 },
+    ];
+
 
     return {
         profile,
@@ -339,5 +353,7 @@ export const generateSeedData = (): AppData => {
         contacts,
         toolGroups,
         tools,
+        lastWill,
+        visionBoardItems,
     };
 };

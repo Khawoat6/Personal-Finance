@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, NavLink, Navigate } from 'react-router-dom';
 import { Sidebar } from './components/layout/Sidebar';
-import { RightSidebar } from './components/layout/RightSidebar';
 import { DashboardPage } from './pages/DashboardPage';
 import { TransactionsPage } from './pages/TransactionsPage';
 import { BudgetsPage } from './pages/BudgetsPage';
@@ -22,6 +21,10 @@ import { RiskProfileModal } from './pages/RiskProfileModal';
 import { LifemapPage } from './pages/LifemapPage';
 import { ToolsPage } from './pages/ToolsPage';
 import { MarketPulsePage } from './pages/MarketPulsePage';
+import { SoftwareMeltdownPage } from './pages/SoftwareMeltdownPage';
+import { RelationshipBalanceSheetPage } from './pages/RelationshipBalanceSheetPage';
+import { LastWillPage } from './pages/LastWillPage';
+import { VisionBoardPage } from './pages/VisionBoardPage';
 
 export const MainApp: React.FC = () => {
     const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
@@ -42,7 +45,7 @@ export const MainApp: React.FC = () => {
     return (
         <div className="flex h-screen bg-slate-50 dark:bg-slate-900 text-zinc-800 dark:text-slate-200 font-sans">
             <Sidebar isMobileOpen={isMobileSidebarOpen} setMobileOpen={setIsMobileSidebarOpen} />
-            <div className="flex-1 flex flex-col overflow-hidden border-r border-zinc-200 dark:border-slate-800">
+            <div className="flex-1 flex flex-col overflow-hidden">
                 <header className="h-20 flex-shrink-0 flex items-center justify-between md:justify-end px-4 sm:px-8">
                     <button 
                         onClick={() => setIsMobileSidebarOpen(true)}
@@ -80,7 +83,9 @@ export const MainApp: React.FC = () => {
                         <Route path="/goals" element={<GoalsPage setHeaderActions={setHeaderActions} />} />
                         <Route path="/reports" element={<ReportsPage />} />
                         <Route path="/market-pulse" element={<MarketPulsePage setHeaderActions={setHeaderActions} />} />
+                        <Route path="/software-meltdown" element={<SoftwareMeltdownPage setHeaderActions={setHeaderActions} />} />
                         <Route path="/health" element={<FinancialHealthPage />} />
+                        <Route path="/relationship-balance-sheet" element={<RelationshipBalanceSheetPage />} />
                         <Route path="/tax-planning" element={<TaxPlanningPage />} />
                         <Route path="/statement" element={<PersonalStatementPage />} />
                         <Route path="/profile" element={<ProfilePage />} />
@@ -88,11 +93,12 @@ export const MainApp: React.FC = () => {
                         <Route path="/relationships" element={<RelationshipsPage setHeaderActions={setHeaderActions} />} />
                         <Route path="/lifemap" element={<LifemapPage setHeaderActions={setHeaderActions} />} />
                         <Route path="/tools" element={<ToolsPage />} />
+                        <Route path="/last-will" element={<LastWillPage />} />
+                        <Route path="/vision-board" element={<VisionBoardPage setHeaderActions={setHeaderActions} />} />
                         <Route path="/settings" element={<SettingsPage />} />
                     </Routes>
                 </main>
             </div>
-            <RightSidebar />
             <TransactionModal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}

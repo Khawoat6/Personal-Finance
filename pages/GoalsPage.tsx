@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useData } from '../hooks/useData';
 import { Card } from '../components/ui/Card';
@@ -152,20 +151,12 @@ export const GoalsPage: React.FC<{ setHeaderActions: (actions: React.ReactNode) 
                         const percentage = (goal.targetAmount > 0) ? Math.min(100, (goal.currentAmount / goal.targetAmount) * 100) : 0;
                         return (
                             <Card key={goal.id} className="group relative flex flex-col">
-                                <div className="absolute top-4 right-4 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <button onClick={() => handleEdit(goal)} className="p-1.5 rounded-md hover:bg-slate-200 dark:hover:bg-slate-700">
-                                        <Pencil size={14} className="text-slate-500" />
-                                    </button>
-                                    <button onClick={() => handleDelete(goal.id)} className="p-1.5 rounded-md hover:bg-red-100 dark:hover:bg-red-900/50">
-                                        <Trash2 size={14} className="text-red-500" />
-                                    </button>
-                                </div>
                                 <div className="flex items-start gap-4">
                                      <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-700/50 flex items-center justify-center flex-shrink-0">
                                         {getGoalCategoryIcon(goal.category)}
                                     </div>
                                     <div>
-                                        <h3 className="font-semibold text-slate-800 dark:text-slate-200 pr-12">{goal.name}</h3>
+                                        <h3 className="font-semibold text-slate-800 dark:text-slate-200">{goal.name}</h3>
                                         <p className="text-sm text-slate-500 dark:text-slate-400">Deadline: {formatDate(goal.deadline)}</p>
                                     </div>
                                 </div>
@@ -177,19 +168,29 @@ export const GoalsPage: React.FC<{ setHeaderActions: (actions: React.ReactNode) 
                                     <ProgressBar value={goal.currentAmount} max={goal.targetAmount} colorClass={isCompleted ? "bg-green-500" : "bg-stone-700"} />
                                 </div>
                                 <div className="mt-auto pt-4 flex items-center justify-between">
-                                    {isCompleted ? (
-                                        <div className="flex items-center gap-2 text-green-600 font-semibold text-sm py-2 px-3 rounded-lg bg-green-50 dark:bg-green-900/30">
-                                            <CheckCircle2 size={16} />
-                                            <span>Completed!</span>
+                                    <div className="flex items-center gap-2">
+                                        {isCompleted ? (
+                                            <div className="flex items-center gap-2 text-green-600 font-semibold text-sm py-2 px-3 rounded-lg bg-green-50 dark:bg-green-900/30">
+                                                <CheckCircle2 size={16} />
+                                                <span>Completed!</span>
+                                            </div>
+                                        ) : (
+                                            <button
+                                                onClick={() => handleOpenContributeModal(goal)}
+                                                className="px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-700/50 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700"
+                                            >
+                                                Contribute
+                                            </button>
+                                        )}
+                                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                            <button onClick={() => handleEdit(goal)} className="p-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700">
+                                                <Pencil size={16} className="text-slate-500" />
+                                            </button>
+                                            <button onClick={() => handleDelete(goal.id)} className="p-2 rounded-full hover:bg-red-100 dark:hover:bg-red-900/50">
+                                                <Trash2 size={16} className="text-red-500" />
+                                            </button>
                                         </div>
-                                    ) : (
-                                        <button
-                                            onClick={() => handleOpenContributeModal(goal)}
-                                            className="px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-700/50 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700"
-                                        >
-                                            Contribute
-                                        </button>
-                                    )}
+                                    </div>
                                     <p className="text-right text-sm font-medium text-slate-600 dark:text-slate-300">{percentage.toFixed(0)}%</p>
                                 </div>
                             </Card>
