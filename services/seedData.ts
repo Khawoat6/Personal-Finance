@@ -1,5 +1,5 @@
 import { DEFAULT_CATEGORIES, DEFAULT_ACCOUNTS, DEFAULT_SUBSCRIPTIONS, DEFAULT_CREDIT_CARDS, DEFAULT_CONTACTS } from '../constants';
-import type { AppData, Transaction, Tool, ToolGroup, LastWill, VisionBoardItem } from '../types';
+import type { AppData, Transaction, Tool, ToolGroup, LastWill, VisionBoardItem, VisionBoardCategory, BookReview } from '../types';
 
 const defaultToolGroups: ToolGroup[] = [
     { id: "group-1", title: "1. Macro View", order: 0 },
@@ -198,6 +198,116 @@ const defaultTools: Tool[] = [
     { id: "tool-137", name: "Ethereum Gas Fees Today", url: "https://milkroad.com/ethereum/gas", groupId: "group-8", order: 32 }
 ];
 
+export const DEFAULT_BOOK_REVIEWS: BookReview[] = [
+    {
+        id: 'br-1',
+        title: 'The Psychology of Money',
+        author: 'Morgan Housel',
+        coverImageUrl: 'https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1589139567l/41881472.jpg',
+        category: 'Finance',
+        readingTime: 8,
+        difficulty: 'Beginner',
+        tagline: 'Timeless lessons on wealth, greed, and happiness by exploring the psychology behind our financial decisions.',
+        keyTakeaways: [
+            "Financial success is less about what you know and more about how you behave.",
+            "Luck and risk are powerful forces. Be humble in success and forgiving in failure.",
+            "The highest dividend money pays is the ability to control your own time.",
+            "Getting wealthy and staying wealthy are two separate skills. The first requires risk-taking, the second requires humility.",
+            "True wealth is what you don't see—it's the financial assets that haven't been converted into stuff."
+        ],
+        coreIdeas: [
+            {
+                concept: "No One's Crazy",
+                explanation: "Your personal experiences with money shape your financial worldview. What seems crazy to one person makes perfect sense to another based on their unique background.",
+                relevance: "It teaches empathy and helps us understand that there's no single 'right' answer in finance. We must make decisions that work for our own goals and risk tolerance."
+            },
+            {
+                concept: "The Seduction of Pessimism",
+                explanation: "Pessimism sounds smarter and more plausible than optimism. Progress happens too slowly to notice, but setbacks happen too quickly to ignore.",
+                relevance: "In investing, being an optimist about the long-term future is the most realistic stance, even though pessimism often grabs more headlines and feels more urgent."
+            }
+        ],
+        frameworks: [
+            {
+                name: "Man in the Car Paradox",
+                description: "When we see someone in a fancy car, we rarely think, 'Wow, that person is cool.' Instead, we think, 'Wow, if I had that car, people would think I'm cool.' The paradox is that wealth is used to signal admiration, but it rarely works that way."
+            }
+        ],
+        quotes: [
+            {
+                text: "The ability to do what you want, when you want, with who you want, for as long as you want, is priceless.",
+                context: "On defining the ultimate goal of wealth."
+            },
+            {
+                text: "Use money to gain control over your time, because not having control of your time is such a powerful and universal drag on happiness.",
+                context: "On the connection between money, time, and well-being."
+            }
+        ],
+        reflections: "This book fundamentally changed how I view wealth and happiness. It’s less of a 'how-to' guide and more of a 'how-to-think' guide. The emphasis on behavior over technical skill is a powerful reminder for any investor. It has made me focus more on long-term consistency and the 'sleep-at-night' factor of my portfolio rather than chasing the highest possible returns.",
+        whoShouldRead: [
+            "Anyone looking to build a healthier, less anxious relationship with money.",
+            "Investors who focus too much on charts and not enough on behavior.",
+            "Young professionals starting their financial journey."
+        ],
+        qualitativeRating: {
+            insightDepth: 5,
+            practicality: 5,
+            timelessness: 5
+        },
+        verdict: "A foundational read that should be on everyone's bookshelf. It provides a mental framework for financial success that will remain relevant for decades.",
+        dateRead: '2023-05-15T00:00:00.000Z',
+    },
+    {
+        id: 'br-2',
+        title: 'Sapiens: A Brief History of Humankind',
+        author: 'Yuval Noah Harari',
+        coverImageUrl: 'https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1420585954l/23692271.jpg',
+        category: 'History',
+        readingTime: 12,
+        difficulty: 'Intermediate',
+        tagline: 'A sweeping narrative of humanity’s journey, from an insignificant ape to the ruler of the planet.',
+        keyTakeaways: [
+            "Homo Sapiens conquered the world thanks to our unique ability to believe in collective fictions like gods, nations, and money.",
+            "The Agricultural Revolution was 'history's biggest fraud,' leading to a harder life for the average person.",
+            "The unification of humankind is driven by three universal orders: the monetary order, the imperial order, and the religious order.",
+            "The Scientific Revolution is built on the willingness to admit ignorance ('we don't know').",
+            "We are more powerful than ever before, but not necessarily happier."
+        ],
+        coreIdeas: [
+            {
+                concept: "The Cognitive Revolution",
+                explanation: "Around 70,000 years ago, Sapiens developed new ways of thinking and communicating, primarily through the ability to discuss fictional entities. This allowed for cooperation in large, flexible groups.",
+                relevance: "This is the foundation of modern society. Companies, laws, and nations are all inter-subjective realities (fictions) we collectively agree to uphold."
+            },
+        ],
+        frameworks: [
+            {
+                name: "The Three Great Revolutions",
+                description: "Human history is framed by three major transformations: The Cognitive Revolution (emergence of imagination), The Agricultural Revolution (domestication of plants/animals), and The Scientific Revolution (the pursuit of knowledge through observation and experiment)."
+            }
+        ],
+        quotes: [
+            {
+                text: "You could never convince a monkey to give you a banana by promising him limitless bananas after death in monkey heaven.",
+                context: "Explaining the unique human ability to believe in abstract concepts."
+            }
+        ],
+        reflections: "Sapiens provides a powerful macro-lens through which to view not just history, but our current world. Understanding that concepts like 'company' or 'money' are powerful fictions changes how one approaches business and finance. It's a book that recalibrates your perspective on everything, making the familiar seem strange and the strange, familiar.",
+        whoShouldRead: [
+            "Anyone curious about the deep history of our species.",
+            "Thinkers who want to understand the foundational structures of society.",
+            "People looking for a 'big picture' perspective on humanity's place in the world."
+        ],
+        qualitativeRating: {
+            insightDepth: 5,
+            practicality: 3,
+            timelessness: 5
+        },
+        verdict: "An essential, mind-expanding read. While not a practical guide, it provides a crucial context for understanding the world we live in today.",
+        dateRead: '2022-11-20T00:00:00.000Z',
+    }
+];
+
 export const generateSeedData = (): AppData => {
     const accounts = [...DEFAULT_ACCOUNTS];
     const categories = [...DEFAULT_CATEGORIES];
@@ -330,14 +440,33 @@ export const generateSeedData = (): AppData => {
         specificGifts: [],
         digitalAssets: [],
     };
-    const visionBoardItems: VisionBoardItem[] = [
-        { id: 'vb-1', year: new Date().getFullYear(), imageUrl: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=800', title: 'Travel to the mountains', notes: 'Visit the Swiss Alps in the summer.', order: 0 },
-        { id: 'vb-2', year: new Date().getFullYear(), imageUrl: 'https://images.unsplash.com/photo-1554224155-1696413565d3?q=80&w=800', title: 'Improve finances', notes: 'Increase savings rate to 25%.', order: 1 },
-        { id: "vb-3", year: new Date().getFullYear(), imageUrl: 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?q=80&w=800', title: 'Career Growth', notes: 'Get promoted to Senior Engineer.', order: 2 },
-        { id: "vb-4", year: new Date().getFullYear(), imageUrl: 'https://images.unsplash.com/photo-1512436991641-6745cdb1723f?q=80&w=800', title: 'Upgrade Wardrobe', notes: 'Develop a personal style.', order: 3 },
-        { id: "vb-5", year: new Date().getFullYear(), imageUrl: 'https://images.unsplash.com/photo-1515023677547-59f68c34253a?q=80&w=800', title: 'Learn to Play Guitar', order: 4 },
-        { id: "vb-6", year: new Date().getFullYear() + 1, imageUrl: 'https://images.unsplash.com/photo-1568605117036-5fe5e7185743?q=80&w=800', title: 'Buy a House', order: 0 },
+    
+    const visionBoardCategories: VisionBoardCategory[] = [
+        { id: 'vbcat-1', name: 'Health', color: 'green' },
+        { id: 'vbcat-2', name: 'Career', color: 'sky' },
+        { id: 'vbcat-3', name: 'Travel', color: 'indigo' },
+        { id: 'vbcat-4', name: 'Finance', color: 'amber' },
+        { id: 'vbcat-5', name: 'Relationships', color: 'rose' },
+        { id: 'vbcat-6', name: 'Personal Growth', color: 'purple' },
+        { id: 'vbcat-7', name: 'Home', color: 'teal' },
     ];
+
+    const visionBoardItems: VisionBoardItem[] = [
+        { id: 'vb-1', year: new Date().getFullYear(), imageUrl: 'https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=800', title: 'Visit Lake Braies, Italy', notes: 'Iconic travel destination.', order: 0, categoryId: 'vbcat-3', achieved: false },
+        { id: 'vb-2', year: new Date().getFullYear(), imageUrl: 'https://images.unsplash.com/photo-1554224155-1696413565d3?q=80&w=800', title: 'Master Personal Finances', notes: 'Increase savings rate to 30%.', order: 1, categoryId: 'vbcat-4', achieved: false },
+        { id: "vb-3", year: new Date().getFullYear(), imageUrl: 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?q=80&w=800', title: 'Career Advancement', notes: 'Achieve a leadership role.', order: 2, categoryId: 'vbcat-2', achieved: false },
+        { id: "vb-8", year: new Date().getFullYear(), imageUrl: 'https://images.unsplash.com/photo-1599818498358-b1724220d9d2?q=80&w=800', title: 'Helicopter Ski Trip', notes: 'Experience heli-skiing in the Alps.', order: 3, categoryId: 'vbcat-3', achieved: false },
+        { id: "vb-9", year: new Date().getFullYear(), imageUrl: 'https://images.unsplash.com/photo-1616422285855-ab153a0094e2?q=80&w=800', title: 'Acquire a Classic Sports Car', notes: 'Dream car: vintage red Porsche.', order: 4, categoryId: 'vbcat-7', achieved: false },
+        { id: "vb-10", year: new Date().getFullYear(), imageUrl: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=800', title: 'Build a Home Gym', notes: 'Invest in personal health and fitness.', order: 5, categoryId: 'vbcat-1', achieved: false },
+        { id: "vb-11", year: new Date().getFullYear(), imageUrl: 'https://images.unsplash.com/photo-1616594418296-e1f26274f8a1?q=80&w=800', title: 'Design a Rec Room', notes: 'With a pool table and entertainment area.', order: 6, categoryId: 'vbcat-7', achieved: false },
+        { id: "vb-12", year: new Date().getFullYear(), imageUrl: 'https://images.unsplash.com/photo-1559586473-2d9b6d85579b?q=80&w=800', title: 'Play Tennis by the Coast', notes: 'Vacation with a view.', order: 7, categoryId: 'vbcat-1', achieved: false },
+        { id: "vb-13", year: new Date().getFullYear(), imageUrl: 'https://images.unsplash.com/photo-1514933651103-005eec06c04b?q=80&w=800', title: 'Invest in a Restaurant', notes: 'Explore new business ventures.', order: 8, categoryId: 'vbcat-4', achieved: false },
+        { id: "vb-14", year: new Date().getFullYear(), imageUrl: 'https://images.unsplash.com/photo-1551952214-86d9e7a5a82e?q=80&w=800', title: 'Build an Indoor Sports Court', notes: 'Personal basketball court.', order: 9, categoryId: 'vbcat-7', achieved: false },
+        { id: "vb-6", year: new Date().getFullYear() + 1, imageUrl: 'https://images.unsplash.com/photo-1568605117036-5fe5e7185743?q=80&w=800', title: 'Buy a House', order: 0, categoryId: 'vbcat-7', achieved: false },
+        { id: "vb-7", year: new Date().getFullYear() - 1, imageUrl: 'https://images.unsplash.com/photo-1528642474498-1af0c17fd8c3?q=80&w=800', title: 'Run a half marathon', order: 0, categoryId: 'vbcat-1', achieved: true },
+    ];
+
+    const bookReviews = [...DEFAULT_BOOK_REVIEWS];
 
 
     return {
@@ -355,5 +484,7 @@ export const generateSeedData = (): AppData => {
         tools,
         lastWill,
         visionBoardItems,
+        visionBoardCategories,
+        bookReviews,
     };
 };

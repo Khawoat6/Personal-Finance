@@ -22,6 +22,7 @@ import {
     HeartHandshake,
     ScrollText,
     Image,
+    BookOpen,
 } from 'lucide-react';
 
 const navGroups = [
@@ -53,6 +54,7 @@ const navGroups = [
             { to: '/relationships', label: 'Relationships', icon: Users },
             { to: '/lifemap', label: 'Lifemap', icon: Map },
             { to: '/vision-board', label: 'Vision Board', icon: Image },
+            { to: '/reviews', label: 'Book Reviews', icon: BookOpen },
             { to: '/tools', label: 'Tools', icon: AppWindow },
             { to: '/credit-cards', label: 'Credit Cards', icon: CreditCard },
             { to: '/subscriptions', label: 'Subscriptions', icon: WalletCards },

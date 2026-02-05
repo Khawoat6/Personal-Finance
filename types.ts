@@ -201,6 +201,12 @@ export interface LastWill {
   finalWishes?: string;
 }
 
+export interface VisionBoardCategory {
+  id: string;
+  name: string;
+  color: string; // tailwind color name e.g. 'blue', 'green'
+}
+
 export interface VisionBoardItem {
   id: string;
   year: number;
@@ -208,6 +214,32 @@ export interface VisionBoardItem {
   title: string;
   notes?: string;
   order: number;
+  categoryId?: string;
+  achieved?: boolean;
+}
+
+export interface BookReview {
+  id: string;
+  title: string;
+  author: string;
+  coverImageUrl: string;
+  category: 'Business' | 'Philosophy' | 'Finance' | 'Psychology' | 'History' | 'Self-Help';
+  readingTime: number; // in minutes
+  difficulty: 'Beginner' | 'Intermediate' | 'Advanced';
+  tagline: string;
+  keyTakeaways: string[];
+  coreIdeas: { concept: string; explanation: string; relevance: string; }[];
+  frameworks: { name: string; description: string; }[];
+  quotes: { text: string; context: string; }[];
+  reflections: string; // Markdown supported
+  whoShouldRead: string[];
+  qualitativeRating: {
+    insightDepth: number; // 1-5
+    practicality: number; // 1-5
+    timelessness: number; // 1-5
+  };
+  verdict: string;
+  dateRead: string;
 }
 
 export interface AppData {
@@ -225,4 +257,6 @@ export interface AppData {
   tools: Tool[];
   lastWill: LastWill;
   visionBoardItems: VisionBoardItem[];
+  visionBoardCategories: VisionBoardCategory[];
+  bookReviews: BookReview[];
 }

@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 // FIX: Add Tool and ToolGroup types to import.
-import type { AppData, Transaction, Budget, Goal, Account, Category, Subscription, Profile, RiskProfile, CreditCard, Contact, Tool, ToolGroup, LastWill, VisionBoardItem } from '../types';
+import type { AppData, Transaction, Budget, Goal, Account, Category, Subscription, Profile, RiskProfile, CreditCard, Contact, Tool, ToolGroup, LastWill, VisionBoardItem, VisionBoardCategory, BookReview } from '../types';
 import { db } from '../services/db';
 
 interface DataContextType extends AppData {
@@ -39,6 +39,9 @@ interface DataContextType extends AppData {
     updateVisionBoardItem: (item: VisionBoardItem) => Promise<void>;
     deleteVisionBoardItem: (id: string) => Promise<void>;
     setVisionBoardItems: (items: VisionBoardItem[]) => Promise<void>;
+    addBookReview: (review: Omit<BookReview, 'id'>) => Promise<void>;
+    updateBookReview: (review: BookReview) => Promise<void>;
+    deleteBookReview: (id: string) => Promise<void>;
     // FIX: Add missing properties for tools and tool groups.
     updateTools: (tools: Tool[]) => Promise<void>;
     updateToolGroups: (toolGroups: ToolGroup[]) => Promise<void>;
@@ -66,6 +69,8 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         contacts: [],
         lastWill: { assetBeneficiaries: {}, specificGifts: [], digitalAssets: [] },
         visionBoardItems: [],
+        visionBoardCategories: [],
+        bookReviews: [],
         // FIX: Add missing initial state for tools and tool groups.
         toolGroups: [],
         tools: [],
@@ -454,6 +459,21 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         await saveData({ ...data, visionBoardItems: items });
     };
 
+    const addBookReview = async (review: Omit<BookReview, 'id'>) => {
+        const newReview: BookReview = { ...review, id: `br-${Date.now()}` };
+        await saveData({ ...data, bookReviews: [...data.bookReviews, newReview] });
+    };
+
+    const updateBookReview = async (updatedReview: BookReview) => {
+        const newReviews = data.bookReviews.map(r => r.id === updatedReview.id ? updatedReview : r);
+        await saveData({ ...data, bookReviews: newReviews });
+    };
+
+    const deleteBookReview = async (id: string) => {
+        const newReviews = data.bookReviews.filter(r => r.id !== id);
+        await saveData({ ...data, bookReviews: newReviews });
+    };
+
     const importData = async (importedData: AppData) => {
         await saveData(importedData);
     };
@@ -543,6 +563,9 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         updateVisionBoardItem,
         deleteVisionBoardItem,
         setVisionBoardItems,
+        addBookReview,
+        updateBookReview,
+        deleteBookReview,
         // FIX: Add tool functions to provider value
         updateTools,
         updateToolGroups,

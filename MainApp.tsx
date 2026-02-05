@@ -25,6 +25,8 @@ import { SoftwareMeltdownPage } from './pages/SoftwareMeltdownPage';
 import { RelationshipBalanceSheetPage } from './pages/RelationshipBalanceSheetPage';
 import { LastWillPage } from './pages/LastWillPage';
 import { VisionBoardPage } from './pages/VisionBoardPage';
+import { BookReviewsPage } from './pages/BookReviewsPage';
+import { BookReviewDetailPage } from './pages/BookReviewDetailPage';
 
 export const MainApp: React.FC = () => {
     const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
@@ -95,6 +97,8 @@ export const MainApp: React.FC = () => {
                         <Route path="/tools" element={<ToolsPage />} />
                         <Route path="/last-will" element={<LastWillPage />} />
                         <Route path="/vision-board" element={<VisionBoardPage setHeaderActions={setHeaderActions} />} />
+                        <Route path="/reviews" element={<BookReviewsPage setHeaderActions={setHeaderActions} />} />
+                        <Route path="/reviews/:reviewId" element={<BookReviewDetailPage setHeaderActions={setHeaderActions} />} />
                         <Route path="/settings" element={<SettingsPage />} />
                     </Routes>
                 </main>

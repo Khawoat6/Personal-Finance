@@ -1,5 +1,5 @@
 import localforage from 'localforage';
-import type { AppData, Transaction, Category, Account, Budget, Goal, Subscription, Profile, RiskProfile, CreditCard, Contact, ToolGroup, Tool, LastWill, VisionBoardItem } from '../types';
+import type { AppData, Transaction, Category, Account, Budget, Goal, Subscription, Profile, RiskProfile, CreditCard, Contact, ToolGroup, Tool, LastWill, VisionBoardItem, VisionBoardCategory, BookReview } from '../types';
 import { generateSeedData } from './seedData';
 
 const DB_NAME = 'personalFinanceDB';
@@ -26,6 +26,8 @@ const KEYS = {
     TOOLS: 'tools',
     LAST_WILL: 'lastWill',
     VISION_BOARD_ITEMS: 'visionBoardItems',
+    VISION_BOARD_CATEGORIES: 'visionBoardCategories',
+    BOOK_REVIEWS: 'bookReviews',
 };
 
 async function seedInitialData() {
@@ -44,6 +46,8 @@ async function seedInitialData() {
     await localforage.setItem(KEYS.TOOLS, seedData.tools);
     await localforage.setItem(KEYS.LAST_WILL, seedData.lastWill);
     await localforage.setItem(KEYS.VISION_BOARD_ITEMS, seedData.visionBoardItems);
+    await localforage.setItem(KEYS.VISION_BOARD_CATEGORIES, seedData.visionBoardCategories);
+    await localforage.setItem(KEYS.BOOK_REVIEWS, seedData.bookReviews);
     return seedData;
 }
 
@@ -68,6 +72,8 @@ export const db = {
         const tools = await localforage.getItem<Tool[]>(KEYS.TOOLS) || [];
         const lastWill = await localforage.getItem<LastWill>(KEYS.LAST_WILL) || { assetBeneficiaries: {}, specificGifts: [], digitalAssets: [] };
         const visionBoardItems = await localforage.getItem<VisionBoardItem[]>(KEYS.VISION_BOARD_ITEMS) || [];
+        const visionBoardCategories = await localforage.getItem<VisionBoardCategory[]>(KEYS.VISION_BOARD_CATEGORIES) || [];
+        const bookReviews = await localforage.getItem<BookReview[]>(KEYS.BOOK_REVIEWS) || [];
         
         // Ensure digitalAssets exists for backward compatibility
         if (!lastWill.digitalAssets) {
@@ -75,7 +81,7 @@ export const db = {
         }
 
 
-        return { profile, riskProfile, creditCards, transactions, categories, accounts, budgets, goals, subscriptions, contacts, toolGroups, tools, lastWill, visionBoardItems };
+        return { profile, riskProfile, creditCards, transactions, categories, accounts, budgets, goals, subscriptions, contacts, toolGroups, tools, lastWill, visionBoardItems, visionBoardCategories, bookReviews };
     },
 
     async saveData(data: AppData): Promise<void> {
@@ -93,6 +99,8 @@ export const db = {
         await localforage.setItem(KEYS.TOOLS, data.tools);
         await localforage.setItem(KEYS.LAST_WILL, data.lastWill);
         await localforage.setItem(KEYS.VISION_BOARD_ITEMS, data.visionBoardItems);
+        await localforage.setItem(KEYS.VISION_BOARD_CATEGORIES, data.visionBoardCategories);
+        await localforage.setItem(KEYS.BOOK_REVIEWS, data.bookReviews);
     },
 
     async clearAllData(): Promise<void> {
