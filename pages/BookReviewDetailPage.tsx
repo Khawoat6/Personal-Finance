@@ -1,9 +1,11 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useData } from '../hooks/useData';
 import { BookReviewFormModal } from '../components/features/BookReviewFormModal';
-import { Clock, BarChart, Check, Quote, Lightbulb, BrainCircuit, User, Star, Edit, Trash2, ArrowLeft } from 'lucide-react';
+import { Clock, BarChart, Check, Quote, Lightbulb, BrainCircuit, User, Star, Edit, Trash2, ArrowLeft, FileDown, Loader2 } from 'lucide-react';
 import type { BookReview } from '../types';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 const slugify = (text: string) => text.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
 
@@ -74,6 +76,8 @@ export const BookReviewDetailPage: React.FC<{ setHeaderActions: (actions: React.
     const { bookReviews, updateBookReview, deleteBookReview, loading } = useData();
     
     const [isFormOpen, setIsFormOpen] = useState(false);
+    const [isExporting, setIsExporting] = useState(false);
+    const contentRef = useRef<HTMLDivElement>(null);
 
     const review = useMemo(() => bookReviews.find(r => r.id === reviewId), [bookReviews, reviewId]);
 
@@ -92,17 +96,49 @@ export const BookReviewDetailPage: React.FC<{ setHeaderActions: (actions: React.
         }
     };
 
+    const handleExportPdf = async () => {
+        if (!contentRef.current || !review) return;
+        setIsExporting(true);
+        try {
+            const canvas = await html2canvas(contentRef.current, {
+                scale: 2,
+                useCORS: true,
+                backgroundColor: document.documentElement.classList.contains('dark') ? '#1e293b' : '#ffffff',
+            });
+            const imgData = canvas.toDataURL('image/png');
+            
+            const pdf = new jsPDF({
+                orientation: 'p',
+                unit: 'px',
+                format: [canvas.width, canvas.height]
+            });
+
+            pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+            pdf.save(`${review.title.replace(/ /g, '_')}_Review.pdf`);
+
+        } catch (error) {
+            console.error("Failed to export PDF:", error);
+            alert("Could not export to PDF. There might be an issue with loading images.");
+        } finally {
+            setIsExporting(false);
+        }
+    };
+
     useEffect(() => {
         if (review) {
             setHeaderActions(
                 <div className="flex items-center gap-2">
+                    <button onClick={handleExportPdf} disabled={isExporting} className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-700/50 border dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50">
+                        {isExporting ? <Loader2 size={16} className="animate-spin" /> : <FileDown size={16}/>}
+                        {isExporting ? 'Downloading...' : 'Download PDF'}
+                    </button>
                     <button onClick={handleEdit} className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-700/50 border dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700"><Edit size={16}/> Edit</button>
                     <button onClick={handleDelete} className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-600 bg-red-100 dark:bg-red-900/40 rounded-lg hover:bg-red-200"><Trash2 size={16}/> Delete</button>
                 </div>
             );
         }
         return () => setHeaderActions(null);
-    }, [setHeaderActions, review]);
+    }, [setHeaderActions, review, isExporting]);
 
     if (loading) return <p>Loading review...</p>;
     if (!review) return <p>Review not found.</p>;
@@ -113,7 +149,7 @@ export const BookReviewDetailPage: React.FC<{ setHeaderActions: (actions: React.
                 <ArrowLeft size={16} /> Back to all reviews
             </Link>
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-x-12">
-                <div className="lg:col-span-3">
+                <div ref={contentRef} className="lg:col-span-3">
                      <header className="pb-8 border-b dark:border-slate-700">
                         <div className="flex flex-col md:flex-row gap-8">
                             <img src={review.coverImageUrl} alt={review.title} className="w-40 h-auto rounded-lg shadow-2xl self-center md:self-start flex-shrink-0" />
